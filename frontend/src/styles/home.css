@@ -595,6 +595,17 @@
   .hero-actions > * { width: 100%; justify-content: center; }
 }
 
+@media (max-width: 680px) {
+  .home-hero { display: flex; justify-content: center; }
+  .hero-card { width: 100%; }
+  .hero-content { align-items: center; text-align: center; }
+  .hero-content p { margin-inline: auto; }
+  .hero-actions { align-items: center; }
+  .hero-graphic { width: 100%; }
+  .home-section { display: flex; flex-direction: column; align-items: center; }
+  .home-section > * { width: 100%; }
+}
+
 /* Compact navbar polish */
 .home-navbar {
   min-height: 64px;
