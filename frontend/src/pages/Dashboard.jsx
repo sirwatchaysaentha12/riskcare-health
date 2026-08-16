@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import LogoIcon from '../components/LogoIcon'
 
 function Dashboard() {
   const navigate = useNavigate()
@@ -7,7 +8,7 @@ function Dashboard() {
     <main className="dashboard-page">
       <header className="dashboard-header">
         <div>
-          <div className="brand-mark dashboard-brand">RISK<span>CARE</span></div>
+          <LogoIcon className="dashboard-brand" />
           <p>พื้นที่สุขภาพของคุณ</p>
         </div>
         <button className="logout-button" type="button" onClick={() => navigate('/login')}>
@@ -20,14 +21,14 @@ function Dashboard() {
         <div className="dashboard-grid">
           <article className="dashboard-card dashboard-card-primary">
             <span className="card-label">การประเมินล่าสุด</span>
-            <strong>ยังไม่มีข้อมูล</strong>
-            <p>เริ่มทำแบบประเมินเพื่อดูระดับความเสี่ยงของคุณ</p>
-            <button type="button" onClick={() => navigate('/assessment')}>เริ่มประเมิน</button>
+            <strong>ยังไม่มีผลประเมิน</strong>
+            <p>ทำแบบประเมินสั้น ๆ เพื่อดูระดับความเสี่ยงที่เหมาะกับคุณ</p>
+            <button type="button" onClick={() => navigate('/assessment')}>เริ่มทำแบบประเมิน</button>
           </article>
           <article className="dashboard-card">
             <span className="card-label">คำแนะนำสุขภาพ</span>
             <strong>ดูแลระบบทางเดินหายใจ</strong>
-            <p>ติดตามอาการและดูแลสุขภาพอย่างสม่ำเสมอ</p>
+            <p>ติดตามอาการ ดูแลสุขภาพ และสังเกตคำแนะนำจากระบบอย่างสม่ำเสมอ</p>
           </article>
         </div>
       </section>

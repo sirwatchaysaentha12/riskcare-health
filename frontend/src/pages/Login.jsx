@@ -1,142 +1,159 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthFieldIcon from '../components/auth/AuthFieldIcon'
+import { supabase } from '../lib/supabase'
 
-const riskLevels = [
-  { label: 'ความเสี่ยงสูงมาก', color: 'risk-red', icon: '!' },
-  { label: 'ความเสี่ยงสูง', color: 'risk-orange', icon: '↑' },
-  { label: 'ความเสี่ยงปานกลาง', color: 'risk-yellow', icon: '~' },
-  { label: 'ความเสี่ยงต่ำ', color: 'risk-green', icon: '✓' },
-]
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const phonePattern = /^(?:\+?[0-9][0-9\s().-]{5,}|0[0-9\s().-]{5,})$/
 
-function Login() {
+function normalizePhone(value) {
+  return value.trim().replace(/[\s().-]/g, '')
+}
+
+function toDummyEmail(phone) {
+  return `${phone.replace(/\D/g, '')}@phone.user`
+}
+
+export default function Login() {
   const navigate = useNavigate()
-  const [isRegistering, setIsRegistering] = useState(false)
-  const [credentials, setCredentials] = useState({ identifier: '', password: '' })
-  const [message, setMessage] = useState('')
+  const [registering, setRegistering] = useState(false)
+  const [username, setUsername] = useState('')
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [message, setMessage] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  function handleChange(event) {
-    const { name, value } = event.target
-    setCredentials((current) => ({ ...current, [name]: value }))
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault()
-    setMessage(isRegistering ? 'กำลังสร้างบัญชีตัวอย่าง...' : 'กำลังเข้าสู่ระบบตัวอย่าง...')
-    setTimeout(() => navigate('/dashboard'), 400)
-  }
-
-  function handleGoogleLogin() {
-    setMessage('กำลังเข้าสู่ระบบด้วย Google ตัวอย่าง...')
-    setTimeout(() => navigate('/dashboard'), 400)
-  }
-
-  function toggleRegister() {
-    setIsRegistering((current) => !current)
+  async function submit(e) {
+    e.preventDefault()
     setMessage('')
+    setSuccess(false)
+    if (!supabase) return setMessage('ยังไม่ได้ตั้งค่า Supabase')
+
+    const value = identifier.trim()
+    const normalizedUsername = username.trim().toLowerCase()
+    const normalizedPhone = normalizePhone(value)
+    const isPhoneRegistration = registering && phonePattern.test(value) && !emailPattern.test(value)
+    const registrationEmail = isPhoneRegistration ? toDummyEmail(normalizedPhone) : value.toLowerCase()
+
+    if (registering && normalizedUsername.length < 3) return setMessage('กรุณากรอกชื่อผู้ใช้อย่างน้อย 3 ตัวอักษร')
+    if (registering && !value) return setMessage('กรุณากรอกอีเมล หรือเบอร์โทรศัพท์')
+    if (!registering && !value) return setMessage('กรุณากรอกอีเมล ชื่อผู้ใช้ หรือเบอร์โทร')
+    if (registering && !emailPattern.test(value) && !phonePattern.test(value)) return setMessage('กรุณากรอกอีเมล หรือเบอร์โทรศัพท์ให้ถูกต้อง')
+    if (password.length < 8 || password.length > 64) return setMessage('รหัสผ่านต้องมีความยาว 8–64 ตัวอักษร')
+
+    setLoading(true)
+    try {
+      if (registering) {
+        const duplicateField = isPhoneRegistration ? 'phone' : 'email'
+        const duplicateValue = isPhoneRegistration ? normalizedPhone : registrationEmail
+        const { data: existingIdentifier, error: identifierCheckError } = await supabase.rpc('is_registration_taken', {
+          lookup_field: duplicateField,
+          lookup_value: duplicateValue,
+        })
+        if (identifierCheckError) return setMessage('ไม่สามารถตรวจสอบข้อมูลสมาชิกได้ กรุณาลองใหม่อีกครั้ง')
+        if (existingIdentifier === true) return setMessage(isPhoneRegistration ? 'เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว' : 'อีเมลนี้เคยสมัครสมาชิกไปแล้ว')
+
+        const { data: existingUsername, error: usernameCheckError } = await supabase.rpc('is_registration_taken', {
+          lookup_field: 'username',
+          lookup_value: normalizedUsername,
+        })
+        if (usernameCheckError) return setMessage('ไม่สามารถตรวจสอบชื่อผู้ใช้ได้ กรุณาลองใหม่อีกครั้ง')
+        if ((Array.isArray(existingUsername) ? existingUsername[0] : existingUsername)?.email) return setMessage('ชื่อผู้ใช้นี้มีคนใช้งานไปแล้ว')
+
+        if (existingUsername === true) return setMessage('ชื่อผู้ใช้นี้มีคนใช้งานไปแล้ว')
+
+        if (isPhoneRegistration) {
+          const { data: existingPhone, error: phoneCheckError } = await supabase.rpc('is_registration_taken', {
+            lookup_field: 'phone',
+            lookup_value: normalizedPhone,
+          })
+          if (phoneCheckError) return setMessage('ไม่สามารถตรวจสอบเบอร์โทรศัพท์ได้ กรุณาลองใหม่อีกครั้ง')
+          if ((Array.isArray(existingPhone) ? existingPhone[0] : existingPhone)?.email) return setMessage('เบอร์โทรศัพท์นี้เคยสมัครสมาชิกไปแล้ว')
+        }
+
+        const { error } = await supabase.auth.signUp({
+          email: registrationEmail,
+          password,
+          options: { data: { username: normalizedUsername, phone: isPhoneRegistration ? normalizedPhone : null } },
+        })
+        if (error && /already registered|already been registered/i.test(error.message)) return setMessage('สมัครสมาชิกไปแล้ว กรุณาเข้าสู่ระบบ')
+        if (error) return setMessage('สมัครสมาชิกไม่สำเร็จ กรุณาลองใหม่')
+
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email: registrationEmail, password })
+        if (signInError) return setMessage('สมัครสมาชิกแล้ว กรุณายืนยันอีเมลก่อนเข้าสู่ระบบ')
+        setSuccess(true)
+        setMessage('สมัครสมาชิกเรียบร้อยแล้ว')
+        setTimeout(() => navigate('/risk-assessment', { replace: true }), 800)
+        return
+      }
+
+      const isPhone = phonePattern.test(value)
+      const lookupField = emailPattern.test(value) ? 'email' : isPhone ? 'phone' : 'username'
+      const lookupValue = isPhone ? normalizedPhone : value.toLowerCase()
+      const { data, error: lookupError } = await supabase.rpc('get_login_email', {
+        lookup_field: lookupField,
+        lookup_value: lookupValue,
+      })
+      const profile = Array.isArray(data) ? data[0] : data
+      if (lookupError) return setMessage('ไม่สามารถตรวจสอบบัญชีได้ กรุณาลองใหม่อีกครั้ง')
+      if (!profile?.email) {
+        return setMessage('ไม่พบชื่อผู้ใช้นี้ในระบบ กรุณาสมัครสมาชิก')
+      }
+
+      const { data: auth, error } = await supabase.auth.signInWithPassword({ email: profile.email.toLowerCase(), password })
+      if (error) return setMessage('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง')
+
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, has_completed_assessment')
+        .eq('id', auth.user.id)
+        .maybeSingle()
+      if (profileError || !userProfile?.role) return setMessage('ไม่พบสิทธิ์ผู้ใช้ กรุณาติดต่อผู้ดูแลระบบ')
+      if (userProfile.role === 'admin') return navigate('/admin/dashboard', { replace: true })
+      if (userProfile.role !== 'user') return setMessage('ไม่พบสิทธิ์ผู้ใช้ กรุณาติดต่อผู้ดูแลระบบ')
+      navigate(userProfile.has_completed_assessment === true ? '/' : '/risk-assessment', { replace: true })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function toggleMode() {
+    setRegistering((value) => !value)
+    setMessage('')
+    setSuccess(false)
+    setShowPassword(false)
+  }
+
+  function startRegistration() {
+    setRegistering(true)
+    setMessage('')
+    setShowPassword(false)
   }
 
   return (
     <main className="auth-page">
-      <div className="auth-shell">
-        <section className="welcome-panel" aria-labelledby="welcome-title">
-          <div className="welcome-topline">
-            <div className="brand-lockup">
-              <span className="brand-symbol" aria-hidden="true">✦</span>
-              <div className="brand-mark">RISK<span>CARE</span></div>
+      <section className="login-panel">
+        <div className="login-card">
+          <h2>{registering ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ'}</h2>
+          <form noValidate onSubmit={submit}>
+            {registering && <label className="sr-only" htmlFor="login-username">ชื่อผู้ใช้</label>}
+            {registering && <input id="login-username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ชื่อผู้ใช้" autoComplete="username" />}
+            <label className="sr-only" htmlFor="login-identifier">อีเมล ชื่อผู้ใช้ หรือเบอร์โทรศัพท์</label>
+            <input id="login-identifier" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder={registering ? 'อีเมล หรือ เบอร์โทรศัพท์' : 'อีเมล ชื่อผู้ใช้ หรือเบอร์โทร'} type="text" autoComplete={registering ? 'email' : 'username'} />
+            <div className="input-wrap password-input-wrap">
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="รหัสผ่าน" type={showPassword ? 'text' : 'password'} autoComplete={registering ? 'new-password' : 'current-password'} aria-label="รหัสผ่าน" />
+              <button className="password-toggle" type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'} aria-pressed={showPassword}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d={showPassword ? 'M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.8 10.8 0 0 1 12 5c5 0 8.5 4 9.5 7-.4 1.2-1.3 2.5-2.5 3.6M6.2 6.2C4.5 7.4 3.3 9.2 2.5 12c1 3 4.5 7 9.5 7 1.2 0 2.3-.2 3.3-.6' : 'M2.5 12S6 5 12 5s9.5 7 9.5 7S18 19 12 19s-9.5-7-9.5-7Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z'} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </button>
             </div>
-            <span className="secure-badge"><span /> ปลอดภัยและเป็นส่วนตัว</span>
-          </div>
-          <div className="welcome-copy">
-            <p className="eyebrow">ระบบประเมินสุขภาพเบื้องต้น</p>
-            <h1 id="welcome-title">ประเมินความเสี่ยงต่อการเป็นโรคทางเดินหายใจ</h1>
-            <p className="welcome-description">
-              ดูแลสุขภาพของคุณด้วยข้อมูลที่เข้าใจง่ายและระบบที่ออกแบบมาเพื่อความปลอดภัยของคุณ
-            </p>
-          </div>
-          <div className="risk-list" aria-label="ระดับความเสี่ยง">
-            {riskLevels.map((level) => (
-              <div className="risk-card" key={level.label}>
-                <span className={`risk-icon ${level.color}`}>{level.icon}</span>
-                <span className="risk-card-copy"><strong>{level.label}</strong><small>ดูรายละเอียดระดับความเสี่ยง</small></span>
-              </div>
-            ))}
-          </div>
-          <p className="welcome-footnote">ข้อมูลที่ช่วยให้คุณเข้าใจสุขภาพของตัวเองได้ดีขึ้น</p>
-        </section>
-
-        <section className="login-panel" aria-labelledby="login-title">
-          <div className="login-card">
-            <div className="mobile-brand"><span className="brand-symbol" aria-hidden="true">✦</span> RISK<span>CARE</span></div>
-            <p className="eyebrow login-eyebrow">{isRegistering ? 'เริ่มต้นดูแลสุขภาพ' : 'ยินดีต้อนรับกลับมา'}</p>
-            <h2 id="login-title">{isRegistering ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ'}</h2>
-            <p className="login-subtitle">
-              {isRegistering ? 'สร้างบัญชีเพื่อบันทึกผลการประเมินของคุณ' : 'กรอกข้อมูลเพื่อเข้าสู่พื้นที่สุขภาพของคุณ'}
-            </p>
-
-            <form onSubmit={handleSubmit}>
-              <label htmlFor="identifier">{isRegistering ? 'อีเมล' : 'อีเมลหรือชื่อผู้ใช้'}</label>
-              <div className="input-wrap">
-                <AuthFieldIcon type="user" />
-                <input
-                  id="identifier"
-                  name="identifier"
-                  type="text"
-                  value={credentials.identifier}
-                  onChange={handleChange}
-                  placeholder={isRegistering ? 'เช่น name@example.com' : 'เช่น name@example.com'}
-                  required
-                />
-              </div>
-
-              <div className="password-label">
-                <label htmlFor="password">รหัสผ่าน</label>
-                {!isRegistering && <a href="#forgot-password">ลืมรหัสผ่าน?</a>}
-              </div>
-              <div className="input-wrap">
-                <AuthFieldIcon type="password" />
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={credentials.password}
-                  onChange={handleChange}
-                  placeholder="กรอกรหัสผ่านของคุณ"
-                  required
-                />
-                <button className="password-toggle" type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}>
-                  {showPassword ? 'ซ่อน' : 'แสดง'}
-                </button>
-              </div>
-
-              <button className="primary-button" type="submit">
-                {isRegistering ? 'สร้างบัญชี' : 'เข้าสู่ระบบ'}
-              </button>
-            </form>
-
-            {!isRegistering && (
-              <>
-                <div className="divider"><span>หรือ</span></div>
-                <button className="google-button" type="button" onClick={handleGoogleLogin}>
-                  <span className="google-icon">G</span>
-                  เข้าสู่ระบบด้วย Google
-                </button>
-              </>
-            )}
-            {message && <p className="form-message" role="status">{message}</p>}
-            <p className="register-switch">
-              {isRegistering ? 'มีบัญชีอยู่แล้ว?' : 'ยังไม่มีบัญชี?'}{' '}
-              <button type="button" onClick={toggleRegister}>
-                {isRegistering ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
-              </button>
-            </p>
-            <p className="demo-note">โหมดสาธิต: ระบบยังไม่ได้เชื่อมต่อฐานข้อมูลจริง</p>
-          </div>
-        </section>
-      </div>
+            <button className="primary-button" disabled={loading}>{loading ? 'กำลังดำเนินการ...' : registering ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ'}</button>
+          </form>
+          {message && <p className={`form-message ${success ? 'form-success' : 'form-error'}`} role="alert">{message}</p>}
+          {!registering && <button className="register-button" type="button" onClick={startRegistration}>สมัครสมาชิก</button>}
+          {registering && <button className="register-button" type="button" onClick={toggleMode}>กลับเข้าสู่ระบบ</button>}
+        </div>
+      </section>
     </main>
   )
 }
-
-export default Login

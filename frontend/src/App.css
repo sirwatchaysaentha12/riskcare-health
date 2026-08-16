@@ -735,6 +735,14 @@
 .dashboard-card p { color: #718096; font-size: 14px; }
 .dashboard-card-primary button { margin-top: 24px; padding: 11px 18px; background: #0E4B95; color: #fff; }
 
+/* Legacy components use the same green/white system as the current pages. */
+.dashboard-card { border-color: var(--color-primary-soft); background: #ffffff; }
+.dashboard-card-primary { border-color: var(--color-primary-soft); background: var(--color-primary-light); }
+.card-label { color: var(--color-primary-dark); }
+.dashboard-card strong { color: var(--color-neutral-900); }
+.dashboard-card p { color: var(--color-neutral-600); }
+.dashboard-card-primary button { background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)); }
+
 @media (max-width: 860px) {
   .auth-page { grid-template-columns: 1fr; }
   .welcome-panel { min-height: auto; padding: 32px 24px; }

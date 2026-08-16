@@ -1,7 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import LogoIcon from '../components/LogoIcon'
 import AssessmentResultModal from '../components/AssessmentResultModal'
 import RiskQuestion from '../components/RiskQuestion'
+import { supabase } from '../lib/supabase'
 
 const questions = [
   {
@@ -106,6 +108,13 @@ const questions = [
 
 const sections = [...new Set(questions.map((question) => question.section))]
 
+const provincesByRegion = {
+  'เหนือ': ['เชียงใหม่', 'เชียงราย', 'ลำปาง', 'ลำพูน', 'แม่ฮ่องสอน', 'น่าน', 'พะเยา', 'แพร่', 'อุตรดิตถ์', 'พิษณุโลก', 'สุโขทัย', 'เพชรบูรณ์', 'กำแพงเพชร', 'พิจิตร', 'ตาก'],
+  'กลาง': ['กรุงเทพมหานคร', 'นนทบุรี', 'ปทุมธานี', 'สมุทรปราการ', 'สมุทรสาคร', 'นครปฐม', 'พระนครศรีอยุธยา', 'สระบุรี', 'ลพบุรี', 'ราชบุรี', 'กาญจนบุรี', 'เพชรบุรี', 'ประจวบคีรีขันธ์', 'ชัยนาท', 'นครสวรรค์', 'อ่างทอง', 'สิงห์บุรี', 'สุพรรณบุรี'],
+  'ตะวันออกเฉียงเหนือ': ['ขอนแก่น', 'นครราชสีมา', 'อุดรธานี', 'อุบลราชธานี', 'บุรีรัมย์', 'สุรินทร์', 'ศรีสะเกษ', 'ร้อยเอ็ด', 'มหาสารคาม', 'กาฬสินธุ์', 'สกลนคร', 'นครพนม', 'มุกดาหาร', 'ยโสธร', 'ชัยภูมิ', 'หนองคาย', 'หนองบัวลำภู', 'บึงกาฬ', 'เลย', 'อำนาจเจริญ'],
+  'ใต้': ['ชุมพร', 'สุราษฎร์ธานี', 'นครศรีธรรมราช', 'กระบี่', 'พังงา', 'ภูเก็ต', 'ตรัง', 'พัทลุง', 'สงขลา', 'สตูล', 'ปัตตานี', 'ยะลา', 'นราธิวาส', 'ระนอง']
+}
+
 function getResult(score, redFlag) {
   if (redFlag) return { label: 'ต้องได้รับการดูแลเร่งด่วน', tone: 'critical', advice: 'มีสัญญาณอันตราย ควรติดต่อบริการฉุกเฉินในพื้นที่ทันที และไม่ควรรอผลจากแบบสอบถาม' }
   if (score >= 16) return { label: 'สูงมาก', tone: 'very-high', advice: 'หลีกเลี่ยงควันและมลพิษ ขอคำแนะนำจากบุคลากรทางการแพทย์โดยเร็ว และเฝ้าระวังอาการ' }
@@ -118,6 +127,8 @@ function Assessment() {
   const navigate = useNavigate()
   const resultRef = useRef(null)
   const [answers, setAnswers] = useState({})
+  const [region, setRegion] = useState('')
+  const [province, setProvince] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -129,8 +140,10 @@ function Assessment() {
   const redFlag = answers.redFlag === 'yes'
   const result = getResult(score, redFlag)
   const answeredCount = Object.keys(answers).length
-  const isFormComplete = answeredCount >= questions.length
+  const isFormComplete = answeredCount >= questions.length && region && province
   const [validationMessage, setValidationMessage] = useState('')
+
+  const progressPercent = Math.round((answeredCount / questions.length) * 100)
 
   function handleChange(id, value) {
     setAnswers((current) => ({ ...current, [id]: value }))
@@ -138,7 +151,7 @@ function Assessment() {
     if (validationMessage) setValidationMessage('')
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     if (!isFormComplete || isProcessing) {
       setValidationMessage('กรุณากรอกคำถามให้ครบทุกข้อก่อนกดดูผลการประเมิน')
@@ -152,26 +165,49 @@ function Assessment() {
 
     setIsProcessing(true)
     setSubmitted(false)
-    window.setTimeout(() => {
+    const healthRiskGroup = redFlag || score >= 10 ? 'high_critical' : score >= 5 ? 'moderate' : 'low'
+
+    try {
+      if (!supabase) throw new Error('Supabase is not configured')
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User is not authenticated')
+
+      const { error: assessmentError } = await supabase.from('risk_assessments').insert({
+        user_id: user.id,
+        answers,
+        score,
+        risk_level: result.label,
+        red_flag: redFlag,
+      })
+      if (assessmentError) throw assessmentError
+
+      const { error: profileError } = await supabase.from('profiles').update({
+        region,
+        province,
+        health_risk_group: healthRiskGroup,
+        has_completed_assessment: true,
+      }).eq('id', user.id)
+      if (profileError) throw profileError
+
       setIsProcessing(false)
       setSubmitted(true)
       setIsModalOpen(true)
-      window.setTimeout(() => {
-        if (resultRef.current) {
-          const headerOffset = 96
-          const elementTop = resultRef.current.getBoundingClientRect().top + window.pageYOffset
-          window.scrollTo({ top: elementTop - headerOffset, behavior: 'smooth' })
-        }
-      }, 60)
-    }, 0)
+    } catch (error) {
+      console.error('Failed to save assessment:', error)
+      setIsProcessing(false)
+      setValidationMessage('บันทึกผลการประเมินไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+    }
   }
 
   return (
     <main className="assessment-page">
       <header className="assessment-header">
-        <button className="back-button" type="button" onClick={() => navigate('/dashboard')}>← กลับหน้าภาพรวม</button>
-        <div className="assessment-brand"><span>✦</span> RISK<span>CARE</span></div>
+        <button className="back-button" type="button" onClick={() => navigate('/')}>← กลับหน้าภาพรวม</button>
+        <div className="assessment-brand"><LogoIcon /></div>
         <span className="progress-label">ตอบแล้ว {answeredCount}/{questions.length}</span>
+        <div className="assessment-progress-track">
+          <div className="assessment-progress-fill" style={{ width: `${progressPercent}%` }} />
+        </div>
       </header>
       <section className="assessment-shell">
         <AssessmentResultModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} result={result} score={score} redFlag={redFlag} />
@@ -187,6 +223,23 @@ function Assessment() {
           </section>
         )}
         <form className="assessment-form" onSubmit={handleSubmit}>
+          <section className="question-section assessment-location-section">
+            <div className="section-heading"><span>00</span><h2>พื้นที่ที่คุณอาศัยอยู่</h2></div>
+            <div className="assessment-location-grid">
+              <label className="assessment-select-label">ภาค
+                <select value={region} onChange={(event) => { setRegion(event.target.value); setProvince('') }} required>
+                  <option value="">เลือกภาค</option>
+                  {Object.keys(provincesByRegion).map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+              <label className="assessment-select-label">จังหวัด
+                <select value={province} onChange={(event) => setProvince(event.target.value)} disabled={!region} required>
+                  <option value="">{region ? 'เลือกจังหวัด' : 'กรุณาเลือกภาคก่อน'}</option>
+                  {(provincesByRegion[region] || []).map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+            </div>
+          </section>
           {sections.map((section) => (
             <section className="question-section" key={section}>
               <div className="section-heading"><span>{String(sections.indexOf(section) + 1).padStart(2, '0')}</span><h2>{section}</h2></div>

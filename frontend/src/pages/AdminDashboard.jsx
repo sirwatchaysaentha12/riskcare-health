@@ -1,0 +1,4 @@
+import { useNavigate } from 'react-router-dom'
+import LogoIcon from '../components/LogoIcon'
+import { supabase } from '../lib/supabase'
+export default function AdminDashboard() { const navigate=useNavigate(); async function logout(){await supabase?.auth.signOut();navigate('/login',{replace:true})} return <main className="dashboard-page"><header className="dashboard-header"><div><LogoIcon className="dashboard-brand" /><p>ศูนย์ควบคุมระบบสำหรับผู้ดูแล</p></div><button className="logout-button" onClick={logout}>ออกจากระบบ</button></header><section className="dashboard-content"><p className="eyebrow">ADMIN</p><h1>แผงควบคุมผู้ดูแลระบบ</h1><div className="dashboard-grid"><article className="dashboard-card dashboard-card-primary"><span className="card-label">การจัดการระบบ</span><strong>ยินดีต้อนรับผู้ดูแล</strong><p>จัดการผู้ใช้ โปรไฟล์ และรายงานระบบจากหน้านี้</p></article></div></section></main> }

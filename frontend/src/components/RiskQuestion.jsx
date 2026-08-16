@@ -1,7 +1,11 @@
 function RiskQuestion({ question, value, onChange }) {
+  const questionId = `q-${question.id}`
+
   return (
-    <fieldset className="question-card">
-      <legend>{question.label}</legend>
+    <div className="question-card" role="group" aria-labelledby={questionId}>
+      <h3 className="question-title" id={questionId}>
+        {question.label}
+      </h3>
       <div className="answer-list">
         {question.options.map((option) => (
           <label className={`answer-option ${value === option.value ? 'is-selected' : ''}`} key={option.value}>
@@ -17,7 +21,7 @@ function RiskQuestion({ question, value, onChange }) {
           </label>
         ))}
       </div>
-    </fieldset>
+    </div>
   )
 }
 

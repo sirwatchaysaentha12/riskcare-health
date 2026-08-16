@@ -1,4 +1,7 @@
-function AssessmentResultModal({ isOpen, onClose, result, score, redFlag }) {
+import { useNavigate } from 'react-router-dom'
+
+function AssessmentResultModal({ isOpen, onClose, result, redFlag }) {
+  const navigate = useNavigate()
   if (!isOpen) return null
 
   const tone = redFlag ? 'critical' : result?.tone || 'moderate'
@@ -14,6 +17,11 @@ function AssessmentResultModal({ isOpen, onClose, result, score, redFlag }) {
     if (event.target === event.currentTarget) {
       onClose()
     }
+  }
+
+  function handleGoHome() {
+    onClose()
+    navigate('/home', { replace: true })
   }
 
   return (
@@ -42,8 +50,8 @@ function AssessmentResultModal({ isOpen, onClose, result, score, redFlag }) {
             <button className="result-modal-btn result-modal-btn-secondary" type="button" onClick={onClose}>
               ปิดหน้าต่าง
             </button>
-            <button className="result-modal-btn result-modal-btn-primary" type="button">
-              เรียนรู้เพิ่มเติม
+            <button className="result-modal-btn result-modal-btn-primary" type="button" onClick={handleGoHome}>
+              กดเพื่อเข้าสู่หน้าหลัก
             </button>
           </div>
         </div>

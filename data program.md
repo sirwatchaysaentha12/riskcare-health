@@ -35,3 +35,23 @@
 - ทำให้ลำดับความสำคัญของข้อความชัดเจนขึ้นผ่าน heading, spacing และ contrast
 - ปรับหน้าแบบประเมินให้ดูโดดเด่นขึ้น โดยเน้นคำถามและปุ่มหลักให้เด่นกว่าองค์ประกอบรอง
 - ลบฟอร์มรับข้อมูลส่วนบุคคลหรือการรับคำแนะนำเพิ่มเติมที่ไม่จำเป็นจากผลลัพธ์เพื่อให้หน้าไม่รกและไม่สร้างความสับสน
+
+
+
+/impeccable 
+
+สร้างระบบ Color System และวางกฎเกณฑ์การเขียน CSS ให้เป็นมาตรฐานเดียวกันทั้งเว็บ:
+
+[Primary Theme - Health & Wellness Green]
+- Primary: #10B981 (Emerald)
+- Primary Hover / Dark: #059669
+- Light Background / Accent: #ECFDF5 / #D1FAE5
+- Neutral Dark (Text): #0F172A (Slate 900)
+- Neutral Light (Card Bg): #FFFFFF
+- Soft Border: #E2E8F0 / #F1F5F9
+
+[Rules for Future Code Generation]
+1. ทุกครั้งที่เขียนโค้ด CSS หรือ JSX ใหม่ ต้องใช้จานสีเขียวชุดนี้เท่านั้น ห้ามใช้สีเขียวเฉดอื่นหรือสีอื่นที่หลุดจาก Theme
+2. กำหนดให้สี Primary และ Neutral ทั้งหมดอยู่ภายใต้ CSS Variables ใน root
+3. ทุก Element (Buttons, Badges, Headers, Borders, Cards) ต้องดึงค่าสีจาก CSS Variables เพื่อให้ทั้งเว็บเป็นไปในแนวทางเดียวกันทุกหน้าตลอดไป
+4. แก้ไขไฟล์ CSS หลัก และเริ่มปรับใช้กับระบบทันที โดยไม่ต้องพิมพ์อธิบายยืดยาว (Concise mode)

@@ -1,0 +1,348 @@
+[2m09:56:18[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Login.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m09:56:18[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Login.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m11:47:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Login.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m11:47:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Login.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m13:42:15[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/services/airQuality.js (resolved id: C:/Users/ACER/projectweb/frontend/src/services/airQuality.js) in C:/Users/ACER/projectweb/frontend/src/components/Pm25AlertCard.jsx. Does the file exist?
+[2m13:42:15[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m13:55:29[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/services/airQuality.js (resolved id: C:/Users/ACER/projectweb/frontend/src/services/airQuality.js) in C:/Users/ACER/projectweb/frontend/src/components/Pm25AlertCard.jsx. Does the file exist?
+[2m13:55:29[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m13:55:29[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m14:35:03[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m14:35:03[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m14:55:16[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./styles/overview.css" from "src/App.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/App.jsx[39m:12:7
+[33m  10 |  import "./styles/home.css";
+  11 |  import "./styles/modal.css";
+  12 |  import "./styles/overview.css";
+     |          ^
+  13 |  import ProtectedRoute from "./components/ProtectedRoute";
+  14 |  import AdminRoute from "./components/AdminRoute";[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:31011:39)
+      at TransformPluginContext.error (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:31008:14)
+      at normalizeUrl (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:27957:18)
+      at async file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:28025:30
+      at async Promise.all (index 11)
+      at async TransformPluginContext.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:27993:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:30796:14)
+      at async loadAndTransform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:20594:26)
+[2m14:55:16[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./styles/overview.css" from "src/App.jsx". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/App.jsx[39m:12:7
+[33m  10 |  import "./styles/home.css";
+  11 |  import "./styles/modal.css";
+  12 |  import "./styles/overview.css";
+     |          ^
+  13 |  import ProtectedRoute from "./components/ProtectedRoute";
+  14 |  import AdminRoute from "./components/AdminRoute";[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:31011:39)
+      at TransformPluginContext.error (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:31008:14)
+      at normalizeUrl (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:27957:18)
+      at async file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:28025:30
+      at async Promise.all (index 11)
+      at async TransformPluginContext.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:27993:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:30796:14)
+      at async loadAndTransform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:20594:26)
+[2m14:55:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m14:55:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/App.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m14:55:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./styles/overview.css" from "src/App.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/App.jsx[39m:12:7
+[33m  10 |  import "./styles/home.css";
+  11 |  import "./styles/modal.css";
+  12 |  import "./styles/overview.css";
+     |          ^
+  13 |  import ProtectedRoute from "./components/ProtectedRoute";
+  14 |  import AdminRoute from "./components/AdminRoute";[39m
+[2m14:55:16[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./styles/overview.css" from "src/App.jsx". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/App.jsx[39m:12:7
+[33m  10 |  import "./styles/home.css";
+  11 |  import "./styles/modal.css";
+  12 |  import "./styles/overview.css";
+     |          ^
+  13 |  import ProtectedRoute from "./components/ProtectedRoute";
+  14 |  import AdminRoute from "./components/AdminRoute";[39m
+[2m15:20:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m15:20:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m15:52:49[22m [31m[1m[vite][22m[39m [31mInternal server error: Transform failed with 1 error:
+
+[31m[PARSE_ERROR] [0mMissing catch or finally clause
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m src/components/Pm25AlertCard.jsx:69:8 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m69 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m}[0m
+ [38;5;240m   │[0m        │ 
+ [38;5;240m   │[0m        ╰─ 
+ [38;5;240m   │[0m 
+ [38;5;240m   │[0m [38;5;115mHelp[0m: Either unwrap this try block or add catch / finally clause
+[38;5;246m────╯[0m
+[39m
+  Plugin: [35mvite:oxc[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/components/Pm25AlertCard.jsx[39m
+      at transformWithOxc (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:4090:19)
+      at TransformPluginContext.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:4161:26)
+      at EnvironmentPluginContainer.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:30796:51)
+      at async loadAndTransform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:20594:26)
+      at async viteTransformMiddleware (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:25092:20)
+[2m15:52:49[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m16:02:24[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m16:41:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned no usable stations; using mock verification data
+[2m16:41:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned no usable stations; using mock verification data
+[2m16:44:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned no usable stations
+[2m16:52:21[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned no usable stations
+[2m16:52:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned no usable stations
+[2m17:08:19[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned fewer than 3 usable stations; supplementing verification data
+[2m17:08:19[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned fewer than 3 usable stations; supplementing verification data
+[2m17:11:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned fewer than 3 usable stations; supplementing verification data
+[2m17:11:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp API Fallback] Air4Thai/DustBoy returned fewer than 3 usable stations; supplementing verification data
+[2m17:13:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/services/airQuality.js (resolved id: C:/Users/ACER/projectweb/frontend/src/services/airQuality.js) in C:/Users/ACER/projectweb/frontend/src/pages/Overview.jsx. Does the file exist?
+[2m17:13:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/services/airQuality.js (resolved id: C:/Users/ACER/projectweb/frontend/src/services/airQuality.js) in C:/Users/ACER/projectweb/frontend/src/pages/Overview.jsx. Does the file exist?
+[2m17:13:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Overview.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m17:13:30[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m17:13:31[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m17:14:34[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: The requested module '/src/services/airQuality.js?t=1786788874483' does not provide an export named 'getNearestAirQuality'
+[2m17:14:34[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Overview.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m17:14:36[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:21:11[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:21:11[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:29:21[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:29:21[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:33:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:33:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[DustBoy] skipped: VITE_DUSTBOY_API_KEY is not configured
+[2m17:33:41[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[Air4Thai] request failed TypeError: Failed to fetch
+    at fetchAir4Thai (http://127.0.0.1:5173/src/services/airQuality.js?t=1786789928058:54:25)
+    at getAirQualityStations (http://127.0.0.1:5173/src/services/airQuality.js?t=1786789928058:85:44)
+    at load (http://127.0.0.1:5173/src/components/Pm25AlertCard.jsx?t=1786789928464:115:180)
+[2m17:33:41[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[Air4Thai] request failed TypeError: Failed to fetch
+    at fetchAir4Thai (http://127.0.0.1:5173/src/services/airQuality.js?t=1786789928058:54:25)
+    at getAirQualityStations (http://127.0.0.1:5173/src/services/airQuality.js?t=1786789928058:85:44)
+    at load (http://127.0.0.1:5173/src/components/Pm25AlertCard.jsx?t=1786789928464:115:180)
+[2m17:40:36[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m17:40:36[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m17:51:34[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m17:53:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m17:53:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m17:57:11[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m17:57:11[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:00:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:00:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:08:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:08:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:25:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:25:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:26:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:26:23[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:35:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:35:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:51:13[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:51:13[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:56:23[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m18:56:24[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:06:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:06:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:06:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:06:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:09:53[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:09:56[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:20:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:20:55[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:31:05[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:31:05[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:31:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:31:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:31:40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:31:40[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:31:52[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:31:52[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:32:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:32:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:32:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:32:28[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:32:48[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:32:48[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:33:04[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:33:04[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:33:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: Identifier 'numericPm' has already been declared
+[2m19:33:11[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m19:33:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:42:32[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:42:32[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:42:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:42:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:48:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:48:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:49:48[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:49:48[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:51:52[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:51:52[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:54:57[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:54:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m19:58:42[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m20:29:30[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:29:31[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:43:09[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:43:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:43:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:43:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:44:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:44:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:44:37[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:44:37[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:15[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:16[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:31[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:47:32[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:48:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:48:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:49:00[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:49:00[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:49:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:49:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:49:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:49:21[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:50:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:50:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:50:11[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:50:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:50:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:50:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:19[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:19[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:39[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:52:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:56:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m20:58:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:09[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:13[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:13[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:36[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:56[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:00:57[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:03[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:14[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:24[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:24[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:11:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:18:20[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Settings.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m21:18:21[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/History.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m21:20:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:20:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:02[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:03[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:18[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:19[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:21:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:29:14[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[Stations Gateway] request failed TypeError: Failed to fetch
+    at fetchStationsGateway (http://127.0.0.1:5173/src/services/airQuality.js?t=1786794746245:258:25)
+    at getAirQualityStations (http://127.0.0.1:5173/src/services/airQuality.js?t=1786794746245:291:19)
+    at load (http://127.0.0.1:5173/src/components/Pm25AlertCard.jsx?t=1786800788225:193:180)
+[2m21:29:14[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[Stations Gateway] request failed TypeError: Failed to fetch
+    at fetchStationsGateway (http://127.0.0.1:5173/src/services/airQuality.js?t=1786794746245:258:25)
+    at getAirQualityStations (http://127.0.0.1:5173/src/services/airQuality.js?t=1786794746245:291:19)
+    at load (http://127.0.0.1:5173/src/components/Pm25AlertCard.jsx?t=1786800788225:193:180)
+[2m21:40:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:40:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:40:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:40:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:40:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:40:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:53:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:53:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m21:58:01[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: The requested module '/src/services/airQuality.js?t=1786805881731' does not provide an export named 'getProvinceSubLocationNames'
+[2m21:58:01[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m21:58:08[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] SyntaxError: The requested module '/src/services/airQuality.js?t=1786805888206' does not provide an export named 'getProvinceSubLocationNames'
+[2m21:58:08[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:05:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:05:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:05:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:05:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:09:44[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:09:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:14:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:14:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:16:23[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:16:24[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:20:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:20:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:29:56[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/data/thaiDistricts.js (resolved id: C:/Users/ACER/projectweb/frontend/src/data/thaiDistricts.js) in C:/Users/ACER/projectweb/frontend/src/services/airQuality.js. Does the file exist?
+[2m22:29:56[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/data/thaiDistricts.js (resolved id: C:/Users/ACER/projectweb/frontend/src/data/thaiDistricts.js) in C:/Users/ACER/projectweb/frontend/src/services/airQuality.js. Does the file exist?
+[2m22:29:56[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:29:56[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:29:56[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Overview.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:31:25[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:31:25[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:32:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:32:36[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:33:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:33:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:41:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./thailandDistricts.json" from "src/data/thaiDistricts.js". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/data/thaiDistricts.js[39m:1:25
+[33m  1  |  import districtData from "./thailandDistricts.json" with { type: "json" };
+     |                            ^
+  2  |  export const THAI_DISTRICTS = districtData;
+  3  |  export function getDistrictNames(province) {[39m
+[2m22:41:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "./thailandDistricts.json" from "src/data/thaiDistricts.js". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/data/thaiDistricts.js[39m:1:25
+[33m  1  |  import districtData from "./thailandDistricts.json" with { type: "json" };
+     |                            ^
+  2  |  export const THAI_DISTRICTS = districtData;
+  3  |  export function getDistrictNames(province) {[39m
+[2m22:41:45[22m [31m[1m[vite][22m[39m [31mInternal server error: Failed to resolve import "./thailandDistricts.json" from "src/data/thaiDistricts.js". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/ACER/projectweb/frontend/src/data/thaiDistricts.js[39m:1:25
+[33m  1  |  import districtData from "./thailandDistricts.json" with { type: "json" };
+     |                            ^
+  2  |  export const THAI_DISTRICTS = districtData;
+  3  |  export function getDistrictNames(province) {[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:31011:39)
+      at TransformPluginContext.error (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:31008:14)
+      at normalizeUrl (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:27957:18)
+      at async file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:28025:30
+      at async Promise.all (index 0)
+      at async TransformPluginContext.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:27993:4)
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:30796:14)
+      at async loadAndTransform (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:20594:26)
+      at async viteTransformMiddleware (file:///C:/Users/ACER/projectweb/frontend/node_modules/vite/dist/node/chunks/node.js:25092:20)
+[2m22:41:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/components/Pm25AlertCard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:41:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/Overview.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:41:45[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /src/pages/RegionalDashboard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m22:42:55[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:42:55[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:56:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:56:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:56:52[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:56:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:57:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m22:57:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m23:05:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates
+[2m23:05:55[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[RiskApp Fallback] using Open-Meteo grid values at reference station coordinates

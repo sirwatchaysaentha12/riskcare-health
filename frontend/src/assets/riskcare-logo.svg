@@ -1,0 +1,21 @@
+<svg xmlns="https://chatgpt.com/backend-api/estuary/content?id=file_0000000079dc821184f4cb09447daf97&ts=496347&p=fs&cid=1&sig=4ba1fd8deee9c3d3e7cfb15e7039657b3d45426d268c2d7fec0fd70ca4f6d17e&v=0>
+  <title id="title">RiskCARE</title>
+  <desc id="desc">โลโก้ RiskCARE ระบบคัดกรองความเสี่ยงระบบทางเดินหายใจ</desc>
+  <defs>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#65b52f" />
+      <stop offset="1" stop-color="#047857" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(18 25)" fill="none" stroke="url(#green)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M82 124c-25-4-44-25-44-52 0-29 21-52 48-52 16 0 28 9 37 21v74c-11 8-25 12-41 9Z" fill="#e9f9df" stroke-width="8" />
+    <path d="M154 124c25-4 44-25 44-52 0-29-21-52-48-52-16 0-28 9-37 21v74c11 8 25 12 41 9Z" fill="#d8f2c5" stroke-width="8" />
+    <path d="M111 24v101M111 44l-17-16M111 60l17-16M111 77l-18-14M111 93l17-14" stroke-width="8" />
+    <path d="M169 126c18-8 32-7 45 2 10 7 18 17 24 30-13 18-29 26-47 24-16-2-26-11-31-27 0-12 3-22 9-29Z" fill="#ffffff" stroke-width="8" />
+    <path d="M190 151h25M202 139v25" stroke-width="7" />
+    <path d="M52 20c-12-9-22-9-31 0 9 9 19 9 31 0Z" fill="#10b981" stroke-width="5" />
+  </g>
+  <text x="260" y="116" fill="#065f46" font-family="Arial, sans-serif" font-size="68" font-weight="800" letter-spacing="2">RISK</text>
+  <text x="455" y="116" fill="#10b981" font-family="Arial, sans-serif" font-size="68" font-weight="800" letter-spacing="2">CARE</text>
+  <text x="264" y="157" fill="#64748b" font-family="Arial, sans-serif" font-size="18" letter-spacing="1">RESPIRATORY HEALTH SCREENING</text>
+</svg>
