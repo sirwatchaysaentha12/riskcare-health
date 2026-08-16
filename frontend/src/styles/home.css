@@ -520,7 +520,16 @@
   .pm25-value { display: block; margin-top: 14px; }
   .pm25-average-today { margin-top: 14px; text-align: left; }
   .pm25-nearby-risk-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .pm25-nearby-risk-row b { grid-column: 1 / -1; }
+.pm25-nearby-risk-row b { grid-column: 1 / -1; }
+}
+
+/* Keep the AQI value and unit together on narrow screens. */
+.pm25-average-today { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: flex-end; gap: 0 6px; }
+.pm25-average-today small { width: 100%; }
+.pm25-average-today strong { line-height: 1; }
+.pm25-average-today span { line-height: 1.2; }
+@media (max-width: 640px) {
+  .pm25-average-today { justify-content: flex-start; text-align: left; }
 }
 
 .pm25-current-summary, .pm25-radius-hint, .pm25-detail-note { margin: 10px 0; font-size: 13px; line-height: 1.5; opacity: .78; }
