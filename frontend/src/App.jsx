@@ -16,7 +16,9 @@ import AdminDashboard from './pages/AdminDashboard'
 import RegionalDashboard from './pages/RegionalDashboard'
 import Profile from './pages/Profile'
 import History from './pages/History'
+import HealthPlanning from './pages/HealthPlanning'
 import './styles/profile.css'
+import './styles/health-planning.css'
 
 function App() {
   return (
@@ -31,6 +33,7 @@ function App() {
         <Route path="/overview" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
+        <Route path="/health-planning" element={<ProtectedRoute><HealthPlanning /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

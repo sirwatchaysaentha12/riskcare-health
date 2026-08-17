@@ -82,6 +82,9 @@ function Home() {
                 <Link to="/assessment" className="btn-hero-primary">
                   ทำแบบประเมินความเสี่ยง <span>→</span>
                 </Link>
+                <Link to="/health-planning" className="btn-health-planning">
+                  การวางแผนเพื่อสุขภาพ <span>→</span>
+                </Link>
                 <Link to="/dashboard" className="btn-hero-secondary">
                   ดูภาพรวมข้อมูล
                 </Link>
