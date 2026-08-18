@@ -17,6 +17,10 @@ import RegionalDashboard from './pages/RegionalDashboard'
 import Profile from './pages/Profile'
 import History from './pages/History'
 import HealthPlanning from './pages/HealthPlanning'
+import ExercisePlan from './pages/ExercisePlan'
+import HealthTracker from './pages/HealthTracker'
+import WorkoutPlan from './pages/WorkoutPlan'
+import ExerciseDetail from './pages/ExerciseDetail'
 import './styles/profile.css'
 import './styles/health-planning.css'
 
@@ -34,6 +38,10 @@ function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/health-planning" element={<ProtectedRoute><HealthPlanning /></ProtectedRoute>} />
+        <Route path="/exercise-plan" element={<ProtectedRoute><ExercisePlan /></ProtectedRoute>} />
+        <Route path="/health-tracker" element={<ProtectedRoute><HealthTracker /></ProtectedRoute>} />
+        <Route path="/workout-plan" element={<ProtectedRoute><WorkoutPlan /></ProtectedRoute>} />
+        <Route path="/exercise-detail" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
