@@ -4,6 +4,10 @@ const STATIONS_GATEWAY_ENDPOINT = import.meta.env.VITE_STATIONS_ENDPOINT || '/ap
 const OPEN_METEO_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 const DEFAULT_PM25 = 6.3
 
+// Known limitation: the upstream payloads currently expose a PM2.5 reading, but this
+// client has not verified that every source is a 24-hour average. Do not describe the
+// reading as 24h until the source contract is confirmed.
+
 function getFallbackDistrictNames(province) {
   return getDistrictNames(province)
 }

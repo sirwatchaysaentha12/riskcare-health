@@ -21,6 +21,8 @@ import ExercisePlan from './pages/ExercisePlan'
 import HealthTracker from './pages/HealthTracker'
 import WorkoutPlan from './pages/WorkoutPlan'
 import ExerciseDetail from './pages/ExerciseDetail'
+import AppointmentCalendar from './pages/AppointmentCalendar'
+import AddAppointment from './pages/AddAppointment'
 import './styles/profile.css'
 import './styles/health-planning.css'
 
@@ -40,6 +42,8 @@ function App() {
         <Route path="/health-planning" element={<ProtectedRoute><HealthPlanning /></ProtectedRoute>} />
         <Route path="/exercise-plan" element={<ProtectedRoute><ExercisePlan /></ProtectedRoute>} />
         <Route path="/health-tracker" element={<ProtectedRoute><HealthTracker /></ProtectedRoute>} />
+        <Route path="/appointments" element={<ProtectedRoute><AppointmentCalendar /></ProtectedRoute>} />
+        <Route path="/add-appointment" element={<ProtectedRoute><AddAppointment /></ProtectedRoute>} />
         <Route path="/workout-plan" element={<ProtectedRoute><WorkoutPlan /></ProtectedRoute>} />
         <Route path="/exercise-detail" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

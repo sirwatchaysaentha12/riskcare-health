@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "test:auth": "node scripts/auth-smoke.mjs",
     "test:provinces": "node --test tests/provinces.test.mjs",
+    "test:pm25": "node --test tests/pm25Personalization.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

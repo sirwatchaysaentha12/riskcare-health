@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { getDistrictNames } from '../data/thaiDistricts'
 import { getAqiStatus } from '../utils/aqiStatus'
+import { getPm25Tier, PRIMARY_PM25_THRESHOLD_SET_ID } from '../data/pm25Thresholds'
+import { getClinicalGuidancePlaceholder, getPersonalizedPm25Result } from '../utils/personalizedPm25'
 import { getAirQualityStations, getProvinceGridStations, getUserLocation } from '../services/airQuality'
 
 function normalizeProvince(value) {
@@ -132,7 +134,7 @@ function RiskStationRow({ station }) {
 }
 
 export default function Pm25AlertCard() {
-  const [state, setState] = useState({ status: 'loading', group: 'low', province: '', stations: [], averagePm25: 0, error: '' })
+  const [state, setState] = useState({ status: 'loading', group: 'low', province: '', stations: [], averagePm25: 0, profile: null, assessment: null, error: '' })
 
   useEffect(() => {
     let cancelled = false
@@ -140,11 +142,15 @@ export default function Pm25AlertCard() {
       try {
         const [{ data: { user } }, location] = await Promise.all([supabase.auth.getUser(), getUserLocation()])
         if (!user) throw new Error('ไม่พบผู้ใช้งาน')
-        const [{ data: profile, error: profileError }, stations] = await Promise.all([
-          supabase.from('profiles').select('health_risk_group, province').eq('id', user.id).maybeSingle(),
+        const [{ data: profile, error: profileError }, { data: assessment, error: assessmentError }, { data: healthProfile, error: healthProfileError }, stations] = await Promise.all([
+          supabase.from('profiles').select('health_risk_group, has_completed_assessment, province').eq('id', user.id).maybeSingle(),
+          supabase.from('risk_assessments').select('answers, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+          supabase.from('health_profiles').select('chronic_condition, medication').eq('user_id', user.id).maybeSingle(),
           getAirQualityStations(location.latitude, location.longitude),
         ])
         if (profileError) throw profileError
+        if (assessmentError) throw assessmentError
+        if (healthProfileError) throw healthProfileError
 
         const validStations = stations.filter((station) => Number.isFinite(station.pm25) && station.pm25 > 0)
         let provinceStations = validStations.filter((station) => matchesProvince(station, profile?.province || ''))
@@ -185,7 +191,9 @@ export default function Pm25AlertCard() {
           selectedProvinceStations: selected.map(({ name, province, pm25 }) => ({ name, province, pm25 })),
         })
 
-        if (!cancelled) setState({ status: 'ready', group: profile?.health_risk_group || 'low', province: profile?.province || '', stations: selected, averagePm25, error: '' })
+        const audience = getPersonalizedPm25Result(averagePm25, profile, assessment || null, (value) => getPm25Tier(value, PRIMARY_PM25_THRESHOLD_SET_ID), healthProfile || null)
+        console.debug('[Personalized PM2.5]', { userId: user.id, profile, assessmentAnswers: assessment?.answers || null, healthProfile, audience: audience.audience })
+        if (!cancelled) setState({ status: 'ready', group: profile?.health_risk_group || 'low', province: profile?.province || '', stations: selected, averagePm25, profile, assessment: assessment || null, healthProfile: healthProfile || null, error: '' })
       } catch (error) {
         if (!cancelled) setState((current) => ({ ...current, status: 'error', error: error.message || 'ไม่สามารถโหลดข้อมูลสถานีวัดฝุ่นได้' }))
       }
@@ -196,6 +204,9 @@ export default function Pm25AlertCard() {
 
   const stationsToRender = useMemo(() => state.stations, [state.stations])
   const averageTone = getAqiStatus(pm25ToAqi(Number(state.averagePm25)) ?? 40).tone
+  const officialPm25Tier = getPm25Tier(state.averagePm25, PRIMARY_PM25_THRESHOLD_SET_ID)
+  const personalized = getPersonalizedPm25Result(state.averagePm25, state.profile, state.assessment, (value) => getPm25Tier(value, PRIMARY_PM25_THRESHOLD_SET_ID), state.healthProfile)
+  const clinicalGuidance = getClinicalGuidancePlaceholder()
 
   if (state.status === 'loading') return <div className="pm25-alert-card pm25-alert-card--loading page-status" role="status" aria-live="polite"><strong>กำลังโหลดข้อมูลค่าฝุ่น</strong><span>ระบบกำลังค้นหาข้อมูลสถานีที่เกี่ยวข้องกับพื้นที่ของคุณ</span></div>
   if (state.status === 'error') return <div className="pm25-alert-card pm25-alert-card--error page-status page-status--error" role="alert"><strong>ไม่สามารถโหลดข้อมูลค่าฝุ่นได้</strong><span>{state.error || 'กรุณาลองใหม่อีกครั้งในภายหลัง'}</span></div>
@@ -205,6 +216,32 @@ export default function Pm25AlertCard() {
       <div><span className="card-label">แจ้งเตือนความเสี่ยงมลพิษฝุ่น PM2.5</span><h3>สถานที่เสี่ยงใกล้ตัว</h3></div>
       <div className="pm25-average-today"><small>ค่า AQI เฉลี่ยวันนี้ในจังหวัด {state.province || 'ไม่ระบุ'}</small><strong>{pm25ToAqi(Number(state.averagePm25)) ?? 40}</strong><span>AQI</span></div>
     </div>
+    <p className="pm25-official-reading">ค่า PM2.5 ทางการ: {Number(state.averagePm25).toFixed(1)} µg/m³ · {officialPm25Tier?.label_th || 'รอข้อมูล'}</p>
+    <section className="pm25-personalized-alert" aria-live="polite">
+      <strong>คำเตือนเฉพาะบุคคล</strong>
+      {personalized.audience === 'unknown' ? (
+        <p>ยังไม่สามารถคำนวณคำเตือนเฉพาะบุคคลได้ — ทำแบบประเมินสุขภาพเพื่อรับคำแนะนำที่เหมาะกับคุณ</p>
+      ) : (
+        <p>กลุ่ม{personalized.audience === 'sensitive' ? 'เสี่ยง' : 'ทั่วไป'} — {personalized.tier?.label_th || 'รอข้อมูล'} ({personalized.reason})</p>
+      )}
+      {personalized.generalWarnings?.map((warning) => <p key={warning}>{warning}</p>)}
+      <div className="pm25-clinical-guidance">
+        <ul>
+          {/* Citation: กรมควบคุมมลพิษ พ.ศ. 2566 — https://www.pcd.go.th/pcd_news/30028/ */}
+          {clinicalGuidance.items.map((item) => <li key={item}>{item}</li>)}
+        </ul>
+        <small>{clinicalGuidance.label}</small>
+      </div>
+      <details className="pm25-reference-details">
+        <summary>ⓘ ดูรายละเอียดแหล่งอ้างอิง</summary>
+        <p>อิงเกณฑ์ไทย ประกาศ คพ. 2566 เมื่อแหล่งข้อมูลยืนยันว่าเป็นค่าเฉลี่ย 24 ชั่วโมง</p>
+        <p>Known limitation: ระบบยังไม่สามารถยืนยันได้ว่าค่า PM2.5 จากทุกแหล่งเป็นค่าเฉลี่ย 24 ชั่วโมง</p>
+        <p>แหล่งอ้างอิง: กรมควบคุมมลพิษ พ.ศ. 2566 และ American Lung Association</p>
+        {/* Citation: https://www.pcd.go.th/pcd_news/30028/ */}
+        {/* Backup citation: https://www.pcd.go.th/pcd_news/29901/ */}
+        {/* Citation: https://www.lung.org/blog/poor-air-quality-protection */}
+      </details>
+    </section>
     <div className="pm25-nearby-risk-list">{stationsToRender.map((station) => <RiskStationRow key={`${station.source}-${station.stationId || station.name}`} station={station} />)}</div>
   </article>
 }

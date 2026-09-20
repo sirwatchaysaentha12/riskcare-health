@@ -4,6 +4,8 @@
 create table if not exists public.health_plans (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  contact_name text,
+  contact_value text,
   age integer,
   sex text not null default 'unspecified',
   weight_kg numeric(6,2),
@@ -48,6 +50,20 @@ create table if not exists public.health_appointments (
 );
 
 alter table public.health_appointments add column if not exists preparation text;
+alter table public.health_appointments add column if not exists contact_name text;
+alter table public.health_appointments add column if not exists contact_value text;
+alter table public.health_appointments add column if not exists reminder_sent_at timestamptz;
+alter table public.health_appointments add column if not exists notified_at timestamptz;
+alter table public.health_appointments add column if not exists in_app_notified_at timestamptz;
+
+create table if not exists public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  endpoint text not null unique,
+  subscription jsonb not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
 alter table public.health_appointments add column if not exists bring_items text;
 alter table public.health_appointments add column if not exists department text;
 alter table public.health_appointments add column if not exists location text;
@@ -67,10 +83,19 @@ create table if not exists public.health_symptom_logs (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.health_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  chronic_condition text not null default 'ไม่มีโรคประจำตัว',
+  medication text not null default 'ไม่ได้ใช้ยาประจำ',
+  updated_at timestamptz not null default now()
+);
+
 alter table public.health_plans enable row level security;
 alter table public.health_medications enable row level security;
 alter table public.health_appointments enable row level security;
 alter table public.health_symptom_logs enable row level security;
+alter table public.health_profiles enable row level security;
+alter table public.push_subscriptions enable row level security;
 
 drop policy if exists "Users manage own health plans" on public.health_plans;
 create policy "Users manage own health plans" on public.health_plans for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
@@ -80,3 +105,7 @@ drop policy if exists "Users manage own appointments" on public.health_appointme
 create policy "Users manage own appointments" on public.health_appointments for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists "Users manage own symptom logs" on public.health_symptom_logs;
 create policy "Users manage own symptom logs" on public.health_symptom_logs for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users manage own health profile" on public.health_profiles;
+create policy "Users manage own health profile" on public.health_profiles for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "Users manage own push subscriptions" on public.push_subscriptions;
+create policy "Users manage own push subscriptions" on public.push_subscriptions for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);

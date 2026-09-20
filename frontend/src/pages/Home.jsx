@@ -54,6 +54,7 @@ function Home() {
           <ul className="home-nav-links">
             <li><Link to="/dashboard">ภาพรวม</Link></li>
             <li><Link to="/assessment">ประเมินความเสี่ยง</Link></li>
+            <li><Link to="/appointments">นัดหมาย</Link></li>
           </ul>
         </nav>
 
