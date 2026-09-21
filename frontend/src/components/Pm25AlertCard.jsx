@@ -138,9 +138,14 @@ export default function Pm25AlertCard() {
 
   useEffect(() => {
     let cancelled = false
-    async function load() {
+    let requestId = 0
+    async function load(authUser = null) {
+      const currentRequestId = ++requestId
       try {
-        const [{ data: { user } }, location] = await Promise.all([supabase.auth.getUser(), getUserLocation()])
+        const [{ data: { user } }, location] = await Promise.all([
+          authUser ? Promise.resolve({ data: { user: authUser } }) : supabase.auth.getUser(),
+          getUserLocation(),
+        ])
         if (!user) throw new Error('ไม่พบผู้ใช้งาน')
         const [{ data: profile, error: profileError }, { data: assessment, error: assessmentError }, { data: healthProfile, error: healthProfileError }, stations] = await Promise.all([
           supabase.from('profiles').select('health_risk_group, has_completed_assessment, province').eq('id', user.id).maybeSingle(),
@@ -193,13 +198,26 @@ export default function Pm25AlertCard() {
 
         const audience = getPersonalizedPm25Result(averagePm25, profile, assessment || null, (value) => getPm25Tier(value, PRIMARY_PM25_THRESHOLD_SET_ID), healthProfile || null)
         console.debug('[Personalized PM2.5]', { userId: user.id, profile, assessmentAnswers: assessment?.answers || null, healthProfile, audience: audience.audience })
-        if (!cancelled) setState({ status: 'ready', group: profile?.health_risk_group || 'low', province: profile?.province || '', stations: selected, averagePm25, profile, assessment: assessment || null, healthProfile: healthProfile || null, error: '' })
+        if (!cancelled && currentRequestId === requestId) setState({ status: 'ready', group: profile?.health_risk_group || 'low', province: profile?.province || '', stations: selected, averagePm25, profile, assessment: assessment || null, healthProfile: healthProfile || null, error: '' })
       } catch (error) {
-        if (!cancelled) setState((current) => ({ ...current, status: 'error', error: error.message || 'ไม่สามารถโหลดข้อมูลสถานีวัดฝุ่นได้' }))
+        if (!cancelled && currentRequestId === requestId) setState((current) => ({ ...current, status: 'error', error: error.message || 'ไม่สามารถโหลดข้อมูลสถานีวัดฝุ่นได้' }))
       }
     }
     load()
-    return () => { cancelled = true }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Re-fetch the profile and assessment when the active account changes.
+      requestId += 1
+      if (!session?.user) {
+        setState({ status: 'loading', group: 'low', province: '', stations: [], averagePm25: 0, profile: null, assessment: null, healthProfile: null, error: '' })
+        return
+      }
+      setState((current) => ({ ...current, status: 'loading', profile: null, assessment: null, healthProfile: null, error: '' }))
+      load(session.user)
+    })
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
   const stationsToRender = useMemo(() => state.stations, [state.stations])

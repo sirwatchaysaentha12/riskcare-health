@@ -28,7 +28,7 @@ Deno.serve(async (request) => {
   if (request.headers.get('x-cron-secret') !== Deno.env.get('CRON_SECRET')) return json({ error: 'Unauthorized' }, 401)
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
   const now = new Date(); const horizon = new Date(now.getTime() + Number(Deno.env.get('REMINDER_WINDOW_MINUTES') || 60) * 60_000)
-  const { data: appointments, error } = await supabase.from('health_appointments').select('*').gte('appointment_at', now.toISOString()).lte('appointment_at', horizon.toISOString()).is('reminder_sent_at', null)
+  const { data: appointments, error } = await supabase.from('health_appointments').select('*').eq('status', 'scheduled').gte('appointment_at', now.toISOString()).lte('appointment_at', horizon.toISOString()).is('reminder_sent_at', null)
   if (error) return json({ error: error.message }, 500)
   const results = []
   for (const appointment of appointments || []) { try { const { data: subscriptions } = await supabase.from('push_subscriptions').select('subscription').eq('user_id', appointment.user_id); for (const row of subscriptions || []) await sendPush(row.subscription, appointment); await supabase.from('health_appointments').update({ reminder_sent_at: new Date().toISOString(), notified_at: new Date().toISOString() }).eq('id', appointment.id); results.push({ id: appointment.id, sent: true }) } catch (sendError) { results.push({ id: appointment.id, sent: false, error: String(sendError) }) } }

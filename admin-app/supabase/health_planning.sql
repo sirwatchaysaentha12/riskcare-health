@@ -38,6 +38,8 @@ create table if not exists public.health_medications (
 create table if not exists public.health_appointments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,
+  symptoms text,
+  status text not null default 'scheduled' check (status in ('scheduled', 'cancelled')),
   appointment_at timestamptz not null,
   provider text,
   department text,
@@ -50,6 +52,10 @@ create table if not exists public.health_appointments (
 );
 
 alter table public.health_appointments add column if not exists preparation text;
+alter table public.health_appointments add column if not exists symptoms text;
+alter table public.health_appointments add column if not exists status text not null default 'scheduled';
+alter table public.health_appointments drop constraint if exists health_appointments_status_check;
+alter table public.health_appointments add constraint health_appointments_status_check check (status in ('scheduled', 'cancelled'));
 alter table public.health_appointments add column if not exists contact_name text;
 alter table public.health_appointments add column if not exists contact_value text;
 alter table public.health_appointments add column if not exists reminder_sent_at timestamptz;

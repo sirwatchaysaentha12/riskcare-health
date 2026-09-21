@@ -123,6 +123,14 @@ function getResult(score, redFlag) {
   return { label: 'ต่ำ', tone: 'low', advice: 'ทำกิจกรรมได้ตามปกติ สังเกตอาการ ลดควันบุหรี่ และตรวจคุณภาพอากาศก่อนออกนอกบ้าน' }
 }
 
+function getHealthProfileCondition(answers) {
+  const conditions = []
+  if (answers.lungDisease === 'controlled' || answers.lungDisease === 'active') conditions.push('มีประวัติโรคปอดจากแบบประเมิน')
+  if (answers.comorbidity === 'yes') conditions.push('มีโรคร่วมที่อาจกระทบการหายใจจากแบบประเมิน')
+  if (answers.vulnerable === 'yes') conditions.push('อยู่ในกลุ่มเปราะบางจากแบบประเมิน')
+  return conditions.length ? conditions.join(' / ') : 'ไม่มีโรคประจำตัว'
+}
+
 function Assessment() {
   const navigate = useNavigate()
   const resultRef = useRef(null)
@@ -188,6 +196,13 @@ function Assessment() {
         has_completed_assessment: true,
       }).eq('id', user.id)
       if (profileError) throw profileError
+
+      const { error: healthProfileError } = await supabase.from('health_profiles').upsert({
+        user_id: user.id,
+        chronic_condition: getHealthProfileCondition(answers),
+        updated_at: new Date().toISOString(),
+      })
+      if (healthProfileError) throw healthProfileError
 
       setIsProcessing(false)
       setSubmitted(true)
