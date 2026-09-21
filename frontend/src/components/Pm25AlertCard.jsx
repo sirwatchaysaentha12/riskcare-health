@@ -225,6 +225,12 @@ export default function Pm25AlertCard() {
   const officialPm25Tier = getPm25Tier(state.averagePm25, PRIMARY_PM25_THRESHOLD_SET_ID)
   const personalized = getPersonalizedPm25Result(state.averagePm25, state.profile, state.assessment, (value) => getPm25Tier(value, PRIMARY_PM25_THRESHOLD_SET_ID), state.healthProfile)
   const clinicalGuidance = getClinicalGuidancePlaceholder()
+  console.debug('[Personalized PM2.5 render]', {
+    userId: state.profile?.id || null,
+    audience: personalized.audience,
+    visibleText: personalized.audience === 'sensitive' ? 'กลุ่มเสี่ยง' : personalized.audience === 'unknown' ? 'ยังประเมินไม่ได้' : 'กลุ่มทั่วไป',
+    chronicCondition: state.healthProfile?.chronic_condition || null,
+  })
 
   if (state.status === 'loading') return <div className="pm25-alert-card pm25-alert-card--loading page-status" role="status" aria-live="polite"><strong>กำลังโหลดข้อมูลค่าฝุ่น</strong><span>ระบบกำลังค้นหาข้อมูลสถานีที่เกี่ยวข้องกับพื้นที่ของคุณ</span></div>
   if (state.status === 'error') return <div className="pm25-alert-card pm25-alert-card--error page-status page-status--error" role="alert"><strong>ไม่สามารถโหลดข้อมูลค่าฝุ่นได้</strong><span>{state.error || 'กรุณาลองใหม่อีกครั้งในภายหลัง'}</span></div>
