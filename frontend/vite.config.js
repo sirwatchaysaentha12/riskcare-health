@@ -38,6 +38,14 @@ export default defineConfig({
   ],
   server: {
     proxy: {
+      '/api/air-quality': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+      },
+      '/api/vital-signs': {
+        target: 'http://127.0.0.1:3000',
+        changeOrigin: true,
+      },
       '/api/air4thai': {
         target: 'http://air4thai.pcd.go.th',
         changeOrigin: true,

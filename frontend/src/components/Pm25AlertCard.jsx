@@ -3,7 +3,8 @@ import { supabase } from '../lib/supabase'
 import { getDistrictNames } from '../data/thaiDistricts'
 import { getAqiStatus } from '../utils/aqiStatus'
 import { getPm25Tier, PRIMARY_PM25_THRESHOLD_SET_ID } from '../data/pm25Thresholds'
-import { getClinicalGuidancePlaceholder, getPersonalizedPm25Result } from '../utils/personalizedPm25'
+import { getClinicalGuidancePlaceholder, getPersonalizedPm25Result, getPersonalizedRowBadge, countPersonalizedRiskRows } from '../utils/personalizedPm25'
+import { notifyProvincePm25IfDue } from '../utils/provinceNotification'
 import { getAirQualityStations, getProvinceGridStations, getUserLocation } from '../services/airQuality'
 
 function normalizeProvince(value) {
@@ -123,13 +124,15 @@ function pm25ToAqi(pm25) {
   return Math.round(((highI - lowI) / (highC - lowC)) * (Math.min(value, highC) - lowC) + lowI)
 }
 
-function RiskStationRow({ station }) {
+function RiskStationRow({ station, audience }) {
   const aqi = pm25ToAqi(Number(station.pm25)) ?? 40
   const status = getAqiStatus(aqi)
+  const personalBadge = getPersonalizedRowBadge(Number(station.pm25), audience)
   return <div className={`pm25-nearby-risk-row pm25-nearby-risk-row--${status.tone}`}>
     <strong>{shortStationName(station.name)}</strong>
     <span>AQI {aqi}</span>
     <b className="aqi-single-badge" style={{ color: status.textColor, backgroundColor: status.background }}>{status.label}</b>
+    {personalBadge && <b className="personal-risk-badge">⚠ สำหรับคุณ: {personalBadge.label}</b>}
   </div>
 }
 
@@ -196,7 +199,9 @@ export default function Pm25AlertCard() {
           selectedProvinceStations: selected.map(({ name, province, pm25 }) => ({ name, province, pm25 })),
         })
 
-        const audience = getPersonalizedPm25Result(averagePm25, profile, assessment || null, (value) => getPm25Tier(value, PRIMARY_PM25_THRESHOLD_SET_ID), healthProfile || null)
+        const audience = getPersonalizedPm25Result(averagePm25, profile, assessment || null, healthProfile || null)
+        // แจ้งเตือนตามจังหวัดที่กรอกในโปรไฟล์ (ไม่ใช่ตำแหน่งปัจจุบัน) — ไฟร์แอนด์ฟอร์เก็ต ไม่บล็อกการแสดงผล
+        notifyProvincePm25IfDue({ province: profile?.province || '', pm25: averagePm25, tier: audience.tier, isSensitive: audience.audience === 'sensitive' }).catch(() => { /* แจ้งเตือนล้มเหลวไม่กระทบหน้า */ })
         console.debug('[Personalized PM2.5]', { userId: user.id, profile, assessmentAnswers: assessment?.answers || null, healthProfile, audience: audience.audience })
         if (!cancelled && currentRequestId === requestId) setState({ status: 'ready', group: profile?.health_risk_group || 'low', province: profile?.province || '', stations: selected, averagePm25, profile, assessment: assessment || null, healthProfile: healthProfile || null, error: '' })
       } catch (error) {
@@ -223,8 +228,9 @@ export default function Pm25AlertCard() {
   const stationsToRender = useMemo(() => state.stations, [state.stations])
   const averageTone = getAqiStatus(pm25ToAqi(Number(state.averagePm25)) ?? 40).tone
   const officialPm25Tier = getPm25Tier(state.averagePm25, PRIMARY_PM25_THRESHOLD_SET_ID)
-  const personalized = getPersonalizedPm25Result(state.averagePm25, state.profile, state.assessment, (value) => getPm25Tier(value, PRIMARY_PM25_THRESHOLD_SET_ID), state.healthProfile)
-  const clinicalGuidance = getClinicalGuidancePlaceholder()
+  const personalized = getPersonalizedPm25Result(state.averagePm25, state.profile, state.assessment, state.healthProfile)
+  const personalRowCounts = countPersonalizedRiskRows(stationsToRender.map((station) => Number(station.pm25)), personalized.audience)
+  const clinicalGuidance = getClinicalGuidancePlaceholder(personalized.audience)
   console.debug('[Personalized PM2.5 render]', {
     userId: state.profile?.id || null,
     audience: personalized.audience,
@@ -259,6 +265,7 @@ export default function Pm25AlertCard() {
       <details className="pm25-reference-details">
         <summary>ⓘ ดูรายละเอียดแหล่งอ้างอิง</summary>
         <p>อิงเกณฑ์ไทย ประกาศ คพ. 2566 เมื่อแหล่งข้อมูลยืนยันว่าเป็นค่าเฉลี่ย 24 ชั่วโมง</p>
+        <p>สำหรับกลุ่มเสี่ยง ระดับคำเตือนอิงเกณฑ์ US EPA PM2.5 breakpoints (2024) สำหรับกลุ่มไวต่อผลกระทบ ซึ่งเริ่มที่ค่าต่ำกว่าเกณฑ์ไทย</p>
         <p>Known limitation: ระบบยังไม่สามารถยืนยันได้ว่าค่า PM2.5 จากทุกแหล่งเป็นค่าเฉลี่ย 24 ชั่วโมง</p>
         <p>แหล่งอ้างอิง: กรมควบคุมมลพิษ พ.ศ. 2566 และ American Lung Association</p>
         {/* Citation: https://www.pcd.go.th/pcd_news/30028/ */}
@@ -266,6 +273,11 @@ export default function Pm25AlertCard() {
         {/* Citation: https://www.lung.org/blog/poor-air-quality-protection */}
       </details>
     </section>
-    <div className="pm25-nearby-risk-list">{stationsToRender.map((station) => <RiskStationRow key={`${station.source}-${station.stationId || station.name}`} station={station} />)}</div>
+    <div className="pm25-nearby-risk-list">
+      {personalized.audience === 'sensitive' && personalRowCounts.flagged > 0 && (
+        <p className="pm25-personal-summary">สำหรับกลุ่มเสี่ยง: {personalRowCounts.flagged} จาก {personalRowCounts.total} พื้นที่ เริ่มมีผลกระทบต่อคุณ</p>
+      )}
+      {stationsToRender.map((station) => <RiskStationRow key={`${station.source}-${station.stationId || station.name}`} station={station} audience={personalized.audience} />)}
+    </div>
   </article>
 }

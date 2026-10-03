@@ -23,6 +23,12 @@ import WorkoutPlan from './pages/WorkoutPlan'
 import ExerciseDetail from './pages/ExerciseDetail'
 import AppointmentCalendar from './pages/AppointmentCalendar'
 import AddAppointment from './pages/AddAppointment'
+import AirQualityTrend from './pages/AirQualityTrend'
+import BreathingRateCheck from './pages/BreathingRateCheck'
+import './styles/breathing.css'
+import RespiratoryRiskAssessment from './pages/RespiratoryRiskAssessment'
+import './styles/respiratory-risk.css'
+import AppLayout from './components/AppLayout'
 import './styles/profile.css'
 import './styles/health-planning.css'
 
@@ -30,19 +36,24 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<RegionalDashboard />} />
+          <Route path="/appointments" element={<AppointmentCalendar />} />
+          <Route path="/air-quality-trend" element={<AirQualityTrend />} />
+          <Route path="/breathing-check" element={<BreathingRateCheck />} />
+        </Route>
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<ProtectedRoute><RegionalDashboard /></ProtectedRoute>} />
         <Route path="/assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
         <Route path="/risk-assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
         <Route path="/overview" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
+        <Route path="/respiratory-risk" element={<ProtectedRoute><RespiratoryRiskAssessment /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
         <Route path="/health-planning" element={<ProtectedRoute><HealthPlanning /></ProtectedRoute>} />
         <Route path="/exercise-plan" element={<ProtectedRoute><ExercisePlan /></ProtectedRoute>} />
         <Route path="/health-tracker" element={<ProtectedRoute><HealthTracker /></ProtectedRoute>} />
-        <Route path="/appointments" element={<ProtectedRoute><AppointmentCalendar /></ProtectedRoute>} />
         <Route path="/add-appointment" element={<ProtectedRoute><AddAppointment /></ProtectedRoute>} />
         <Route path="/workout-plan" element={<ProtectedRoute><WorkoutPlan /></ProtectedRoute>} />
         <Route path="/exercise-detail" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />

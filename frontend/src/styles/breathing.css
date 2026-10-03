@@ -1,0 +1,82 @@
+/* สไตล์เฉพาะของหน้า Breathing Rate Detector (ฟีเจอร์ทดลอง) — แยกจากไฟล์ CSS ระบบหลัก */
+.br-page { min-height: 100vh; padding: 24px 16px 40px; background: linear-gradient(180deg, #f4fbf9, #eef7f4); }
+.br-shell { max-width: 860px; margin: 0 auto; }
+.br-back { display: inline-flex; align-items: center; min-height: 34px; margin-bottom: 12px; padding: 6px 14px; border: 1px solid #d5ece6; border-radius: 999px; background: #ffffff; color: #1f6f5c; font-size: 13px; font-weight: 700; cursor: pointer; }
+.br-card { padding: 22px; border: 1px solid #d5ece6; border-radius: 16px; background: #ffffff; box-shadow: 0 8px 20px rgba(15, 23, 42, .05); }
+.br-warning { position: sticky; top: 12px; z-index: 5; display: flex; align-items: center; gap: 8px; margin: 0 0 14px; padding: 10px 14px; border: 1.5px solid #d97706; border-radius: 10px; background: #fffbeb; color: #92400e; font-size: 13px; font-weight: 700; }
+.br-title { margin: 0 0 4px; font-size: 22px; color: #14532d; }
+.br-desc { margin: 0 0 16px; font-size: 13px; color: #5b6b6b; }
+.br-note { margin: 0 0 14px; padding: 10px 14px; border-radius: 10px; background: #f2fbf8; color: #1f6f5c; font-size: 13px; }
+.br-primary-button { display: inline-flex; align-items: center; min-height: 42px; padding: 10px 22px; border: 0 !important; border-radius: 999px !important; background: #29977c !important; color: #ffffff !important; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.br-secondary-button { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 18px; margin-left: 8px; border: 1px solid #29977c !important; border-radius: 999px !important; background: #ffffff !important; color: #1f6f5c !important; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.br-primary-button:disabled, .br-secondary-button:disabled { opacity: .55; cursor: wait; }
+.br-video-wrap { position: relative; max-width: 640px; margin: 14px auto; overflow: hidden; border-radius: 12px; background: #0f172a; }
+.br-video-wrap video { display: block; width: 100%; transform: scaleX(-1); }
+.br-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+.br-countdown { text-align: center; font-size: 30px; font-weight: 800; color: #1f6f5c; margin: 12px 0; }
+.br-hint { text-align: center; color: #b45309; font-size: 13px; font-weight: 700; margin: 8px 0; }
+.br-result { margin: 16px 0; padding: 20px; border: 1px solid #d5ece6; border-radius: 12px; background: #f2fbf8; text-align: center; }
+.br-result strong { display: block; font-size: 36px; color: #1f6f5c; line-height: 1.2; }
+.br-result small { color: #5b6b6b; font-size: 13px; }
+.br-error { margin: 16px 0; padding: 16px; border: 1.5px solid #fca5a5; border-radius: 12px; background: #fef2f2; color: #991b1b; font-size: 14px; }
+.br-error strong { display: block; margin-bottom: 4px; }
+.br-error span { display: block; margin-bottom: 10px; font-size: 13px; }
+.br-plain-fallback { margin: 16px 0; padding: 16px; border: 1.5px dashed #d97706; border-radius: 12px; background: #fffbeb; color: #92400e; font-size: 14px; font-weight: 700; text-align: center; }
+.br-instructions { margin: 0 0 14px; padding: 12px 14px; border-left: 4px solid #29977c; border-radius: 8px; background: #f2fbf8; color: #1f5147; font-size: 14px; line-height: 1.6; }
+.br-privacy-panel { margin: 14px 0; padding: 16px; border: 1px solid #cfe9e1; border-radius: 12px; background: #f8fcfa; color: #28463f; }
+.br-privacy-panel > strong { display: block; margin-bottom: 6px; color: #14532d; font-size: 14px; }
+.br-privacy-panel p { margin: 0 0 12px; font-size: 13px; line-height: 1.6; }
+.br-consent-label { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; font-weight: 600; line-height: 1.55; cursor: pointer; }
+.br-consent-label input { flex: 0 0 auto; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #29977c; }
+.br-quality { margin: 14px 0; padding: 14px 16px; border: 1px solid #cfe9e1; border-radius: 12px; background: #f8fcfa; color: #28463f; font-size: 13px; line-height: 1.55; }
+.br-quality--warning { border-color: #f3d49b; background: #fffbeb; color: #7c4a03; }
+.br-quality--checking { border-color: #d7e2e8; background: #f7fafb; color: #475569; }
+.br-quality strong { display: block; margin-bottom: 4px; }
+.br-quality p { margin: 4px 0 0; }
+.br-quality .br-live-guide { margin-top: 8px; padding: 8px 10px; border-left: 3px solid #29977c; border-radius: 6px; background: #eef8f4; color: #1f5147; font-weight: 700; }
+.br-quality ul { margin: 6px 0 0; padding-left: 20px; }
+.br-stop-button { display: block; min-height: 40px; margin: 12px auto 0; padding: 8px 14px; border: 1px solid #94a3b8; border-radius: 9px; background: #fff; color: #475569; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.br-stop-button:hover { background: #f1f5f9; }
+.br-stop-button:focus-visible, .br-consent-label input:focus-visible { outline: 3px solid rgba(41, 151, 124, .35); outline-offset: 3px; }
+.br-primary-button:disabled { opacity: .55; cursor: not-allowed; }
+.br-quality-canvas { position: absolute; left: -10000px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+/* ปุ่มเข้าฟีเจอร์บนหน้า ภาพรวม — โชว์เฉพาะเมื่อ browser รองรับกล้อง */
+.br-entry-button { display: inline-flex; flex-direction: column; gap: 6px; padding: 18px 24px; border: 2px solid #29977c; border-radius: 14px; background: linear-gradient(180deg, #f2fbf8, #ffffff); box-shadow: 0 6px 16px rgba(41, 151, 124, .14); text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
+.br-entry-button:hover { transform: translateY(-2px); box-shadow: 0 10px 22px rgba(41, 151, 124, .22); }
+.br-entry-button strong { color: #1f6f5c; font-size: 16px; }
+.br-entry-button small { color: #5b6b6b; font-size: 12px; }
+
+/* โหมดสลับ: กล้องสด / อัปโหลดคลิปวิดีโอ — เพิ่ม 30 ก.ย. 2026 */
+.br-mode-tabs { display: flex; gap: 8px; margin: 12px 0 4px; }
+.br-mode-tab {
+  flex: 1; padding: 10px 12px; border-radius: 12px;
+  border: 2px solid #cfe8dd; background: #fff; color: #29977c;
+  font-weight: 600; cursor: pointer; font-size: 0.95rem;
+}
+.br-mode-tab.is-active { border-color: #29977c; background: #eafaf3; }
+.br-upload-panel { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+.br-file-label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; color: #29977c; }
+.br-file-label input[type='file'] { width: 100%; font-weight: 400; }
+
+/* progress bar ระหว่างวัด + แผงประเมินความเสี่ยง — เพิ่ม 1 ต.ค. 2026 */
+.br-progress {
+  width: 100%; height: 10px; border-radius: 999px;
+  background: #e4efe9; overflow: hidden; margin: 8px 0;
+}
+.br-progress-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #35c48d, #29977c);
+  transition: width 0.3s ease;
+}
+.br-risk-panel {
+  margin-top: 14px; padding: 14px; border-radius: 12px;
+  background: #f4faf7; border: 1px solid #cfe8dd;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.br-risk-question { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.br-risk-note { margin: 0; font-size: 0.9rem; color: #4a6b60; }
+.br-risk-result {
+  margin-top: 6px; padding: 12px; border-radius: 10px;
+  background: #fff; border: 1px solid #b9dfd0;
+}
+.br-risk-result p { margin: 6px 0; }

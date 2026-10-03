@@ -1,0 +1,277 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { computeBreathingRate, extractShoulderY } from '../utils/breathingRate'
+import { analyzeCameraFrame, isVideoFrameReady } from '../utils/cameraQuality'
+
+// คอมโพเนนต์ใหม่สำหรับระบบประเมินความเสี่ยงโรคทางเดินหายใจ (3 สัญญาณ)
+// วัดอัตราการหายใจ (RR) จากจังหวะไหล่ด้วย MediaPipe PoseLandmarker (พรีเทรน) — pattern เดียวกับ
+// BreathingRateCheck.jsx แต่แยกไฟล์เพื่อไม่แตะระบบเดิม และบันทึกคลิปจากกล้องพร้อมกัน (MediaRecorder)
+// เพื่อส่งต่อให้ vitallens rPPG ที่ backend (/api/vital-signs)
+// ผลลัพธ์เป็นข้อมูลคัดกรองเบื้องต้น ไม่ใช่ค่าทางการแพทย์
+
+const TASKS_VISION_URL = '/mediapipe'
+const POSE_MODEL_URL = '/mediapipe/pose_landmarker_lite.task'
+const MEASURE_DURATION_MS = 30000
+const LIGHT_WARNING = 'ต้องการแสงสว่างเพียงพอ เพื่อความแม่นยำ'
+
+const landmarkerPromises = {}
+function loadPoseLandmarker(delegate = 'GPU') {
+  if (landmarkerPromises[delegate]) return landmarkerPromises[delegate]
+  landmarkerPromises[delegate] = (async () => {
+    const vision = await import(/* @vite-ignore */ `${TASKS_VISION_URL}/vision_bundle.mjs`)
+    const fileset = await vision.FilesetResolver.forVisionTasks(`${TASKS_VISION_URL}/wasm`)
+    return vision.PoseLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: POSE_MODEL_URL, delegate },
+      runningMode: 'VIDEO',
+      numPoses: 1,
+    })
+  })().catch((error) => {
+    delete landmarkerPromises[delegate]
+    throw error
+  })
+  return landmarkerPromises[delegate]
+}
+
+const POSE_LOAD_TIMEOUT_MS = 12000
+async function loadPoseLandmarkerRobust() {
+  try {
+    return await Promise.race([
+      loadPoseLandmarker('GPU'),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('pose GPU load timeout')), POSE_LOAD_TIMEOUT_MS)),
+    ])
+  } catch {
+    // GPU โหลดไม่ได้/ค้าง (WebGL ไม่พร้อม) — ลอง CPU ก่อนยอมแพ้ (RR จะขาดไปแต่ระบบยังทำงาน)
+    try {
+      return await Promise.race([
+        loadPoseLandmarker('CPU'),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('pose CPU load timeout')), POSE_LOAD_TIMEOUT_MS)),
+      ])
+    } catch {
+      return null
+    }
+  }
+}
+
+function pickRecorderMime() {
+  const candidates = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4']
+  for (const mime of candidates) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mime)) return mime
+  }
+  return ''
+}
+
+function drawShoulderOverlay(canvas, landmarks) {
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  if (!landmarks) return
+  const points = [11, 12]
+    .map((index) => landmarks[index])
+    .filter((point) => point && (point.visibility ?? 1) >= 0.5)
+  for (const point of points) {
+    ctx.beginPath()
+    ctx.arc(point.x * canvas.width, point.y * canvas.height, 7, 0, Math.PI * 2)
+    ctx.fillStyle = '#047857'
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 2.5
+    ctx.stroke()
+  }
+}
+
+export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }) {
+  const videoRef = useRef(null)
+  const canvasRef = useRef(null)
+  const qualityCanvasRef = useRef(null)
+  const landmarkerRef = useRef(null)
+  const streamRef = useRef(null)
+  const recorderRef = useRef(null)
+  const chunksRef = useRef([])
+  const rafRef = useRef(0)
+  const samplesRef = useRef([])
+  const startTsRef = useRef(0)
+  const measuringRef = useRef(false)
+  const lastVideoTimeRef = useRef(-1)
+  const lastUiRef = useRef(0)
+  const lastQualityCheckRef = useRef(0)
+  const previousFrameRef = useRef(null)
+  const stoppedRef = useRef(false)
+
+  const [status, setStatus] = useState('idle') // idle | preparing | ready | measuring | done | error
+  const [error, setError] = useState(null)
+  const [elapsedMs, setElapsedMs] = useState(0)
+  const [qualityIssue, setQualityIssue] = useState(null)
+
+  const stopEverything = useCallback(() => {
+    stoppedRef.current = true
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    rafRef.current = 0
+    try { recorderRef.current?.state === 'recording' && recorderRef.current.stop() } catch { /* ข้าม */ }
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    try { landmarkerRef.current?.close?.() } catch { /* ข้าม */ }
+    landmarkerRef.current = null
+  }, [])
+
+  useEffect(() => () => stopEverything(), [stopEverything])
+
+  const finishMeasurement = useCallback(() => {
+    measuringRef.current = false
+    const rawBpm = computeBreathingRate(samplesRef.current)?.bpm ?? null
+    const reliable = rawBpm !== null && rawBpm >= 6 && rawBpm <= 40
+    let recorder = recorderRef.current
+    const recordedChunks = chunksRef.current
+    if (recorder?.state === 'recording') {
+      recorder.stop()
+      recorder = null
+    } else {
+      // กรณี recorder ไม่พร้อม — แจ้งว่าสัญญาณ vitallens ขาดไป
+      onVideoRecorded?.(null)
+    }
+    chunksRef.current = []
+    setStatus('done')
+    stopEverything()
+    onRrResult?.({ bpm: reliable ? rawBpm : null, rawBpm, reliable, sampleCount: samplesRef.current.length })
+    if (recordedChunks.length > 0) {
+      const mime = recordedChunks[0].type || 'video/webm'
+      onVideoRecorded?.(new Blob(recordedChunks, { type: mime }))
+    } else {
+      onVideoRecorded?.(null)
+    }
+  }, [onRrResult, onVideoRecorded, stopEverything])
+
+  const start = useCallback(async () => {
+    setError(null)
+    setQualityIssue(null)
+    setElapsedMs(0)
+    samplesRef.current = []
+    chunksRef.current = []
+    stoppedRef.current = false
+    setStatus('preparing')
+
+    let stream = null
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        audio: false,
+      })
+    } catch {
+      const message = 'เปิดกล้องไม่ได้ (ไม่ได้ให้สิทธิ์ หรือไม่มีกล้อง) — ยังประเมินจากแบบประเมินอาการได้'
+      setError(message)
+      setStatus('error')
+      onError?.(message)
+      return
+    }
+    streamRef.current = stream
+    const video = videoRef.current
+    if (video) {
+      video.srcObject = stream
+      await video.play().catch(() => {})
+    }
+
+    // เริ่มบันทึกคลิปสำหรับ vitallens (ถ้าเบราว์เซอร์รองรับ)
+    try {
+      const mime = pickRecorderMime()
+      const recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined)
+      chunksRef.current = []
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) chunksRef.current.push(event.data)
+      }
+      recorder.start(1000)
+      recorderRef.current = recorder
+    } catch {
+      recorderRef.current = null // vitallens จะขาดไป — หน้าผลรวมจะแจ้งสัญญาณที่ขาด
+    }
+
+    // โหลดโมเดล pose (ถ้าโหลดไม่ได้ ยังบันทึกวิดีโอให้ vitallens ต่อได้ แต่ RR จะขาด)
+    landmarkerRef.current = await loadPoseLandmarkerRobust()
+
+    setStatus('measuring')
+    measuringRef.current = true
+    startTsRef.current = performance.now()
+    lastVideoTimeRef.current = -1
+    lastQualityCheckRef.current = 0
+
+    const loop = () => {
+      if (stoppedRef.current) return
+      const currentVideo = videoRef.current
+      const landmarker = landmarkerRef.current
+      if (currentVideo && currentVideo.readyState >= 2 && isVideoFrameReady(currentVideo)) {
+        if (currentVideo.currentTime !== lastVideoTimeRef.current) {
+          lastVideoTimeRef.current = currentVideo.currentTime
+          try {
+            const result = landmarker.detectForVideo(currentVideo, performance.now())
+            const landmarks = result?.landmarks?.[0] || null
+            landmarksCacheRef.current = landmarks
+            drawShoulderOverlay(canvasRef.current, landmarks)
+          } catch { /* ข้าม frame ที่ผิดพลาด */ }
+        }
+        const now = performance.now()
+        if (now - lastQualityCheckRef.current >= 500) {
+          lastQualityCheckRef.current = now
+          try {
+            const qualityCanvas = qualityCanvasRef.current
+            const qualityContext = qualityCanvas?.getContext('2d', { willReadFrequently: true })
+            if (qualityCanvas && qualityContext) {
+              qualityCanvas.width = 64
+              qualityCanvas.height = 48
+              qualityContext.drawImage(currentVideo, 0, 0, qualityCanvas.width, qualityCanvas.height)
+              const analysis = analyzeCameraFrame(
+                qualityContext.getImageData(0, 0, qualityCanvas.width, qualityCanvas.height),
+                null,
+                previousFrameRef.current,
+              )
+              previousFrameRef.current = analysis.sampledFrame
+              setQualityIssue(analysis.status === 'warning' ? analysis.issues.join(' ') : null)
+            }
+          } catch { /* ข้าม */ }
+        }
+        if (measuringRef.current && landmarker) {
+          const y = extractShoulderY(landmarksCacheRef.current)
+          const elapsed = performance.now() - startTsRef.current
+          if (y !== null) samplesRef.current.push({ t: elapsed, y })
+          if (elapsed >= MEASURE_DURATION_MS) {
+            setElapsedMs(MEASURE_DURATION_MS)
+            finishMeasurement()
+            return
+          }
+          if (now - lastUiRef.current > 200) {
+            lastUiRef.current = now
+            setElapsedMs(elapsed)
+          }
+        }
+      }
+      if (!stoppedRef.current) rafRef.current = requestAnimationFrame(loop)
+    }
+    rafRef.current = requestAnimationFrame(loop)
+  }, [finishMeasurement, onError])
+
+  // เก็บ landmarks ล่าสุดไว้ใช้ในส่วนวัดของลูป
+  const landmarksCacheRef = useRef(null)
+
+  const secondsLeft = Math.max(0, Math.ceil((MEASURE_DURATION_MS - elapsedMs) / 1000))
+  const progress = Math.min(100, (elapsedMs / MEASURE_DURATION_MS) * 100)
+
+  return (
+    <div className="rrisk-camera">
+      <p className="rrisk-light-warning">⚠️ {LIGHT_WARNING} (ทั้งการวัด RR และ rPPG)</p>
+      <div className="rrisk-camera-stage">
+        <video ref={videoRef} playsInline muted className={status === 'measuring' ? 'is-live' : ''} />
+        <canvas ref={canvasRef} className="rrisk-camera-overlay" />
+      </div>
+      <canvas ref={qualityCanvasRef} hidden />
+      {status === 'measuring' && (
+        <div className="rrisk-camera-progress" role="status">
+          <span>กำลังวัด — เหลือ {secondsLeft} วินาที</span>
+          <div className="rrisk-progress-bar"><span style={{ width: `${progress}%` }} /></div>
+        </div>
+      )}
+      {qualityIssue && <p className="rrisk-camera-quality">คุณภาพภาพ: {qualityIssue}</p>}
+      {error && <p className="rrisk-error">{error}</p>}
+      {status !== 'measuring' && (
+        <button type="button" className="rrisk-btn" onClick={start} disabled={status === 'preparing'}>
+          {status === 'preparing' ? 'กำลังเตรียมกล้อง…' : status === 'done' ? 'วัดใหม่อีกครั้ง (30 วินาที)' : 'เริ่มวัดการหายใจ (30 วินาที)'}
+        </button>
+      )}
+    </div>
+  )
+}

@@ -20,4 +20,12 @@ export function pm25ToAqi(value) {
   return Math.round(((highI - lowI) / (highC - lowC)) * (Math.min(pm25, highC) - lowC) + lowI)
 }
 
+export function getAqiEmoji(pm25Value) {
+  const tone = getAqiStatus(pm25ToAqi(pm25Value)).tone
+  if (tone === 'green') return '\u{1F642}'
+  if (tone === 'lime' || tone === 'yellow') return '\u{1F610}'
+  if (tone === 'orange' || tone === 'red') return '\u{1F641}'
+  return '-'
+}
+
 export { AQI_RANGES }

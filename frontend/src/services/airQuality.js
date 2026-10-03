@@ -4,6 +4,12 @@ const STATIONS_GATEWAY_ENDPOINT = import.meta.env.VITE_STATIONS_ENDPOINT || '/ap
 const OPEN_METEO_ENDPOINT = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 const DEFAULT_PM25 = 6.3
 
+// meta ล่าสุดจาก stations gateway (source/stale/updatedAt) — อ่านด้วย getStationsMeta()
+let lastStationsMeta = null
+export function getStationsMeta() {
+  return lastStationsMeta
+}
+
 // Known limitation: the upstream payloads currently expose a PM2.5 reading, but this
 // client has not verified that every source is a 24-hour average. Do not describe the
 // reading as 24h until the source contract is confirmed.
@@ -143,6 +149,8 @@ export async function getAirQualityStations(userLat, userLon) {
     console.error('[Stations Gateway] request failed', error)
     payload = { air4thai: [], dustboy: [] }
   }
+  // เก็บ meta (source/stale/updatedAt) จาก gateway — หน้า dashboard ใช้โชว์ป้าย "ข้อมูลอาจไม่ล่าสุด"
+  lastStationsMeta = payload?.meta ?? null
   const airRaw = unwrapStations(payload.air4thai)
   const dustRaw = unwrapStations(payload.dustboy)
   const air4thai = airRaw.map((station) => normalizeStation(station, 'air4thai', userLat, userLon)).filter(Boolean)

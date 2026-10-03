@@ -1,0 +1,240 @@
+/* หน้าประเมินความเสี่ยงโรคทางเดินหายใจ (RespiratoryRiskAssessment) — prefix rrisk-
+   โทนสีตาม design.md: เขียวหลัก #047857 / เหลืองเฝ้าระวัง / แดงวิกฤต */
+
+.rrisk-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  font-family: inherit;
+  color: #1f2937;
+}
+
+.rrisk-header h1 {
+  margin: 8px 0 4px;
+  font-size: 1.6rem;
+}
+
+.rrisk-back-link {
+  font-size: 0.9rem;
+  color: #047857;
+  text-decoration: none;
+}
+
+.rrisk-back-link:hover { text-decoration: underline; }
+
+.rrisk-subtitle {
+  margin: 0;
+  color: #4b5563;
+}
+
+.rrisk-disclaimer {
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  border-left: 4px solid #9ca3af;
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 0.85rem;
+  border-radius: 0 8px 8px 0;
+}
+
+.rrisk-section {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.rrisk-section h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.rrisk-section > p {
+  margin: 0 0 12px;
+  color: #4b5563;
+  font-size: 0.92rem;
+}
+
+/* --- กล้อง --- */
+.rrisk-light-warning {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 8px;
+  font-size: 0.88rem;
+}
+
+.rrisk-camera-stage {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 4 / 3;
+  background: #111827;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.rrisk-camera-stage video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.rrisk-camera-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.rrisk-camera-progress {
+  margin-bottom: 10px;
+}
+
+.rrisk-progress-bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.rrisk-progress-bar span {
+  display: block;
+  height: 100%;
+  background: #047857;
+  transition: width 0.2s linear;
+}
+
+.rrisk-camera-quality {
+  margin: 0 0 10px;
+  color: #b45309;
+  font-size: 0.88rem;
+}
+
+.rrisk-btn {
+  background: #047857;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.rrisk-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* --- ผลสัญญาณ --- */
+.rrisk-signal-ok { color: #047857; font-size: 0.92rem; }
+.rrisk-signal-warn { color: #b45309; font-size: 0.92rem; }
+.rrisk-error { color: #b91c1c; font-size: 0.92rem; }
+
+.rrisk-upload {
+  display: block;
+  font-size: 0.88rem;
+  color: #4b5563;
+}
+
+.rrisk-upload input {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.88rem;
+}
+
+/* --- ผลรวม --- */
+.rrisk-total {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  color: #ffffff;
+}
+
+.rrisk-total--green { background: #047857; }
+.rrisk-total--yellow { background: #b45309; }
+.rrisk-total--red { background: #b91c1c; }
+
+.rrisk-total-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 84px;
+}
+
+.rrisk-total-score b { font-size: 2.2rem; line-height: 1; }
+.rrisk-total-score span { font-size: 0.78rem; }
+
+.rrisk-total-level strong { font-size: 1.25rem; display: block; margin-bottom: 4px; }
+.rrisk-total-level p { margin: 0; font-size: 0.9rem; }
+
+.rrisk-critical {
+  background: #fee2e2;
+  border: 2px solid #b91c1c;
+  color: #7f1d1d;
+  font-weight: 700;
+  padding: 12px 14px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.rrisk-signal-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.rrisk-signal {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.rrisk-signal p { margin: 6px 0 0; font-size: 0.88rem; color: #4b5563; }
+
+.rrisk-signal-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rrisk-signal-points { margin-left: auto; font-size: 0.85rem; color: #6b7280; }
+
+.rrisk-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: #ffffff;
+}
+
+.rrisk-badge--normal { background: #047857; }
+.rrisk-badge--watch { background: #b45309; }
+.rrisk-badge--abnormal { background: #dc2626; }
+.rrisk-badge--critical { background: #7f1d1d; }
+.rrisk-badge--unavailable { background: #9ca3af; }
+
+.rrisk-coverage {
+  font-size: 0.88rem;
+  color: #374151;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.rrisk-coverage p { margin: 0 0 4px; }
+.rrisk-coverage p:last-child { margin-bottom: 0; }
+.rrisk-coverage-missing { color: #b45309; }

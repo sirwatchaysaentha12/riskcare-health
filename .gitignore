@@ -6,3 +6,4 @@ backups/*.json
 .env.*.local
 !.env.example
 notebooks/publish_log.txt
+frontend/lighthouse-report.html

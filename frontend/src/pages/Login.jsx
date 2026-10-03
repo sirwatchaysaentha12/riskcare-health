@@ -135,7 +135,7 @@ export default function Login() {
     <main className="auth-page">
       <section className="login-panel">
         <div className="login-card">
-          <h2>{registering ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ'}</h2>
+          <h1>{registering ? 'สมัครสมาชิก' : 'เข้าสู่ระบบ'}</h1>
           <form noValidate onSubmit={submit}>
             {registering && <label className="sr-only" htmlFor="login-username">ชื่อผู้ใช้</label>}
             {registering && <input id="login-username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ชื่อผู้ใช้" autoComplete="username" />}
