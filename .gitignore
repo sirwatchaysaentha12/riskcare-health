@@ -7,3 +7,21 @@ backups/*.json
 !.env.example
 notebooks/publish_log.txt
 frontend/lighthouse-report.html
+
+# Local caches and runtime data (never commit)
+admin-app/server/bin/
+admin-app/server/data/
+admin-app/supabase/.temp/
+tmp-vitallens/
+notebooks/.om_cache/
+**/__pycache__/
+data/raw/
+debug.log
+
+# Large model binaries (train artifacts — keep local only)
+notebooks/*.joblib
+
+# Zero-byte shell-redirect artifacts at repo root
+/cd
+/netstat
+/node
