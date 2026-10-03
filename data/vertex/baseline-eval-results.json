@@ -1,0 +1,334 @@
+{
+ "split": {
+  "train": "2023-09-28→2026-03-31",
+  "validation": "2026-04-01→2026-06-30",
+  "test": "2026-07-01→2026-09-30 (holdout, never used for tuning)"
+ },
+ "method": "prediction for date t at horizon h uses only observations ≤ (t−h) — no leakage",
+ "byHorizon": {
+  "h1": {
+   "persistence": {
+    "n": 1804,
+    "mae": 1.99,
+    "rmse": 2.83,
+    "mapePct": 16.92,
+    "smapePct": 20.81
+   },
+   "moving_avg_3": {
+    "n": 1804,
+    "mae": 2.38,
+    "rmse": 3.35,
+    "mapePct": 20.04,
+    "smapePct": 24.17
+   },
+   "seasonal_naive_weekly": {
+    "n": 1636,
+    "mae": 3.7,
+    "rmse": 4.85,
+    "mapePct": 31.44,
+    "smapePct": 35.88
+   },
+   "ma3_plus_trend (production baseline)": {
+    "n": 1804,
+    "mae": 2.55,
+    "rmse": 3.54,
+    "mapePct": 21.65,
+    "smapePct": 25.74
+   }
+  },
+  "h2": {
+   "persistence": {
+    "n": 1804,
+    "mae": 2.73,
+    "rmse": 3.88,
+    "mapePct": 23.04,
+    "smapePct": 27.31
+   },
+   "moving_avg_3": {
+    "n": 1804,
+    "mae": 2.89,
+    "rmse": 4.02,
+    "mapePct": 24.39,
+    "smapePct": 28.75
+   },
+   "seasonal_naive_weekly": {
+    "n": 1636,
+    "mae": 3.7,
+    "rmse": 4.85,
+    "mapePct": 31.44,
+    "smapePct": 35.88
+   },
+   "ma3_plus_trend (production baseline)": {
+    "n": 1804,
+    "mae": 3.51,
+    "rmse": 4.77,
+    "mapePct": 29.93,
+    "smapePct": 34.24
+   }
+  },
+  "h3": {
+   "persistence": {
+    "n": 1804,
+    "mae": 3.21,
+    "rmse": 4.48,
+    "mapePct": 27.18,
+    "smapePct": 31.74
+   },
+   "moving_avg_3": {
+    "n": 1804,
+    "mae": 3.16,
+    "rmse": 4.35,
+    "mapePct": 26.67,
+    "smapePct": 30.95
+   },
+   "seasonal_naive_weekly": {
+    "n": 1636,
+    "mae": 3.7,
+    "rmse": 4.85,
+    "mapePct": 31.44,
+    "smapePct": 35.88
+   },
+   "ma3_plus_trend (production baseline)": {
+    "n": 1804,
+    "mae": 4.3,
+    "rmse": 5.77,
+    "mapePct": 36.92,
+    "smapePct": 40.53
+   }
+  }
+ },
+ "perStationH1": [
+  {
+   "stationId": "1304082",
+   "n": 0,
+   "persistenceMae": null,
+   "ma3Mae": null,
+   "productionMae": null
+  },
+  {
+   "stationId": "1304114",
+   "n": 63,
+   "persistenceMae": 2.08,
+   "ma3Mae": 2.84,
+   "productionMae": 2.89
+  },
+  {
+   "stationId": "1304179",
+   "n": 65,
+   "persistenceMae": 1.57,
+   "ma3Mae": 1.91,
+   "productionMae": 2.18
+  },
+  {
+   "stationId": "1304192",
+   "n": 63,
+   "persistenceMae": 1.95,
+   "ma3Mae": 2.38,
+   "productionMae": 2.58
+  },
+  {
+   "stationId": "1304205",
+   "n": 62,
+   "persistenceMae": 2.05,
+   "ma3Mae": 2.27,
+   "productionMae": 2.36
+  },
+  {
+   "stationId": "1304207",
+   "n": 62,
+   "persistenceMae": 2.08,
+   "ma3Mae": 2.23,
+   "productionMae": 2.32
+  },
+  {
+   "stationId": "1304211",
+   "n": 65,
+   "persistenceMae": 1.54,
+   "ma3Mae": 2,
+   "productionMae": 2.19
+  },
+  {
+   "stationId": "1304255",
+   "n": 62,
+   "persistenceMae": 1.6,
+   "ma3Mae": 2.03,
+   "productionMae": 2.17
+  },
+  {
+   "stationId": "1304281",
+   "n": 65,
+   "persistenceMae": 1.92,
+   "ma3Mae": 2.47,
+   "productionMae": 2.62
+  },
+  {
+   "stationId": "1304293",
+   "n": 63,
+   "persistenceMae": 1.95,
+   "ma3Mae": 2.23,
+   "productionMae": 2.41
+  },
+  {
+   "stationId": "1304328",
+   "n": 63,
+   "persistenceMae": 1.41,
+   "ma3Mae": 1.7,
+   "productionMae": 1.82
+  },
+  {
+   "stationId": "1304340",
+   "n": 63,
+   "persistenceMae": 1.49,
+   "ma3Mae": 1.88,
+   "productionMae": 2.04
+  },
+  {
+   "stationId": "1304353",
+   "n": 63,
+   "persistenceMae": 1.58,
+   "ma3Mae": 2.33,
+   "productionMae": 2.53
+  },
+  {
+   "stationId": "1304403",
+   "n": 63,
+   "persistenceMae": 1.88,
+   "ma3Mae": 2.33,
+   "productionMae": 2.42
+  },
+  {
+   "stationId": "1304435",
+   "n": 63,
+   "persistenceMae": 1.77,
+   "ma3Mae": 2.18,
+   "productionMae": 2.27
+  },
+  {
+   "stationId": "1304438",
+   "n": 65,
+   "persistenceMae": 2.01,
+   "ma3Mae": 2.19,
+   "productionMae": 2.33
+  },
+  {
+   "stationId": "1305020",
+   "n": 63,
+   "persistenceMae": 1.98,
+   "ma3Mae": 2.24,
+   "productionMae": 2.51
+  },
+  {
+   "stationId": "1320292",
+   "n": 0,
+   "persistenceMae": null,
+   "ma3Mae": null,
+   "productionMae": null
+  },
+  {
+   "stationId": "14153208",
+   "n": 92,
+   "persistenceMae": 2.79,
+   "ma3Mae": 3.14,
+   "productionMae": 3.29
+  },
+  {
+   "stationId": "15186788",
+   "n": 92,
+   "persistenceMae": 3.57,
+   "ma3Mae": 4.2,
+   "productionMae": 4.4
+  },
+  {
+   "stationId": "15194517",
+   "n": 0,
+   "persistenceMae": null,
+   "ma3Mae": null,
+   "productionMae": null
+  },
+  {
+   "stationId": "15194983",
+   "n": 77,
+   "persistenceMae": 3.18,
+   "ma3Mae": 3.78,
+   "productionMae": 3.95
+  },
+  {
+   "stationId": "2076214",
+   "n": 61,
+   "persistenceMae": 1.54,
+   "ma3Mae": 1.73,
+   "productionMae": 1.82
+  },
+  {
+   "stationId": "2076216",
+   "n": 63,
+   "persistenceMae": 1.25,
+   "ma3Mae": 1.52,
+   "productionMae": 1.7
+  },
+  {
+   "stationId": "2076219",
+   "n": 0,
+   "persistenceMae": null,
+   "ma3Mae": null,
+   "productionMae": null
+  },
+  {
+   "stationId": "2076228",
+   "n": 61,
+   "persistenceMae": 1.45,
+   "ma3Mae": 1.69,
+   "productionMae": 1.83
+  },
+  {
+   "stationId": "2076229",
+   "n": 65,
+   "persistenceMae": 1.58,
+   "ma3Mae": 1.9,
+   "productionMae": 2.07
+  },
+  {
+   "stationId": "2076231",
+   "n": 65,
+   "persistenceMae": 1.82,
+   "ma3Mae": 2.09,
+   "productionMae": 2.36
+  },
+  {
+   "stationId": "5077771",
+   "n": 63,
+   "persistenceMae": 1.45,
+   "ma3Mae": 1.79,
+   "productionMae": 1.9
+  },
+  {
+   "stationId": "5077838",
+   "n": 62,
+   "persistenceMae": 1.69,
+   "ma3Mae": 2.07,
+   "productionMae": 2.21
+  },
+  {
+   "stationId": "6530250",
+   "n": 0,
+   "persistenceMae": null,
+   "ma3Mae": null,
+   "productionMae": null
+  },
+  {
+   "stationId": "6530291",
+   "n": 90,
+   "persistenceMae": 2.8,
+   "ma3Mae": 3.29,
+   "productionMae": 3.64
+  },
+  {
+   "stationId": "6530344",
+   "n": 0,
+   "persistenceMae": null,
+   "ma3Mae": null,
+   "productionMae": null
+  }
+ ],
+ "sampleCountsNote": "n = number of (station, date) forecast origins × 1 in the holdout window"
+}

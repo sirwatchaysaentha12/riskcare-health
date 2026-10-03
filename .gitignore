@@ -1,1 +1,8 @@
 backups/*.json
+
+# Local environment files may contain API keys and database credentials.
+.env
+.env.local
+.env.*.local
+!.env.example
+notebooks/publish_log.txt
