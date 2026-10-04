@@ -63,7 +63,7 @@ export interface RespiratoryRiskResult {
 }
 
 export const RISK_DISCLAIMER =
-  'ใช้โมเดล pose detection (MediaPipe) + rPPG (vitallens) สำเร็จรูป ร่วมกับแบบประเมินอาการ เพื่อคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยทางการแพทย์'
+  'ใช้โมเดล pose detection (MediaPipe) + rPPG (vitallens) สำเร็จรูป ร่วมกับแบบประเมินอาการ เพื่อคัดกรองเบื้องต้น — เป็นค่าประมาณจากกล้อง ไม่ใช่การวินิจฉัยทางการแพทย์และไม่ใช่เครื่องมือแทนแพทย์'
 
 const LEVELS: Record<RiskLevel, { label: string; description: string; tone: 'green' | 'yellow' | 'red' }> = {
   low: {

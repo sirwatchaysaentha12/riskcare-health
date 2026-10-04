@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { computeBreathingRate, extractShoulderY } from '../utils/breathingRate'
-import { analyzeCameraFrame, isVideoFrameReady } from '../utils/cameraQuality'
+import { isVideoFrameReady } from '../utils/cameraQuality'
+import {
+  createQualityAccumulator,
+  recordFrameMetrics,
+  recordPoseFrame,
+  computeFrameMetrics,
+  buildQualityResult,
+} from '../utils/signalQuality'
 
 // คอมโพเนนต์ใหม่สำหรับระบบประเมินความเสี่ยงโรคทางเดินหายใจ (3 สัญญาณ)
 // วัดอัตราการหายใจ (RR) จากจังหวะไหล่ด้วย MediaPipe PoseLandmarker (พรีเทรน) — pattern เดียวกับ
@@ -32,6 +39,11 @@ function loadPoseLandmarker(delegate = 'GPU') {
 }
 
 const POSE_LOAD_TIMEOUT_MS = 12000
+
+// ปิด landmarker แล้วต้องล้าง cache — ไม่งั้นการวัดครั้งถัดไปได้ instance ที่ถูก close() ไปแล้ว
+function invalidateLandmarkerCache() {
+  for (const key of Object.keys(landmarkerPromises)) delete landmarkerPromises[key]
+}
 async function loadPoseLandmarkerRobust() {
   try {
     return await Promise.race([
@@ -78,7 +90,7 @@ function drawShoulderOverlay(canvas, landmarks) {
   }
 }
 
-export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }) {
+export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, onCancel, enabled = false }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const qualityCanvasRef = useRef(null)
@@ -95,6 +107,10 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
   const lastQualityCheckRef = useRef(0)
   const previousFrameRef = useRef(null)
   const stoppedRef = useRef(false)
+  const qualityAccumulatorRef = useRef(createQualityAccumulator())
+  const rafFramesRef = useRef(0)
+  const processedFramesRef = useRef(0)
+  const startTsWallRef = useRef(0)
 
   const [status, setStatus] = useState('idle') // idle | preparing | ready | measuring | done | error
   const [error, setError] = useState(null)
@@ -108,21 +124,56 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
     try { recorderRef.current?.state === 'recording' && recorderRef.current.stop() } catch { /* ข้าม */ }
     streamRef.current?.getTracks().forEach((track) => track.stop())
     streamRef.current = null
-    try { landmarkerRef.current?.close?.() } catch { /* ข้าม */ }
+    if (landmarkerRef.current) {
+      try { landmarkerRef.current?.close?.() } catch { /* ข้าม */ }
+      invalidateLandmarkerCache()
+    }
     landmarkerRef.current = null
   }, [])
 
   useEffect(() => () => stopEverything(), [stopEverything])
 
+  // Consent ถูกยกเลิกขณะวัด → หยุดกล้องและตัดการบันทึกทันที
+  useEffect(() => {
+    if (!enabled) {
+      const wasMeasuring = measuringRef.current || status === 'measuring' || status === 'preparing'
+      stopEverything()
+      if (wasMeasuring) {
+        setStatus('idle')
+        setElapsedMs(0)
+        onCancel?.('ยกเลิกความยินยอมแล้ว — กล้องถูกปิด')
+      }
+    }
+  }, [enabled, status, stopEverything, onCancel])
+
+  const cancel = useCallback(() => {
+    stopEverything()
+    chunksRef.current = [] // ยกเลิก = ทิ้งคลิปที่บันทึกค้าง ไม่ส่งให้ backend
+    recorderRef.current = null
+    setStatus('idle')
+    setElapsedMs(0)
+    onCancel?.('ยกเลิกการวัดแล้ว — กล้องถูกปิด คลิปที่บันทึกไม่ถูกส่ง')
+  }, [onCancel, stopEverything])
+
   const finishMeasurement = useCallback(() => {
     measuringRef.current = false
-    const rawBpm = computeBreathingRate(samplesRef.current)?.bpm ?? null
+    const rrRaw = computeBreathingRate(samplesRef.current)
+    const rawBpm = rrRaw?.bpm ?? null
     const reliable = rawBpm !== null && rawBpm >= 6 && rawBpm <= 40
+    const elapsedMs = performance.now() - startTsWallRef.current
+    // Phase 2 — structured quality gate: คุณภาพไม่ผ่าน = ห้ามใช้ค่า
+    const quality = buildQualityResult({
+      accumulator: qualityAccumulatorRef.current,
+      elapsedMs,
+      requiredMs: MEASURE_DURATION_MS,
+      processedFrames: processedFramesRef.current,
+      rafFrames: rafFramesRef.current,
+      rrResult: rrRaw,
+    })
     let recorder = recorderRef.current
     const recordedChunks = chunksRef.current
     if (recorder?.state === 'recording') {
       recorder.stop()
-      recorder = null
     } else {
       // กรณี recorder ไม่พร้อม — แจ้งว่าสัญญาณ vitallens ขาดไป
       onVideoRecorded?.(null)
@@ -130,7 +181,14 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
     chunksRef.current = []
     setStatus('done')
     stopEverything()
-    onRrResult?.({ bpm: reliable ? rawBpm : null, rawBpm, reliable, sampleCount: samplesRef.current.length })
+    onRrResult?.({
+      bpm: reliable && quality.canUseMeasurement ? rawBpm : null,
+      rawBpm,
+      reliable: reliable && quality.canUseMeasurement,
+      sampleCount: samplesRef.current.length,
+      elapsedMs,
+      quality,
+    })
     if (recordedChunks.length > 0) {
       const mime = recordedChunks[0].type || 'video/webm'
       onVideoRecorded?.(new Blob(recordedChunks, { type: mime }))
@@ -140,15 +198,25 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
   }, [onRrResult, onVideoRecorded, stopEverything])
 
   const start = useCallback(async () => {
+    // Consent gate — ห้ามเรียก getUserMedia/MediaRecorder ก่อนยินยอม
+    if (!enabled) {
+      const message = 'ยังไม่ได้ให้ความยินยอมการใช้กล้อง'
+      setError(message)
+      onError?.(message)
+      return
+    }
     setError(null)
     setQualityIssue(null)
     setElapsedMs(0)
     samplesRef.current = []
     chunksRef.current = []
     stoppedRef.current = false
+    qualityAccumulatorRef.current = createQualityAccumulator()
+    rafFramesRef.current = 0
+    processedFramesRef.current = 0
     setStatus('preparing')
 
-    let stream = null
+    let stream
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
@@ -188,22 +256,39 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
     setStatus('measuring')
     measuringRef.current = true
     startTsRef.current = performance.now()
+    startTsWallRef.current = startTsRef.current
     lastVideoTimeRef.current = -1
     lastQualityCheckRef.current = 0
 
+    const liveQualityHint = (metrics) => {
+      // ข้อความระหว่างวัด (สรุปจากเมตริกล่าสุด — ผลตัดสินจริงอยู่ใน quality result ตอนจบ)
+      if (metrics.brightness < 38) return 'ภาพมืดเกินไป เพิ่มแสงในห้อง'
+      if (metrics.brightness > 225) return 'ภาพสว่างจ้าเกินไป'
+      if (metrics.edgeDetail < 4) return 'ภาพอาจเบลอ'
+      if (metrics.frameChange !== null && metrics.frameChange > 36) return 'ขยับตัว/พูดมาก กรุณานิ่ง ๆ'
+      return null
+    }
+
     const loop = () => {
       if (stoppedRef.current) return
+      rafFramesRef.current += 1
       const currentVideo = videoRef.current
       const landmarker = landmarkerRef.current
       if (currentVideo && currentVideo.readyState >= 2 && isVideoFrameReady(currentVideo)) {
         if (currentVideo.currentTime !== lastVideoTimeRef.current) {
           lastVideoTimeRef.current = currentVideo.currentTime
-          try {
-            const result = landmarker.detectForVideo(currentVideo, performance.now())
-            const landmarks = result?.landmarks?.[0] || null
-            landmarksCacheRef.current = landmarks
-            drawShoulderOverlay(canvasRef.current, landmarks)
-          } catch { /* ข้าม frame ที่ผิดพลาด */ }
+          if (landmarker) {
+            try {
+              const result = landmarker.detectForVideo(currentVideo, performance.now())
+              const landmarks = result?.landmarks?.[0] || null
+              landmarksCacheRef.current = landmarks
+              drawShoulderOverlay(canvasRef.current, landmarks)
+              processedFramesRef.current += 1
+              if (measuringRef.current) {
+                recordPoseFrame(qualityAccumulatorRef.current, extractShoulderY(landmarks) !== null)
+              }
+            } catch { /* ข้าม frame ที่ผิดพลาด */ }
+          }
         }
         const now = performance.now()
         if (now - lastQualityCheckRef.current >= 500) {
@@ -215,13 +300,15 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
               qualityCanvas.width = 64
               qualityCanvas.height = 48
               qualityContext.drawImage(currentVideo, 0, 0, qualityCanvas.width, qualityCanvas.height)
-              const analysis = analyzeCameraFrame(
+              const metrics = computeFrameMetrics(
                 qualityContext.getImageData(0, 0, qualityCanvas.width, qualityCanvas.height),
-                null,
                 previousFrameRef.current,
               )
-              previousFrameRef.current = analysis.sampledFrame
-              setQualityIssue(analysis.status === 'warning' ? analysis.issues.join(' ') : null)
+              if (metrics) {
+                previousFrameRef.current = metrics.sampledFrame
+                if (measuringRef.current) recordFrameMetrics(qualityAccumulatorRef.current, metrics)
+                setQualityIssue(liveQualityHint(metrics))
+              }
             }
           } catch { /* ข้าม */ }
         }
@@ -243,7 +330,7 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
       if (!stoppedRef.current) rafRef.current = requestAnimationFrame(loop)
     }
     rafRef.current = requestAnimationFrame(loop)
-  }, [finishMeasurement, onError])
+  }, [enabled, finishMeasurement, onError])
 
   // เก็บ landmarks ล่าสุดไว้ใช้ในส่วนวัดของลูป
   const landmarksCacheRef = useRef(null)
@@ -267,11 +354,24 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError }
       )}
       {qualityIssue && <p className="rrisk-camera-quality">คุณภาพภาพ: {qualityIssue}</p>}
       {error && <p className="rrisk-error">{error}</p>}
-      {status !== 'measuring' && (
-        <button type="button" className="rrisk-btn" onClick={start} disabled={status === 'preparing'}>
-          {status === 'preparing' ? 'กำลังเตรียมกล้อง…' : status === 'done' ? 'วัดใหม่อีกครั้ง (30 วินาที)' : 'เริ่มวัดการหายใจ (30 วินาที)'}
-        </button>
-      )}
+      <div className="rrisk-camera-actions">
+        {status !== 'measuring' && (
+          <button
+            type="button"
+            className="rrisk-btn"
+            onClick={start}
+            disabled={status === 'preparing' || !enabled}
+            title={!enabled ? 'ต้องให้ความยินยอมการใช้กล้องก่อน' : undefined}
+          >
+            {status === 'preparing' ? 'กำลังเตรียมกล้อง…' : status === 'done' ? 'วัดใหม่อีกครั้ง (30 วินาที)' : 'เริ่มวัดการหายใจ (30 วินาที)'}
+          </button>
+        )}
+        {(status === 'measuring' || status === 'preparing') && (
+          <button type="button" className="rrisk-btn rrisk-btn--cancel" onClick={cancel}>
+            ยกเลิกการวัด (ปิดกล้อง)
+          </button>
+        )}
+      </div>
     </div>
   )
 }

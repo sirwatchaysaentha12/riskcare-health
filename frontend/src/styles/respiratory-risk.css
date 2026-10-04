@@ -151,6 +151,8 @@
   font-size: 0.88rem;
 }
 
+.rrisk-upload--locked { opacity: 0.55; }
+
 /* --- ผลรวม --- */
 .rrisk-total {
   display: flex;
@@ -238,3 +240,193 @@
 .rrisk-coverage p { margin: 0 0 4px; }
 .rrisk-coverage p:last-child { margin-bottom: 0; }
 .rrisk-coverage-missing { color: #b45309; }
+.rrisk-accuracy { color: #6b7280; }
+
+/* --- Quality Gate (Phase 2) --- */
+.rrisk-quality {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 10px 0;
+  font-size: 0.88rem;
+}
+
+.rrisk-quality--good { border-left: 4px solid #047857; }
+.rrisk-quality--acceptable { border-left: 4px solid #b45309; }
+.rrisk-quality--insufficient { border-left: 4px solid #b91c1c; background: #fef2f2; }
+
+.rrisk-quality-title { margin: 0 0 8px; font-weight: 600; }
+
+.rrisk-checks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 6px;
+}
+
+.rrisk-check {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.rrisk-check small { grid-column: 1 / -1; color: #6b7280; font-size: 0.78rem; }
+
+.rrisk-check--pass b { color: #047857; }
+.rrisk-check--warn b { color: #b45309; }
+.rrisk-check--fail b { color: #b91c1c; }
+.rrisk-check--fail { background: #fef2f2; }
+.rrisk-check--not_run b { color: #9ca3af; }
+
+.rrisk-retry {
+  margin: 8px 0 0;
+  color: #b45309;
+  font-weight: 600;
+}
+
+/* --- Phase 3: 4-layer signal cards + clinician summary --- */
+.rrisk-layer1-value { margin: 6px 0 2px; font-size: 1.05rem; }
+.rrisk-layer1-value small { font-size: 0.8rem; color: #6b7280; }
+.rrisk-missing-value { color: #6b7280; font-weight: 600; }
+.rrisk-missing-reason { margin: 2px 0 6px; color: #b45309; font-size: 0.85rem; }
+
+.rrisk-layer2 { margin: 4px 0; font-size: 0.85rem; font-weight: 600; }
+.rrisk-qualitytext--good { color: #047857; }
+.rrisk-qualitytext--acceptable { color: #b45309; }
+.rrisk-qualitytext--insufficient { color: #b91c1c; }
+.rrisk-qualitytext--not_assessed { color: #6b7280; font-weight: 400; }
+
+.rrisk-layer3, .rrisk-layer4 {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 6px;
+}
+
+.rrisk-layer3 summary, .rrisk-layer4 summary {
+  cursor: pointer;
+  color: #047857;
+}
+
+.rrisk-layer3 p, .rrisk-layer4 p { margin: 4px 0 0; }
+.rrisk-layer4 ul { margin: 4px 0 0; padding-left: 18px; }
+.rrisk-layer4 .rrisk-clinical { color: #b45309; font-weight: 600; }
+
+.rrisk-clinician {
+  margin-top: 16px;
+  border: 2px solid #1f2937;
+  border-radius: 12px;
+  padding: 14px;
+  background: #ffffff;
+  font-size: 0.88rem;
+}
+
+.rrisk-clinician-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rrisk-clinician h3 { margin: 0 0 6px; font-size: 1rem; }
+
+.rrisk-btn--small { padding: 6px 12px; font-size: 0.85rem; }
+
+.rrisk-clinician-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 0.8rem;
+}
+
+.rrisk-clinician-table th, .rrisk-clinician-table td {
+  border: 1px solid #d1d5db;
+  padding: 5px 7px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.rrisk-clinician-table th { background: #f3f4f6; }
+
+.rrisk-clinician-disclaimer { font-weight: 600; margin-top: 8px; }
+.rrisk-clinician-policy { color: #6b7280; font-size: 0.8rem; }
+
+/* Accessibility: โฟกัสชัดเจนด้วยคีย์บอร์ด */
+.rrisk-page button:focus-visible,
+.rrisk-page a:focus-visible,
+.rrisk-page summary:focus-visible,
+.rrisk-page input:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Phase 5: Consent --- */
+.rrisk-consent {
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 0 0 12px;
+}
+
+.rrisk-consent h3 { margin: 0 0 8px; font-size: 0.95rem; }
+
+.rrisk-consent-info {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  font-size: 0.86rem;
+  color: #4b5563;
+}
+
+.rrisk-consent-info li { margin-bottom: 3px; }
+
+.rrisk-consent-options {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.rrisk-consent-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.9rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.rrisk-consent-item--disabled { opacity: 0.55; cursor: not-allowed; }
+
+.rrisk-consent-item input { margin-top: 3px; width: 16px; height: 16px; }
+
+.rrisk-consent-note { color: #b45309; font-size: 0.85rem; margin: 0; }
+
+.rrisk-camera-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.rrisk-btn--cancel {
+  background: #ffffff;
+  color: #b91c1c;
+  border: 1.5px solid #b91c1c;
+}
+
+/* Print: แสดงเฉพาะรายงานสำหรับแพทย์ */
+@media print {
+  body * { visibility: hidden; }
+  .rrisk-clinician, .rrisk-clinician * { visibility: visible; }
+  .rrisk-clinician {
+    position: absolute;
+    inset: 0;
+    border: none;
+  }
+  .rrisk-clinician-head button { display: none; }
+}
