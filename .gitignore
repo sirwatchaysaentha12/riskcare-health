@@ -25,3 +25,8 @@ notebooks/*.joblib
 /cd
 /netstat
 /node
+
+# Phase 2 test scratch (raw video clips for e2e — not committed)
+tmp-vitallens/
+data/hourly/
+data/vertex/*.joblib
