@@ -9,8 +9,9 @@
 1. เปิด dev server 2 ตัว:
    - `cd admin-app && npm run dev` (พอร์ต 3000 — ตรวจ: `curl http://127.0.0.1:3000/api/stations` ได้ 200)
    - `cd frontend && npm run dev` (พอร์ต 5173)
-   - ⚠️ ถ้า dev server เปิดค้างนาน: รีสตาร์ทก่อน (Vite watcher อาจ serve module เก่าเงียบ ๆ)
-2. เปิด `http://localhost:5173` ล็อกอินบัญชีทดสอบ (e2e-breath@test.local / TestPass123!)
+    - ⚠️ ถ้า dev server เปิดค้างนาน: รีสตาร์ทก่อน (Vite watcher อาจ serve module เก่าเงียบ ๆ)
+    - 🔒 ระบบไม่บันทึก credential ลงไฟล์ใด และไม่ log รหัสผ่านใน log/report ทุกกรณี
+2. เปิด `http://localhost:5173` ล็อกอินด้วยบัญชีทดสอบ — **รหัสผ่านอ่านจาก environment variable `DEMO_TEST_PASSWORD` (ตั้งไว้ในเครื่องสาธิตเท่านั้น ห้ามเขียนลงเอกสาร/ไฟล์)** · บัญชีทดสอบ local (`e2e-breath@test.local`) ไม่ใช่บัญชีจริง
 3. ตรวจ webcam ทำงาน (ไม่มีกล้องจริง → ใช้ขั้น 4 fallback)
 4. ไฟล์สำรอง: คลิปสังเคราะห์ใน `tmp-vitallens/` (ไม่ใช่ข้อมูลบุคคลจริง)
 
