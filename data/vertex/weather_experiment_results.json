@@ -1,0 +1,142 @@
+{
+ "h1_no_wx": {
+  "model": "ridge",
+  "val_MAE": 0.54,
+  "holdout": {
+   "N": 3607,
+   "Acc2": 99.3,
+   "Acc5": 99.8,
+   "MAE": 0.3,
+   "RMSE": 0.62,
+   "MedAE": 0.22,
+   "R2": 0.987,
+   "Bias": -0.13
+  }
+ },
+ "h1_with_wx": {
+  "model": "ridge",
+  "val_MAE": 0.57,
+  "holdout": {
+   "N": 3607,
+   "Acc2": 97.8,
+   "Acc5": 98.4,
+   "MAE": 0.62,
+   "RMSE": 2.33,
+   "MedAE": 0.29,
+   "R2": 0.809,
+   "Bias": -0.09
+  }
+ },
+ "h6_no_wx": {
+  "model": "ridge",
+  "val_MAE": 1.32,
+  "holdout": {
+   "N": 3592,
+   "Acc2": 89.4,
+   "Acc5": 99.4,
+   "MAE": 1.03,
+   "RMSE": 1.38,
+   "MedAE": 0.84,
+   "R2": 0.934,
+   "Bias": -0.46
+  }
+ },
+ "h6_with_wx": {
+  "model": "ridge",
+  "val_MAE": 1.22,
+  "holdout": {
+   "N": 3592,
+   "Acc2": 85.5,
+   "Acc5": 98.1,
+   "MAE": 1.31,
+   "RMSE": 2.68,
+   "MedAE": 0.88,
+   "R2": 0.748,
+   "Bias": 0.06
+  }
+ },
+ "h24_no_wx": {
+  "model": "ridge",
+  "val_MAE": 3.14,
+  "holdout": {
+   "N": 3547,
+   "Acc2": 41.2,
+   "Acc5": 85.4,
+   "MAE": 2.85,
+   "RMSE": 3.61,
+   "MedAE": 2.47,
+   "R2": 0.547,
+   "Bias": -1.43
+  }
+ },
+ "h24_with_wx": {
+  "model": "ridge",
+  "val_MAE": 3.07,
+  "holdout": {
+   "N": 3547,
+   "Acc2": 42.8,
+   "Acc5": 85.5,
+   "MAE": 2.86,
+   "RMSE": 3.7,
+   "MedAE": 2.36,
+   "R2": 0.523,
+   "Bias": 0.15
+  }
+ },
+ "h48_no_wx": {
+  "model": "ridge",
+  "val_MAE": 3.5,
+  "holdout": {
+   "N": 3481,
+   "Acc2": 28.2,
+   "Acc5": 66.7,
+   "MAE": 3.98,
+   "RMSE": 4.83,
+   "MedAE": 3.68,
+   "R2": 0.193,
+   "Bias": -2.29
+  }
+ },
+ "h48_with_wx": {
+  "model": "ridge",
+  "val_MAE": 4.78,
+  "holdout": {
+   "N": 3481,
+   "Acc2": 36.6,
+   "Acc5": 77.3,
+   "MAE": 3.46,
+   "RMSE": 4.5,
+   "MedAE": 2.74,
+   "R2": 0.301,
+   "Bias": 0.05
+  }
+ },
+ "h72_no_wx": {
+  "model": "ridge",
+  "val_MAE": 3.86,
+  "holdout": {
+   "N": 3409,
+   "Acc2": 21.7,
+   "Acc5": 55.9,
+   "MAE": 4.79,
+   "RMSE": 5.71,
+   "MedAE": 4.43,
+   "R2": -0.117,
+   "Bias": -3.07
+  }
+ },
+ "h72_with_wx": {
+  "model": "ridge",
+  "val_MAE": 5.86,
+  "holdout": {
+   "N": 3409,
+   "Acc2": 31.0,
+   "Acc5": 68.8,
+   "MAE": 3.99,
+   "RMSE": 5.05,
+   "MedAE": 3.37,
+   "R2": 0.128,
+   "Bias": -0.14
+  }
+ }
+}
