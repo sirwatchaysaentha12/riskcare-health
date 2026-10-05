@@ -141,6 +141,52 @@ export function createSpo2LocalMeasurement() {
   })
 }
 
+/** สถานะ provenance ระดับระบบ (Phase 9) — แสดงบนหน้าเว็บเพื่อความโปร่งใส; ที่ไม่ทราบจริง = UNKNOWN — REQUIRES REVIEW */
+export const DATA_PROVENANCE_STATUS = {
+  lastEvaluationDate: '2026-10-04',
+  metricsStatus: 'Track A signal-only evaluation บน BIDMC (2026-10-04) — clinical accuracy: not-validated',
+  trainingSource: 'ไม่มี — โมเดลพรีเทรน third-party (MediaPipe, vitallens POS) + rule-based scoring ไม่มีการเทรนใหม่',
+  evaluation: {
+    dataset: 'BIDMC PPG and Respiration v1.0.0 (PhysioNet, ODC-By 1.0)',
+    track: 'Signal Processing Only (Track A)',
+    modality: 'Impedance Respiration / PPG / ECG (125 Hz) — ไม่มีวิดีโอ',
+    evaluationDate: '2026-10-04',
+    participantCount: 53,
+    windowCount: 842,
+    windowsUsed: 484,
+    metrics: {
+      mae: '9.03 ครั้ง/นาที (95% CI 8.49-9.54)',
+      rmse: '10.74',
+      meanBias: '+8.92 ครั้ง/นาที (overcount อย่างเป็นระบบ — cardiogenic artifact บน impedance)',
+      acceptableErrorPct: '20.7% (±2)',
+      abstentionRate: '42.4%',
+    },
+    cameraAccuracy: 'Not validated — BIDMC ไม่มีวิดีโอ (ห้ามอ้าง)',
+    clinicalAccuracy: 'Not validated',
+    report: 'TRACK-A-OFFLINE-VALIDATION-REPORT.md',
+  },
+  libraries: [
+    {
+      role: 'RR — Pose estimation (ประมาณอัตราการหายใจ)',
+      name: 'MediaPipe Pose Landmarker',
+      version: 'UNKNOWN — REQUIRES REVIEW (vendored tasks-vision ไม่มี version string)',
+      license: 'Apache 2.0 (MediaPipe + pose_landmarker_lite)',
+    },
+    {
+      role: 'HR — rPPG จากใบหน้า (POS local)',
+      name: 'VitalLens (vitallens + vitallens-core)',
+      version: 'vitallens 0.6.1 / vitallens-core 0.2.3 (ตรวจจาก pip)',
+      license: 'MIT (© 2026 Rouast Labs)',
+    },
+    {
+      role: 'SpO2',
+      name: 'ไม่มี — VitalLens POS local mode ไม่ประเมิน SpO2',
+      version: 'n/a',
+      license: 'n/a',
+    },
+  ],
+}
+
 /**
  * สร้างรายงานสำหรับแพทย์ (Clinician Review Summary)
  * - ใช้รหัสผู้ใช้แบบ Pseudonymous (รหัสเทียม) ไม่แสดงตัวตน — แต่ต้องเรียกว่า Pseudonymous ไม่ใช่ Anonymous

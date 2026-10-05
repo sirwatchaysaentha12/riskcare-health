@@ -1,0 +1,233 @@
+{
+ "Global Ridge PM-only_h24": {
+  "model": "Global Ridge PM-only",
+  "h": 24,
+  "N": 3547,
+  "Acc2": 42.8,
+  "Acc5": 86.8,
+  "MAE": 2.78,
+  "RMSE": 3.55,
+  "Bias": -1.24,
+  "R2": 0.562
+ },
+ "Global Ridge PM-only_h48": {
+  "model": "Global Ridge PM-only",
+  "h": 48,
+  "N": 3481,
+  "Acc2": 29.7,
+  "Acc5": 68.5,
+  "MAE": 3.86,
+  "RMSE": 4.71,
+  "Bias": -2.03,
+  "R2": 0.231
+ },
+ "Global Ridge PM-only_h72": {
+  "model": "Global Ridge PM-only",
+  "h": 72,
+  "N": 3409,
+  "Acc2": 23.2,
+  "Acc5": 58.4,
+  "MAE": 4.63,
+  "RMSE": 5.55,
+  "Bias": -2.75,
+  "R2": -0.054
+ },
+ "Global Ridge+wx_h24": {
+  "model": "Global Ridge+wx",
+  "h": 24,
+  "N": 3547,
+  "Acc2": 46.6,
+  "Acc5": 88.6,
+  "MAE": 2.63,
+  "RMSE": 3.43,
+  "Bias": 0.45,
+  "R2": 0.591
+ },
+ "Global Ridge+wx_h48": {
+  "model": "Global Ridge+wx",
+  "h": 48,
+  "N": 3481,
+  "Acc2": 37.7,
+  "Acc5": 75.2,
+  "MAE": 3.6,
+  "RMSE": 4.76,
+  "Bias": 0.82,
+  "R2": 0.216
+ },
+ "Global Ridge+wx_h72": {
+  "model": "Global Ridge+wx",
+  "h": 72,
+  "N": 3409,
+  "Acc2": 29.0,
+  "Acc5": 64.2,
+  "MAE": 4.43,
+  "RMSE": 5.65,
+  "Bias": 0.91,
+  "R2": -0.092
+ },
+ "Global HGB+wx_h24": {
+  "model": "Global HGB+wx",
+  "h": 24,
+  "N": 3547,
+  "Acc2": 48.9,
+  "Acc5": 88.6,
+  "MAE": 2.51,
+  "RMSE": 3.21,
+  "Bias": -0.26,
+  "R2": 0.642
+ },
+ "Global HGB+wx_h48": {
+  "model": "Global HGB+wx",
+  "h": 48,
+  "N": 3481,
+  "Acc2": 40.6,
+  "Acc5": 78.1,
+  "MAE": 3.17,
+  "RMSE": 4.18,
+  "Bias": -0.27,
+  "R2": 0.396
+ },
+ "Global HGB+wx_h72": {
+  "model": "Global HGB+wx",
+  "h": 72,
+  "N": 3409,
+  "Acc2": 37.2,
+  "Acc5": 76.3,
+  "MAE": 3.48,
+  "RMSE": 4.64,
+  "Bias": 0.37,
+  "R2": 0.262
+ },
+ "Station 1304179 HGB+wx_h24": {
+  "model": "Station 1304179 HGB",
+  "h": 24,
+  "N": 1183,
+  "Acc2": 47.7,
+  "Acc5": 87.0,
+  "MAE": 2.53,
+  "RMSE": 3.18,
+  "Bias": -0.52,
+  "R2": 0.064
+ },
+ "Station 1304179 HGB+wx_h48": {
+  "model": "Station 1304179 HGB",
+  "h": 48,
+  "N": 1161,
+  "Acc2": 45.4,
+  "Acc5": 86.6,
+  "MAE": 2.66,
+  "RMSE": 3.31,
+  "Bias": -0.19,
+  "R2": -0.001
+ },
+ "Station 1304179 HGB+wx_h72": {
+  "model": "Station 1304179 HGB",
+  "h": 72,
+  "N": 1137,
+  "Acc2": 42.8,
+  "Acc5": 88.4,
+  "MAE": 2.73,
+  "RMSE": 3.41,
+  "Bias": 0.53,
+  "R2": -0.037
+ },
+ "Station 1304281 HGB+wx_h24": {
+  "model": "Station 1304281 HGB",
+  "h": 24,
+  "N": 1183,
+  "Acc2": 40.9,
+  "Acc5": 73.5,
+  "MAE": 3.92,
+  "RMSE": 5.62,
+  "Bias": -0.61,
+  "R2": -0.958
+ },
+ "Station 1304281 HGB+wx_h48": {
+  "model": "Station 1304281 HGB",
+  "h": 48,
+  "N": 1161,
+  "Acc2": 40.5,
+  "Acc5": 73.5,
+  "MAE": 3.79,
+  "RMSE": 5.33,
+  "Bias": 0.03,
+  "R2": -0.74
+ },
+ "Station 1304281 HGB+wx_h72": {
+  "model": "Station 1304281 HGB",
+  "h": 72,
+  "N": 1137,
+  "Acc2": 36.4,
+  "Acc5": 73.1,
+  "MAE": 3.77,
+  "RMSE": 5.09,
+  "Bias": 1.15,
+  "R2": -0.552
+ },
+ "Station 1304403 HGB+wx_h24": {
+  "model": "Station 1304403 HGB",
+  "h": 24,
+  "N": 1181,
+  "Acc2": 48.8,
+  "Acc5": 81.2,
+  "MAE": 2.9,
+  "RMSE": 3.86,
+  "Bias": -0.26,
+  "R2": 0.366
+ },
+ "Station 1304403 HGB+wx_h48": {
+  "model": "Station 1304403 HGB",
+  "h": 48,
+  "N": 1159,
+  "Acc2": 45.9,
+  "Acc5": 77.9,
+  "MAE": 3.31,
+  "RMSE": 4.69,
+  "Bias": 0.44,
+  "R2": 0.077
+ },
+ "Station 1304403 HGB+wx_h72": {
+  "model": "Station 1304403 HGB",
+  "h": 72,
+  "N": 1135,
+  "Acc2": 32.3,
+  "Acc5": 71.7,
+  "MAE": 4.21,
+  "RMSE": 5.68,
+  "Bias": 0.83,
+  "R2": -0.323
+ },
+ "persistence_1h_h24": {
+  "model": "persistence_1h",
+  "h": 24,
+  "N": 3512,
+  "Acc2": 50.8,
+  "Acc5": 88.0,
+  "MAE": 2.54,
+  "RMSE": 3.42,
+  "Bias": 0.05,
+  "R2": 0.592
+ },
+ "persistence_1h_h48": {
+  "model": "persistence_1h",
+  "h": 48,
+  "N": 3440,
+  "Acc2": 41.6,
+  "Acc5": 77.1,
+  "MAE": 3.35,
+  "RMSE": 4.46,
+  "Bias": 0.21,
+  "R2": 0.313
+ },
+ "persistence_1h_h72": {
+  "model": "persistence_1h",
+  "h": 72,
+  "N": 3368,
+  "Acc2": 34.0,
+  "Acc5": 71.2,
+  "MAE": 4.0,
+  "RMSE": 5.3,
+  "Bias": 0.36,
+  "R2": 0.043
+ }
+}

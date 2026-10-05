@@ -357,6 +357,34 @@
 .rrisk-clinician-disclaimer { font-weight: 600; margin-top: 8px; }
 .rrisk-clinician-policy { color: #6b7280; font-size: 0.8rem; }
 
+/* --- Phase 9: Data Provenance --- */
+.rrisk-provenance {
+  margin-top: 12px;
+  border-top: 1px dashed #d1d5db;
+  padding-top: 8px;
+  font-size: 0.85rem;
+}
+
+.rrisk-provenance summary { cursor: pointer; color: #047857; }
+
+.rrisk-provenance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 0.8rem;
+}
+
+.rrisk-provenance-table th, .rrisk-provenance-table td {
+  border: 1px solid #d1d5db;
+  padding: 4px 6px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.rrisk-provenance-table th { background: #f3f4f6; }
+
+.rrisk-provenance p { margin: 4px 0 0; color: #374151; }
+
 /* Accessibility: โฟกัสชัดเจนด้วยคีย์บอร์ด */
 .rrisk-page button:focus-visible,
 .rrisk-page a:focus-visible,

@@ -23,7 +23,10 @@ const key = process.env.VITE_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABA
 try {
   if (!url || !key) throw new Error('Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY')
   const sb = createClient(url, key)
-  const email = `smoke-${Date.now()}@example.com`, password = 'TestPass123!'
+  // Phase 15 — password ต้องมาจาก environment เท่านั้น (ห้ามมี default ใน source, ห้าม log รหัสผ่าน)
+  const password = process.env.DEMO_TEST_PASSWORD
+  if (!password) throw new Error('DEMO_TEST_PASSWORD is required for local auth smoke test')
+  const email = `smoke-${Date.now()}@example.com`
   const signUp = await sb.auth.signUp({ email, password, options: { data: { username: `smoke_${Date.now()}` } } })
   if (signUp.error) throw signUp.error
   console.log('PASS signup/trigger (email confirmation may be enabled)')

@@ -13,6 +13,7 @@ import {
   pseudonymizeUserCode,
   QUALITY_DISPLAY,
   CONTRACT_QUALITY_STATUS,
+  DATA_PROVENANCE_STATUS,
 } from '../utils/measurementContract'
 
 // หน้าประเมินความเสี่ยงโรคทางเดินหายใจ รวม 3 สัญญาณเข้าด้วยกัน (rule-based weighted scoring):
@@ -469,6 +470,35 @@ export default function RespiratoryRiskAssessment() {
               <p className="rrisk-clinician-disclaimer">{clinicianSummary.disclaimer}</p>
               <p className="rrisk-clinician-policy">{clinicianSummary.dataPolicy}</p>
             </div>
+            {/* Phase 9 — Data Provenance & Model Status: ที่มาของโมเดล/ไลบรารี/สถานะการประเมิน */}
+            <details className="rrisk-provenance" aria-label="ที่มาของโมเดลและสถานะการประเมิน">
+              <summary>Data Provenance &amp; Model Status (โปร่งใสเรื่องโมเดล/เวอร์ชัน/ไลเซนส์)</summary>
+              <table className="rrisk-provenance-table">
+                <thead>
+                  <tr><th>บทบาท</th><th>โมเดล/ไลบรารี</th><th>เวอร์ชัน</th><th>ไลเซนส์</th></tr>
+                </thead>
+                <tbody>
+                  {DATA_PROVENANCE_STATUS.libraries.map((lib) => (
+                    <tr key={lib.role}>
+                      <td>{lib.role}</td>
+                      <td>{lib.name}</td>
+                      <td>{lib.version}</td>
+                      <td>{lib.license}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p>Dataset/Training Source: {DATA_PROVENANCE_STATUS.trainingSource}</p>
+              <p>Last Evaluation Date: {DATA_PROVENANCE_STATUS.lastEvaluationDate
+                ? new Date(DATA_PROVENANCE_STATUS.lastEvaluationDate).toLocaleString('th-TH')
+                : 'ยังไม่มี — ยังไม่ได้ประเมินกับ dataset อ้างอิง'}</p>
+              <p>Metrics Status: {DATA_PROVENANCE_STATUS.metricsStatus}</p>
+              {DATA_PROVENANCE_STATUS.evaluation && (
+                <p>
+                  Offline Evaluation ล่าสุด: {DATA_PROVENANCE_STATUS.evaluation.dataset} · Track: {DATA_PROVENANCE_STATUS.evaluation.track} · Modality: {DATA_PROVENANCE_STATUS.evaluation.modality} · {DATA_PROVENANCE_STATUS.evaluation.participantCount} participants / {DATA_PROVENANCE_STATUS.evaluation.windowCount} หน้าต่าง (ใช้จริง {DATA_PROVENANCE_STATUS.evaluation.windowsUsed}) · MAE {DATA_PROVENANCE_STATUS.evaluation.metrics.mae} · Bias {DATA_PROVENANCE_STATUS.evaluation.metrics.meanBias} · Camera Accuracy: {DATA_PROVENANCE_STATUS.evaluation.cameraAccuracy} · Clinical Accuracy: {DATA_PROVENANCE_STATUS.evaluation.clinicalAccuracy}
+                </p>
+              )}
+            </details>
             <p className="rrisk-disclaimer">
               {RISK_DISCLAIMER} ค่าทั้งหมดเป็นค่าประมาณจากกล้อง ไม่ใช่ค่าจากอุปกรณ์การแพทย์ หากมีอาการผิดปกติหรือเป็นห่วงสุขภาพ
               กรุณานำผลนี้ไปปรึกษาแพทย์หรือบุคลากรทางการแพทย์

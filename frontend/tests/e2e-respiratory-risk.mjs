@@ -6,8 +6,13 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 
 const BASE = 'http://localhost:5173'
+// Phase 15 — test credential ต้องมาจาก environment (DEMO_TEST_PASSWORD) — ห้ามมี default ใน source
 const EMAIL = 'e2e-breath@test.local'
-const PASSWORD = 'TestPass123!'
+const PASSWORD = process.env.DEMO_TEST_PASSWORD
+if (!PASSWORD) {
+  console.error('SAFE ERROR: DEMO_TEST_PASSWORD is required for the e2e login (ตั้งค่าใน shell session เท่านั้น ห้ามเขียนลงไฟล์)')
+  process.exit(1)
+}
 const FACE_CLIP = process.argv[2] || String.raw`C:\Users\ACER\projectweb\tmp-vitallens\clip25.y4m`
 const NOFACE_CLIP = process.argv[3] || String.raw`C:\Users\ACER\projectweb\tmp-vitallens\noface.mp4`
 const OUT_DIR = String.raw`C:\Users\ACER\projectweb\tmp-vitallens\e2e`
