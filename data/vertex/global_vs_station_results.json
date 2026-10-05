@@ -1,0 +1,152 @@
+{
+ "global_pm_h24": {
+  "model": "Global PM-only",
+  "h": 24,
+  "N": 3547,
+  "Acc2": 42.8,
+  "Acc5": 86.7,
+  "MAE": 2.78,
+  "RMSE": 3.55,
+  "Bias": -1.24
+ },
+ "global_pm_h48": {
+  "model": "Global PM-only",
+  "h": 48,
+  "N": 3481,
+  "Acc2": 29.8,
+  "Acc5": 68.8,
+  "MAE": 3.85,
+  "RMSE": 4.71,
+  "Bias": -2.01
+ },
+ "global_pm_h72": {
+  "model": "Global PM-only",
+  "h": 72,
+  "N": 3409,
+  "Acc2": 23.5,
+  "Acc5": 59.1,
+  "MAE": 4.6,
+  "RMSE": 5.52,
+  "Bias": -2.68
+ },
+ "global_wx_h24": {
+  "model": "Global PM+wx",
+  "h": 24,
+  "N": 3547,
+  "Acc2": 46.7,
+  "Acc5": 88.5,
+  "MAE": 2.63,
+  "RMSE": 3.42,
+  "Bias": 0.42
+ },
+ "global_wx_h48": {
+  "model": "Global PM+wx",
+  "h": 48,
+  "N": 3481,
+  "Acc2": 37.9,
+  "Acc5": 75.1,
+  "MAE": 3.6,
+  "RMSE": 4.76,
+  "Bias": 0.78
+ },
+ "global_wx_h72": {
+  "model": "Global PM+wx",
+  "h": 72,
+  "N": 3409,
+  "Acc2": 29.1,
+  "Acc5": 64.3,
+  "MAE": 4.43,
+  "RMSE": 5.64,
+  "Bias": 0.9
+ },
+ "station_1304179_h24": {
+  "model": "Station 1304179",
+  "h": 24,
+  "N": 1183,
+  "Acc2": 55.0,
+  "Acc5": 91.3,
+  "MAE": 2.19,
+  "RMSE": 2.83,
+  "Bias": 0.91
+ },
+ "station_1304179_h48": {
+  "model": "Station 1304179",
+  "h": 48,
+  "N": 1161,
+  "Acc2": 37.2,
+  "Acc5": 79.3,
+  "MAE": 3.18,
+  "RMSE": 3.98,
+  "Bias": 1.61
+ },
+ "station_1304179_h72": {
+  "model": "Station 1304179",
+  "h": 72,
+  "N": 1137,
+  "Acc2": 30.8,
+  "Acc5": 69.3,
+  "MAE": 3.9,
+  "RMSE": 4.75,
+  "Bias": 1.99
+ },
+ "station_1304281_h24": {
+  "model": "Station 1304281",
+  "h": 24,
+  "N": 1183,
+  "Acc2": 46.1,
+  "Acc5": 85.3,
+  "MAE": 2.73,
+  "RMSE": 3.52,
+  "Bias": 1.01
+ },
+ "station_1304281_h48": {
+  "model": "Station 1304281",
+  "h": 48,
+  "N": 1161,
+  "Acc2": 35.3,
+  "Acc5": 71.5,
+  "MAE": 3.72,
+  "RMSE": 4.71,
+  "Bias": 1.63
+ },
+ "station_1304281_h72": {
+  "model": "Station 1304281",
+  "h": 72,
+  "N": 1137,
+  "Acc2": 25.8,
+  "Acc5": 60.1,
+  "MAE": 4.56,
+  "RMSE": 5.55,
+  "Bias": 1.58
+ },
+ "station_1304403_h24": {
+  "model": "Station 1304403",
+  "h": 24,
+  "N": 1181,
+  "Acc2": 44.2,
+  "Acc5": 87.6,
+  "MAE": 2.73,
+  "RMSE": 3.56,
+  "Bias": -0.76
+ },
+ "station_1304403_h48": {
+  "model": "Station 1304403",
+  "h": 48,
+  "N": 1159,
+  "Acc2": 36.3,
+  "Acc5": 76.7,
+  "MAE": 3.54,
+  "RMSE": 4.68,
+  "Bias": -0.88
+ },
+ "station_1304403_h72": {
+  "model": "Station 1304403",
+  "h": 72,
+  "N": 1135,
+  "Acc2": 29.0,
+  "Acc5": 63.9,
+  "MAE": 4.28,
+  "RMSE": 5.45,
+  "Bias": -0.65
+ }
+}
