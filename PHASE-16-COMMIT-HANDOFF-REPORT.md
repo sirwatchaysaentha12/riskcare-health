@@ -22,7 +22,7 @@
 
 ## Files excluded
 
-- Sensitive: dataset จริง (นอก Git) · raw video/face image (tmp-vitallens gitignored) · .env/.env.local · password/key/token (TestPass123 หมดจาก repo)
+- Sensitive: dataset จริง (นอก Git) · raw video/face image (tmp-vitallens gitignored) · .env/.env.local · password/key/token (รหัสผ่านเดิมของบัญชีทดสอบ หมดจาก repo)
 - Unrelated: OpenAQ/Vertex (commits ของ actor อื่น) · notebooks/ · data/vertex/ · งาน admin-app/.vscode/pm25Personalization test ที่ไม่เกี่ยวข้อง
 
 ## Security Scan (staged diff scope)

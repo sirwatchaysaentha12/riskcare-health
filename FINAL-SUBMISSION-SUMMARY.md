@@ -42,7 +42,7 @@
 ## คุณภาพกระบวนการ (พิสูจน์ด้วยการรันจริง)
 
 - Unit 15 suites = **120/120** · E2E = **40/40** · Build 2 แอป **ผ่าน** · Lint **exit 0**
-- Security: TestPass123 หมดจาก repo (env-based credential + Safe Error) · ไม่มี key/PII/dataset ใน Git
+- Security: รหัสผ่านเดิมของบัญชีทดสอบ หมดจาก repo (env-based credential + Safe Error) · ไม่มี key/PII/dataset ใน Git
 - Privacy by design: consent ก่อนกล้อง, raw video ไม่เก็บ, temp ลบทุกครั้ง, error redaction
 - โครงสร้าง commit: content commit `7236ddd` (mixed-scope — ขอบเขตตาม RESPIRATORY-STAGING-LIST.txt) + corrective `18b66de` + security `f79a5b5`
 

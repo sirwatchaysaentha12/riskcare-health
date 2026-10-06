@@ -34,11 +34,11 @@
 |---|---|---|
 | `frontend/src/styles/breathing.css` | Modified (ยังไม่ commit) | actor อื่น |
 | `frontend/src/styles/overview.css` | Modified (ยังไม่ commit) | actor อื่น |
-| `DEMO-RUNBOOK.md` | Modified — เป็น**การแก้ที่ถูกต้อง**ของระบบ respiratory (ลบ TestPass123! ออกจาก HEAD version → env placeholder) **แต่ยังไม่ถูก commit** | respiratory work (Phase 9) |
+| `DEMO-RUNBOOK.md` | Modified — เป็น**การแก้ที่ถูกต้อง**ของระบบ respiratory (ลบ รหัสผ่านเดิมของบัญชีทดสอบ (ถูกลบแล้ว) ออกจาก HEAD version → env placeholder) **แต่ยังไม่ถูก commit** | respiratory work (Phase 9) |
 | อื่น ๆ | .vscode, package.json, stations route, tsconfig, pm25Personalization test, `admin-app/cd`(D), cli-latest — งานเก่า/actor อื่น | — |
 
-- **ข้อค้นพบด้านความปลอดภัย**: HEAD (`f872c52`) ยังมี **`TestPass123!` ใน DEMO-RUNBOOK.md บรรทัด 13** (เวอร์ชันที่ commit ไว้ก่อนการแก้ของ Phase 9) — การแก้ (ลบรหัสออก) อยู่ใน working tree **แต่ยังไม่ถูก commit** → ต้อง commit ไฟล์นี้ก่อนเผยแพร่ repo ใด ๆ
-- นอกจากนี้ literal "TestPass123" ยังปรากฏเป็น**ข้อความอธิบายการลบ**ใน 3 เอกสารที่ commit แล้ว (PHASE-16-HANDOFF, PHASE-17-AUDIT, SUBMISSION-ARCHIVE-MANIFEST) — ไม่ใช่ credential ใช้งาน แต่ควร reword ใน commit ถัดไป
+- **ข้อค้นพบด้านความปลอดภัย**: HEAD (`f872c52`) ยังมี **`รหัสผ่านเดิมของบัญชีทดสอบ (ถูกลบแล้ว)` ใน DEMO-RUNBOOK.md บรรทัด 13** (เวอร์ชันที่ commit ไว้ก่อนการแก้ของ Phase 9) — การแก้ (ลบรหัสออก) อยู่ใน working tree **แต่ยังไม่ถูก commit** → ต้อง commit ไฟล์นี้ก่อนเผยแพร่ repo ใด ๆ
+- นอกจากนี้ literal "รหัสผ่านเดิมของบัญชีทดสอบ" ยังปรากฏเป็น**ข้อความอธิบายการลบ**ใน 3 เอกสารที่ commit แล้ว (PHASE-16-HANDOFF, PHASE-17-AUDIT, SUBMISSION-ARCHIVE-MANIFEST) — ไม่ใช่ credential ใช้งาน แต่ควร reword ใน commit ถัดไป
 
 ## 4. Modified Files (รวม) — รายงาน ไม่ stage
 
@@ -61,7 +61,7 @@ MAE **9.03** (CI 8.49-9.54) · RMSE **10.74** · Mean Bias **+8.92** · Acceptab
 
 - ตัวเลขเอกสาร: ✅ **ไม่พบ DOCUMENT CONFLICT** — MAE 9.03 (10 ไฟล์), RMSE 10.74 (4), Bias +8.92 (10), 20.7% (7), 42.4% (8), Not Validated/Real Participant NO ครบ — ไม่มี MAE/bias ชุดอื่นปน
 - Secret scan: ไม่มี password/key/token จริง — matches เป็นเอกสารอธิบายกระบวนการ scan และ env-reads ของระบบเดิม
-- ⚠️ ยกเว้นข้อค้นพบ §3: TestPass123! ยังอยู่ใน DEMO-RUNBOOK.md **เวอร์ชัน committed (HEAD)** — การแก้อยู่ใน working tree รอ commit
+- ⚠️ ยกเว้นข้อค้นพบ §3: รหัสผ่านเดิมของบัญชีทดสอบ (ถูกลบแล้ว) ยังอยู่ใน DEMO-RUNBOOK.md **เวอร์ชัน committed (HEAD)** — การแก้อยู่ใน working tree รอ commit
 
 ## 9. Test Evidence (ผลล่าสุดจาก Phase 17 — ตามที่โจทย์กำหนดให้ใช้)
 
@@ -86,6 +86,6 @@ Unit **15/15** · E2E **40/40** · Build **PASS** · Lint **PASS** · Consent �
 
 **เหตุผล (ตามเงื่อนไขโจทย์):**
 1. **Submission Baseline ไม่ตรง** — breathing.css/overview.css (submission baseline) ถูก actor อื่นแก้หลัง 18b66de → worktree ปัจจุบัน ≠ baseline
-2. **Sensitive ค้างใน committed baseline** — TestPass123! ยังอยู่ใน DEMO-RUNBOOK.md เวอร์ชัน committed (fix รอ commit)
+2. **Sensitive ค้างใน committed baseline** — รหัสผ่านเดิมของบัญชีทดสอบ (ถูกลบแล้ว) ยังอยู่ใน DEMO-RUNBOOK.md เวอร์ชัน committed (fix รอ commit)
 
 **เงื่อนไขผ่าน Gate (เมื่อแก้ครบ):** actor อื่นเสร็จงาน/จบการแก้ไฟล์ที่ใช้ร่วม → ทำ "controlled commit" ของ DEMO-RUNBOOK fix + ไฟล์ที่เหลือตาม manifest (ต้องมีคำสั่งจากผู้ใช้) → รัน Gate ซ้ำ → จึงจะผ่าน

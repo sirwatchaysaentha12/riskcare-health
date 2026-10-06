@@ -27,7 +27,7 @@
 
 ## 4. Dataset / Raw Video / PII Status
 
-❌ **ไม่มีทั้งสามอย่างใน export** — ตรวจด้วย scan: TestPass123 = 0 · dataset content = 0 · PII = 0 · .env.local = 0
+❌ **ไม่มีทั้งสามอย่างใน export** — ตรวจด้วย scan: รหัสผ่านเดิมของบัญชีทดสอบ = 0 · dataset content = 0 · PII = 0 · .env.local = 0
 
 ## 5. Validation Numbers (ตรวจใน export แล้ว — ตรงทุกไฟล์)
 

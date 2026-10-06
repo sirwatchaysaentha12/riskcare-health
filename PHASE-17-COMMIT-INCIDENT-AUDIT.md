@@ -44,7 +44,7 @@
 | Dataset content (waveform/video จริง) | ❌ **ไม่มีใน commit** — dataset BIDMC อยู่ที่ `C:\Users\ACER\research-data\bidmc\` นอก Git |
 | Raw Video / Face Image | ❌ ไม่มี (tmp-vitallens/ gitignored) |
 | PII | ❌ ไม่มี (สแกน @pkw/@gmail/@hotmail/เบอร์โทร ในไฟล์ทั้ง 39 — สะอาด) |
-| Password/Key/Token | ❌ ไม่มี (DEMO_TEST_PASSWORD ใน .env.example เป็นค่าว่าง; "TestPass123" literal ถูกลบออกจากเอกสารก่อน stage) |
+| Password/Key/Token | ❌ ไม่มี (DEMO_TEST_PASSWORD ใน .env.example เป็นค่าว่าง; "รหัสผ่านเดิมของบัญชีทดสอบ" literal ถูกลบออกจากเอกสารก่อน stage) |
 
 ## 5. ข้อยืนยัน
 

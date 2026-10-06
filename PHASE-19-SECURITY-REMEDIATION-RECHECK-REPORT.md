@@ -16,21 +16,21 @@
 | Hash | `f79a5b550cf8cc22917785df679a5a7f9ed846ca` (f79a5b5) |
 | Message | `fix(security): remove hardcoded demo credential` |
 | Files changed | **DEMO-RUNBOOK.md เท่านั้น** (1 file, +3/−2) — ยืนยันจาก `git show --name-status HEAD` |
-| เนื้อหา | ลบ `TestPass123!` ออกจากเอกสาร → ใช้ `DEMO_TEST_PASSWORD` (env) + บันทึก "ไม่บันทึก credential ลงไฟล์ และไม่ log รหัสผ่าน" |
+| เนื้อหา | ลบ `รหัสผ่านเดิมของบัญชีทดสอบ (ถูกลบแล้ว)` ออกจากเอกสาร → ใช้ `DEMO_TEST_PASSWORD` (env) + บันทึก "ไม่บันทึก credential ลงไฟล์ และไม่ log รหัสผ่าน" |
 
 ## 3. TestPass ก่อน/หลัง
 
 | ตำแหน่ง | ก่อน | หลัง |
 |---|---|---|
-| DEMO-RUNBOOK.md | HEAD เก่ามี `TestPass123!` (บรรทัด 13) | ✅ **0** — ใช้ placeholder env |
+| DEMO-RUNBOOK.md | HEAD เก่ามี `รหัสผ่านเดิมของบัญชีทดสอบ (ถูกลบแล้ว)` (บรรทัด 13) | ✅ **0** — ใช้ placeholder env |
 | frontend/tests/e2e-respiratory-risk.mjs | (แก้แล้วใน Phase 15) | ✅ `process.env.DEMO_TEST_PASSWORD` + Safe Error |
 | frontend/scripts/auth-smoke.mjs | (แก้แล้วใน Phase 15) | ✅ เช่นเดียวกัน |
-| **ทั้ง repo (git grep TestPass123 ที่ HEAD)** | — | เหลือเฉพาะ **3 จุดในเอกสาร audit** (PHASE-16-HANDOFF, PHASE-17-AUDIT, SUBMISSION-ARCHIVE-MANIFEST) ซึ่งเป็น**ข้อความบันทึกว่า credential ถูกลบแล้ว** — ไม่ใช่ credential ที่ใช้งานได้ใน source |
+| **ทั้ง repo (git grep รหัสผ่านเดิมของบัญชีทดสอบ ที่ HEAD)** | — | เหลือเฉพาะ **3 จุดในเอกสาร audit** (PHASE-16-HANDOFF, PHASE-17-AUDIT, SUBMISSION-ARCHIVE-MANIFEST) ซึ่งเป็น**ข้อความบันทึกว่า credential ถูกลบแล้ว** — ไม่ใช่ credential ที่ใช้งานได้ใน source |
 
 ## 4. Security Scan (หลัง commit — ตาม pattern โจทย์)
 
-`git grep -n -I -E "TestPass123|TestPass|apiKey|secret|Authorization|service_role|BEGIN PRIVATE KEY" -- DEMO-RUNBOOK.md frontend/.env.example frontend/scripts/auth-smoke.mjs frontend/tests/e2e-respiratory-risk.mjs`
-- ผล: match เดียวคือ comment อธิบายการใช้ secret ของระบบเดิมใน .env.example — **ไม่มี TestPass123 · ไม่มี password จริง · ไม่มี key/token**
+`git grep -n -I -E "รหัสผ่านเดิมของบัญชีทดสอบ|TestPass|apiKey|secret|Authorization|service_role|BEGIN PRIVATE KEY" -- DEMO-RUNBOOK.md frontend/.env.example frontend/scripts/auth-smoke.mjs frontend/tests/e2e-respiratory-risk.mjs`
+- ผล: match เดียวคือ comment อธิบายการใช้ secret ของระบบเดิมใน .env.example — **ไม่มี รหัสผ่านเดิมของบัญชีทดสอบ · ไม่มี password จริง · ไม่มี key/token**
 
 Recheck ทั่ว HEAD (DEMO-RUNBOOK.md, frontend, scripts, tests, *.md): matches ทั้งหมดเป็น (a) ข้อความ audit ว่า credential ถูกลบ (b) form-handling ของระบบเดิม (c) เอกสาร setup ของ actor อื่น (OpenAQ/Vertex) — ไม่แตะ
 
