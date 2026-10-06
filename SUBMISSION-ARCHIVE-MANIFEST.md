@@ -31,7 +31,7 @@ DEMO-RUNBOOK (placeholder credential) · DEMO-CHECKLIST · COMPETITION-FILE-MANI
 - ❌ Dataset จริง (BIDMC = `C:\Users\ACER\research-data\bidmc\` นอก Git, มี manifest.json)
 - ❌ Raw video / Face image (`tmp-vitallens/` gitignored)
 - ❌ `.env` / `.env.local` (ไม่มีใน git ls-files)
-- ❌ Password/API Key/Token (TestPass123 หมดจาก repo — Phase 15; DEMO_TEST_PASSWORD ใน .env.example เป็นค่าว่าง)
+- ❌ Password/API Key/Token (รหัสผ่านเดิมของบัญชีทดสอบ หมดจาก repo — Phase 15; DEMO_TEST_PASSWORD ใน .env.example เป็นค่าว่าง)
 - ❌ Temp files / Health logs (validation-results.json อยู่นอก Git)
 
 ## 3. Exclude — Unrelated (งาน actor อื่น — ไม่รวมใน manifest นี้)
