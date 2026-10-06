@@ -501,7 +501,37 @@
 .resp-header-text { flex: 1; }
 .resp-header-text h1 { font-size: 24px; margin: 0 0 4px; }
 .resp-header-text p { margin: 0; color: var(--muted); font-size: 14px; }
+.resp-header-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.resp-header-tips {
+  background: var(--card-green);
+  border: 1px solid #d7ece4;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 320px;
+}
+.resp-tips-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-deep);
+}
 .resp-header-illustration { color: var(--brand-deep); opacity: 0.85; }
+@media (max-width: 1100px) {
+  .resp-header { flex-wrap: wrap; }
+  .resp-header-side { align-items: flex-start; }
+}
 
 /* แถบคำแนะนำ */
 .resp-tips-bar {
@@ -551,15 +581,20 @@
   color: #fff;
 }
 
-/* Grid 2 คอลัมน์ */
+/* Grid 3 คอลัมน์ตาม mockup: consent+เริ่มใช้งาน · preview · ตรวจคุณภาพ */
 .resp-grid {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 16px;
   align-items: start;
+}
+@media (max-width: 1100px) {
+  .resp-grid { grid-template-columns: 1fr 1fr; }
+  .resp-col-main { grid-column: 1 / -1; }
 }
 @media (max-width: 860px) {
   .resp-grid { grid-template-columns: 1fr; }
+  .resp-col-main { grid-column: auto; }
 }
 
 .resp-col-main, .resp-col-side {
@@ -645,17 +680,99 @@
 .resp-dropzone-hint { font-size: 12px; color: var(--muted); margin: 0; }
 .resp-file-chip { font-size: 12.5px; color: var(--brand-deep); font-weight: 600; margin: 0; word-break: break-all; }
 
-/* โหมดกล้อง */
-.resp-camera-frame {
+/* โหมดกล้อง: กล่องขออนุญาต (คอลัมน์ซ้าย) */
+.resp-cam-request {
+  background: #fff;
+  border: 1.5px dashed var(--brand-deep);
+  border-radius: 16px;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+.resp-cam-request-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--card-green);
+  color: var(--brand-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.resp-cam-request strong { font-size: 15px; }
+.resp-cam-request p { margin: 0; font-size: 12.5px; color: var(--muted); }
+
+/* โหมดกล้อง: การ์ด preview (คอลัมน์กลาง) — video กับ canvas ซ้อนกันเต็มกรอบเสมอ */
+.resp-campreview {
   background: #fff;
   border: 1px solid var(--border-soft);
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-.resp-camera-frame .rrisk-camera-stage video { width: 100%; max-width: 480px; }
+.resp-campreview .rrisk-camera-stage {
+  max-width: none;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #eef3f2;
+  border: 1px solid var(--border-soft);
+  margin-bottom: 0;
+}
+.resp-campreview .rrisk-camera-stage.is-idle { border-style: dashed; }
+.resp-campreview .rrisk-camera-stage video { width: 100%; height: 100%; object-fit: cover; }
+.resp-campreview-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef3f2;
+  color: #8aa0a8;
+}
+.resp-campreview-gear {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.resp-campreview-gear:disabled { cursor: default; }
+.resp-campreview-caption { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+.resp-campreview-tools {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+.resp-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  background: #fff;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.resp-icon-btn:disabled { opacity: 0.6; cursor: default; }
+.resp-campreview .rrisk-btn--cancel { width: 100%; justify-content: center; }
+
+/* การ์ด preview วิดีโอ (คอลัมน์กลาง โหมดอัปโหลด) */
+.resp-preview-title { margin: 0; font-size: 13.5px; color: var(--ink); font-weight: 600; }
 
 /* ปุ่มหลัก */
 .resp-btn-primary {

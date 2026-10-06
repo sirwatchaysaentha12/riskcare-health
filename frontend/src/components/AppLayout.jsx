@@ -8,9 +8,9 @@ export default function AppLayout() {
       <SidebarNav />
       <div className="app-shell-content">
         <AssessmentGate />
-        <main className="app-layout-content">
+        <div className="app-layout-content">
           <Outlet />
-        </main>
+        </div>
       </div>
     </div>
   )

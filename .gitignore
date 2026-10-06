@@ -30,3 +30,4 @@ notebooks/*.joblib
 tmp-vitallens/
 data/hourly/
 data/vertex/*.joblib
+.venv-ml/

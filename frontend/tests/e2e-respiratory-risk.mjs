@@ -72,7 +72,7 @@ try {
   page.on('console', (message) => {
     if (message.text().includes('[rrisk-consent]')) consentLogs.push(message.text())
   })
-  const measureBtn = page.getByRole('button', { name: 'เริ่มวัดการหายใจ (30 วินาที)' })
+  const measureBtn = page.getByRole('button', { name: 'อนุญาตเข้าถึงกล้อง' })
   // โหมดกล้อง (ยังไม่ยินยอม): ปุ่มวัดทั้งของ shell และของคอมโพเนนต์กล้องต้อง disabled
   await page.getByRole('button', { name: 'กล้องสด' }).click()
   await measureBtn.waitFor({ timeout: 5000 })
@@ -239,7 +239,7 @@ try {
   // (a) กดหยุด / retry ไม่ซ้อน / ออกจากหน้า → track หยุดครบ
   {
     const { context, lifecyclePage } = await newLifecycleContext(trackPatch)
-    const btn = lifecyclePage.getByRole('button', { name: 'เริ่มวัดการหายใจ (30 วินาที)' })
+    const btn = lifecyclePage.getByRole('button', { name: 'อนุญาตเข้าถึงกล้อง' })
     await btn.click()
     await lifecyclePage.getByText('กำลังวัด', { exact: false }).waitFor({ timeout: 35000 })
     await lifecyclePage.getByRole('button', { name: 'ยกเลิกการวัด (ปิดกล้อง)' }).click()
@@ -280,7 +280,7 @@ try {
       }
     `
     const { context, lifecyclePage } = await newLifecycleContext(denyPatch)
-    await lifecyclePage.getByRole('button', { name: 'เริ่มวัดการหายใจ (30 วินาที)' }).click()
+    await lifecyclePage.getByRole('button', { name: 'อนุญาตเข้าถึงกล้อง' }).click()
     await lifecyclePage.getByText('เปิดกล้องไม่ได้', { exact: false }).waitFor({ timeout: 10000 })
     record('Deny permission → แจ้งเหตุผล + ยังประเมินจากแบบประเมินได้ (ไม่ crash)', true)
     await context.close()

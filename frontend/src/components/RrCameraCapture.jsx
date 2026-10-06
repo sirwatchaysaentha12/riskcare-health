@@ -18,7 +18,6 @@ import {
 const TASKS_VISION_URL = '/mediapipe'
 const POSE_MODEL_URL = '/mediapipe/pose_landmarker_lite.task'
 const MEASURE_DURATION_MS = 30000
-const LIGHT_WARNING = 'ต้องการแสงสว่างเพียงพอ เพื่อความแม่นยำ'
 
 const landmarkerPromises = {}
 function loadPoseLandmarker(delegate = 'GPU') {
@@ -277,6 +276,13 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, 
       if (currentVideo && currentVideo.readyState >= 2 && isVideoFrameReady(currentVideo)) {
         if (currentVideo.currentTime !== lastVideoTimeRef.current) {
           lastVideoTimeRef.current = currentVideo.currentTime
+          // ซิงก์ขนาด canvas กับเฟรมวิดีโอจริง — จุดไหล่จะได้ทับภาพตรงตำแหน่งทุก aspect ratio ของกล้อง
+          const overlayCanvas = canvasRef.current
+          if (overlayCanvas && currentVideo.videoWidth > 0 &&
+            (overlayCanvas.width !== currentVideo.videoWidth || overlayCanvas.height !== currentVideo.videoHeight)) {
+            overlayCanvas.width = currentVideo.videoWidth
+            overlayCanvas.height = currentVideo.videoHeight
+          }
           if (landmarker) {
             try {
               const result = landmarker.detectForVideo(currentVideo, performance.now())
@@ -347,14 +353,37 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, 
   const secondsLeft = Math.max(0, Math.ceil((MEASURE_DURATION_MS - elapsedMs) / 1000))
   const progress = Math.min(100, (elapsedMs / MEASURE_DURATION_MS) * 100)
 
+  const cameraActive = status === 'measuring' || status === 'preparing'
+
   return (
-    <div className="rrisk-camera">
-      <p className="rrisk-light-warning">⚠️ {LIGHT_WARNING} (ทั้งการวัด RR และ rPPG)</p>
-      <div className="rrisk-camera-stage">
+    <div className="resp-campreview">
+      <div className={`rrisk-camera-stage resp-campreview-stage${cameraActive ? '' : ' is-idle'}`}>
         <video ref={videoRef} playsInline muted className={status === 'measuring' ? 'is-live' : ''} />
-        <canvas ref={canvasRef} className="rrisk-camera-overlay" />
+        <canvas ref={canvasRef} className="rrisk-camera-overlay" aria-hidden="true" />
+        {!cameraActive && (
+          <div className="resp-campreview-placeholder" aria-hidden="true">
+            <SilhouetteIcon />
+          </div>
+        )}
+        <button
+          type="button"
+          className="resp-campreview-gear"
+          aria-label="ตั้งค่ากล้อง (ยังไม่เปิดใช้งาน)"
+          disabled
+          title="ตัวเลือกกล้องจะพร้อมใช้ในเวอร์ชันถัดไป"
+        >
+          <GearIcon />
+        </button>
       </div>
       <canvas ref={qualityCanvasRef} hidden />
+      <p className="resp-campreview-caption">
+        {cameraActive ? 'กล้องกำลังทำงาน — นั่งนิ่ง ๆ หายใจตามปกติ' : 'กล้องจะเริ่มทำงานเมื่อคุณอนุญาต'}
+      </p>
+      <div className="resp-campreview-tools">
+        <button type="button" className="resp-icon-btn" disabled tabIndex={-1} aria-hidden="true"><CameraSmallIcon /></button>
+        <button type="button" className="resp-icon-btn" disabled tabIndex={-1} aria-hidden="true"><PersonIcon /></button>
+        <button type="button" className="resp-icon-btn" disabled tabIndex={-1} aria-hidden="true"><GearIcon /></button>
+      </div>
       {status === 'measuring' && (
         <div className="rrisk-camera-progress" role="status">
           <span>กำลังวัด — เหลือ {secondsLeft} วินาที</span>
@@ -362,25 +391,46 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, 
         </div>
       )}
       {qualityIssue && <p className="rrisk-camera-quality">คุณภาพภาพ: {qualityIssue}</p>}
-      {error && <p className="rrisk-error">{error}</p>}
-      <div className="rrisk-camera-actions">
-        {status !== 'measuring' && (
-          <button
-            type="button"
-            className="rrisk-btn"
-            onClick={start}
-            disabled={status === 'preparing' || !enabled}
-            title={!enabled ? 'ต้องให้ความยินยอมการใช้กล้องก่อน' : undefined}
-          >
-            {status === 'preparing' ? 'กำลังเตรียมกล้อง…' : status === 'done' ? 'วัดใหม่อีกครั้ง (30 วินาที)' : 'เริ่มวัดการหายใจ (30 วินาที)'}
-          </button>
-        )}
-        {(status === 'measuring' || status === 'preparing') && (
-          <button type="button" className="rrisk-btn rrisk-btn--cancel" onClick={cancel}>
-            ยกเลิกการวัด (ปิดกล้อง)
-          </button>
-        )}
-      </div>
+      {error && <p className="rrisk-error" role="alert">{error}</p>}
+      {(status === 'measuring' || status === 'preparing') && (
+        <button type="button" className="rrisk-btn rrisk-btn--cancel" onClick={cancel}>
+          ยกเลิกการวัด (ปิดกล้อง)
+        </button>
+      )}
     </div>
+  )
+}
+
+/* ─── Icons (inline SVG — โปรเจกต์ไม่มี icon library) ─── */
+function SilhouetteIcon() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 24 24" fill="currentColor" opacity="0.45">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+    </svg>
+  )
+}
+function GearIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+    </svg>
+  )
+}
+function CameraSmallIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  )
+}
+function PersonIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+    </svg>
   )
 }

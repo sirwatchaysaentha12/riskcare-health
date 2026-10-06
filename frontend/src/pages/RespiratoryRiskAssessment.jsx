@@ -23,8 +23,9 @@ import {
 // คัดกรองเบื้องต้นเท่านั้น ไม่ใช่การวินิจฉัยทางการแพทย์
 // ทุกสัญญาณขาดได้ — ไม่มีกล้องก็ยังประเมินจากแบบประเมินอย่างเดียวได้ และหน้านี้จะแจ้งเสมอว่าใช้/ขาดสัญญาณไหน
 //
-// 2026-10-06 — UI รูปทรงใหม่ตาม mockup (prefix resp-): toggle 2 โหมด (กล้องสด / อัปโหลดคลิป)
-// โดย logic ทั้งหมด (consent, quality gate, MediaPipe, vitallens, scoring, clinician summary) ใช้ของเดิมที่ทดสอบผ่านแล้ว
+// 2026-10-06 — UI ตาม mockup (prefix resp-): layout 3 คอลัมน์ (consent+เลือกไฟล์/ขออนุญาตกล้อง ·
+// preview วิดีโอ/กล้อง · ตรวจคุณภาพวิดีโอ) โดย logic ทั้งหมด (consent, quality gate, MediaPipe,
+// vitallens, scoring, clinician summary) ใช้ของเดิมที่ทดสอบผ่านแล้ว
 
 const SAMPLE_CLIP_URL = '/demo/sample-breathing.mp4'
 
@@ -242,7 +243,7 @@ export default function RespiratoryRiskAssessment() {
     await handleVideoRecorded(videoFile)
   }, [consentReady, videoFile, vitalsStatus, handleVideoRecorded])
 
-  // ปุ่ม "เริ่มวิเคราะห์อัตราการหายใจ" (โหมดกล้อง) — เรียก start() ของ RrCameraCapture ผ่าน registerStart
+  // ปุ่ม "อนุญาตเข้าถึงกล้อง" / "เริ่มวิเคราะห์อัตราการหายใจ" (โหมดกล้อง) — เรียก start() ของ RrCameraCapture ผ่าน registerStart
   const handleRegisterStart = useCallback((fn) => { startFnRef.current = fn }, [])
   const handleCameraStatus = useCallback((status) => setCameraStatus(status), [])
   const handleRequestCamera = useCallback(() => {
@@ -331,7 +332,7 @@ export default function RespiratoryRiskAssessment() {
 
   // ─── derived UI state (จาก state/logic เดิม ไม่มี state จำลอง) ───
   const readyForVideo = consentReady && videoFile !== null && !vitalsLoading
-  const readyForCamera = consentReady && cameraStatus !== 'preparing' && cameraStatus !== 'measuring'
+  const cameraBusy = cameraStatus === 'preparing' || cameraStatus === 'measuring'
 
   // quality checks จริง 9 ข้อจาก quality gate เดิม — ก่อนวัดยังไม่รัน (not_run)
   const qualityChecks = rr?.quality?.checks ?? Object.keys(CHECK_LABELS).map((id) => ({ id, status: 'not_run', detail: '' }))
@@ -340,6 +341,17 @@ export default function RespiratoryRiskAssessment() {
     mode === 'video'
       ? { desc: 'อัปโหลดวิดีโอเพื่อวิเคราะห์อัตราการหายใจจากการเคลื่อนไหวในภาพ (vitallens rPPG)' }
       : { desc: 'วัดอัตราการหายใจจากการเคลื่อนไหวไหล่ด้วยกล้อง (MediaPipe Pose) — ต้นแบบประมาณการเคลื่อนไหวจากภาพ ไม่ใช่การคัดกรองหรือวินิจฉัยโรค' }
+
+  const headerTips =
+    mode === 'video'
+      ? {
+          title: 'แนะนำการถ่ายวิดีโอ',
+          rows: ['แนะนำวิดีโอความยาว 10-30 วินาที (ไม่เกิน 60MB)', 'ถ่ายแบบนิ่ง เห็นช่วงไหล่ถึงหน้าอกส่วนบนชัดเจน', 'แสงสม่ำเสมอพอ ไม่มืดจนเกินไปเพื่อความแม่นยำ'],
+        }
+      : {
+          title: 'ตั้งกล้องให้พร้อม',
+          rows: ['วางกล้องให้ชิดตัวคุณในระดับตา นั่ง/นอนหลังตรง', 'หายใจตามธรรมชาติ ไม่กลั้นหายใจ', 'ต้องการแสงสว่างเพียงพอ ไม่มืดหรือสว่างจ้าเกินไป'],
+        }
 
   const readyRowCopy =
     mode === 'video'
@@ -350,7 +362,7 @@ export default function RespiratoryRiskAssessment() {
           : { title: 'ยังไม่พร้อมสำหรับการประเมิน', desc: 'เลือกไฟล์วิดีโอแล้วกด "เริ่มประเมินจากวิดีโอ"' }
       : rr?.quality?.canUseMeasurement && rr.reliable
         ? { title: 'ภาพพร้อมสำหรับการประเมิน', desc: 'วัด RR สำเร็จและคุณภาพผ่านเกณฑ์ — ดูผลรวมด้านล่าง' }
-        : { title: 'ยังไม่พร้อมสำหรับการประเมิน', desc: 'กด "เริ่มวิเคราะห์อัตราการหายใจ" เพื่อวัด 30 วินาที' }
+        : { title: 'ยังไม่พร้อมสำหรับการประเมิน', desc: 'กด "อนุญาตเข้าถึงกล้อง" เพื่อเริ่มวัด 30 วินาที' }
 
   return (
     <main className="resp-page">
@@ -371,18 +383,16 @@ export default function RespiratoryRiskAssessment() {
           <p>{headerCopy.desc}</p>
           <p className="rrisk-disclaimer">{RISK_DISCLAIMER}</p>
         </div>
-        <div className="resp-header-illustration">
-          <LungsIcon />
+        <div className="resp-header-side">
+          <div className="resp-header-tips">
+            <p className="resp-tips-title"><BulbIcon /> {headerTips.title}</p>
+            {headerTips.rows.map((text) => <TipRow key={text} text={text} />)}
+          </div>
+          <div className="resp-header-illustration">
+            <LungsIcon />
+          </div>
         </div>
       </div>
-
-      {mode === 'video' && (
-        <div className="resp-tips-bar">
-          <TipRow text="แนะนำวิดีโอความยาว 10-30 วินาที (ไม่เกิน 60MB)" />
-          <TipRow text="ถ่ายแบบนิ่ง เห็นช่วงไหล่ถึงหน้าอกส่วนบนชัดเจน" />
-          <TipRow text="แสงสม่ำเสมอพอ ไม่มืดจนเกินไปเพื่อความแม่นยำ" />
-        </div>
-      )}
 
       <div className="resp-mode-toggle" role="tablist" aria-label="เลือกโหมดการประเมิน">
         <button
@@ -402,7 +412,7 @@ export default function RespiratoryRiskAssessment() {
       </div>
 
       <div className="resp-grid">
-        {/* ===== คอลัมน์ซ้าย ===== */}
+        {/* ===== คอลัมน์ซ้าย: consent + จุดเริ่มใช้งานของแต่ละโหมด ===== */}
         <div className="resp-col-main">
           <div className="resp-consent-card">
             <ShieldIcon />
@@ -474,8 +484,61 @@ export default function RespiratoryRiskAssessment() {
               <p className="resp-dropzone-hint">รองรับ MP4, WebM, MOV · ขนาดไม่เกิน 60 MB</p>
             </div>
           ) : (
-            <div className="resp-camera-frame">
-              {/* คอมโพเนนต์กล้องเดิม — MediaPipe Pose + MediaRecorder + quality gate ครบ */}
+            <div className="resp-cam-request">
+              <div className="resp-cam-request-icon"><CameraIcon /></div>
+              <strong>อนุญาตเข้าถึงกล้อง</strong>
+              <p>กดปุ่มด้านล่างเพื่อเปิดกล้องและเริ่มวัดอัตราการหายใจ 30 วินาทีทันที</p>
+              <button
+                type="button"
+                className="resp-btn-primary resp-btn-wide"
+                disabled={!consentReady || cameraBusy}
+                onClick={handleRequestCamera}
+                title={!consentReady ? 'ต้องให้ความยินยอมก่อน' : undefined}
+              >
+                <CameraSmallIcon /> {cameraStatus === 'preparing' ? 'กำลังเตรียมกล้อง…' : 'อนุญาตเข้าถึงกล้อง'}
+              </button>
+              {!consentReady && <p className="resp-dropzone-hint">ต้องติ๊กยินยอมด้านบนก่อนจึงกดได้</p>}
+            </div>
+          )}
+        </div>
+
+        {/* ===== คอลัมน์กลาง: preview วิดีโอ (โหมดอัปโหลด) หรือกล้องสด ===== */}
+        <div className="resp-col-preview">
+          {mode === 'video' ? (
+            <div className="resp-preview-card">
+              {videoFile && previewUrl ? (
+                <video key={previewUrl} src={previewUrl} controls muted playsInline />
+              ) : (
+                <>
+                  <button type="button" className="resp-play-circle" disabled aria-hidden="true" tabIndex={-1}>
+                    <PlayIcon />
+                  </button>
+                  <p className="resp-preview-title">Preview วิดีโอจะแสดงที่นี่</p>
+                  <p className="resp-dropzone-hint">ความยาวคลิปสั้นเพื่อความรวดเร็ว</p>
+                </>
+              )}
+              {videoFile && previewUrl && <p className="resp-preview-title">ตัวอย่างคลิปที่เลือก</p>}
+              <div className="resp-campreview-tools">
+                <button type="button" className="resp-icon-btn" disabled tabIndex={-1} aria-hidden="true"><VideoSmallIcon /></button>
+                <button type="button" className="resp-icon-btn" disabled tabIndex={-1} aria-hidden="true"><PlayIconSmall /></button>
+                <button type="button" className="resp-icon-btn" disabled tabIndex={-1} aria-hidden="true"><GearSmallIcon /></button>
+              </div>
+              {/* สัญญาณที่ 2 — สถานะ vitallens (ข้อความ/เงื่อนไขเดิมทุกอย่าง) */}
+              {vitalsLoading && <p className="rrisk-signal-warn" role="status">กำลังประมวลผลวิดีโอด้วย vitallens… (ประมาณ 10-60 วินาที)</p>}
+              {vitalsStatus === 'ok' && vitals && (
+                <div>
+                  <p className="rrisk-signal-ok">
+                    vitallens (ประมวลผลในเครื่อง): HR {vitals.hrBpm !== null ? `${Math.round(vitals.hrBpm)} bpm` : 'ไม่มี'}
+                    {vitals.hrQuality && ` · Algorithm Confidence: ${vitals.hrQuality.confidence?.toFixed(2)} — ตัวชี้วัดภายในอัลกอริทึม ไม่ใช่ความแม่นยำทางคลินิก`}
+                    {vitals.hrQuality?.level === 'low_confidence_warning' && ' · ความมั่นใจต่ำ ควรตีความด้วยความระมัดระวัง'}
+                  </p>
+                  <p className="rrisk-signal-warn">SpO2: ไม่มีข้อมูล — โหมด local ของ vitallens ไม่ประเมิน SpO2 และระบบจะไม่สร้างค่าแทน หากมีเครื่องวัดออกซิเจนแบบคลิปนิ้ว (Pulse Oximeter) ให้ใช้ค่าจากอุปกรณ์นั้นเป็นข้อมูลประกอบ</p>
+                </div>
+              )}
+              {vitalsStatus === 'failed' && <p className="rrisk-signal-warn">⚠️ {vitalsMessage}</p>}
+            </div>
+          ) : (
+            <>
               <RrCameraCapture
                 onRrResult={handleRrResult}
                 onVideoRecorded={handleVideoRecorded}
@@ -484,50 +547,29 @@ export default function RespiratoryRiskAssessment() {
                 registerStart={handleRegisterStart}
                 onStatusChange={handleCameraStatus}
               />
-            </div>
-          )}
-
-          {rr && (
-            <div className="rrisk-rr-outcome">
-              <p className={`rrisk-signal-${rr.quality?.canUseMeasurement && rr.reliable ? 'ok' : 'warn'}`} role="status">
-                {rr.quality?.canUseMeasurement && rr.reliable
-                  ? `วัดได้ RR ${Math.round(rr.bpm)} ครั้ง/นาที (จาก ${rr.sampleCount} จุดตัวอย่าง, ${Math.round(rr.elapsedMs / 1000)} วินาที)`
-                  : rr.rawBpm != null
-                    ? `ค่าดิบที่ประมาณได้ ${Math.round(rr.rawBpm)} ครั้ง/นาที แต่ไม่ถูกนำไปใช้เพราะคุณภาพไม่ผ่านเกณฑ์`
-                    : 'ประมาณค่า RR ไม่สำเร็จ — ค่านี้จะไม่ถูกนำไปใช้'}
-              </p>
-            </div>
+              {/* สัญญาณที่ 2 — สถานะ vitallens จากคลิปที่กล้องบันทึก (ข้อความ/เงื่อนไขเดิม) ต้องแสดงในโหมดกล้องด้วย */}
+              {(vitalsLoading || vitalsStatus !== 'idle') && (
+                <div className="resp-preview-card">
+                  {vitalsLoading && <p className="rrisk-signal-warn" role="status">กำลังประมวลผลวิดีโอด้วย vitallens… (ประมาณ 10-60 วินาที)</p>}
+                  {vitalsStatus === 'ok' && vitals && (
+                    <div>
+                      <p className="rrisk-signal-ok">
+                        vitallens (ประมวลผลในเครื่อง): HR {vitals.hrBpm !== null ? `${Math.round(vitals.hrBpm)} bpm` : 'ไม่มี'}
+                        {vitals.hrQuality && ` · Algorithm Confidence: ${vitals.hrQuality.confidence?.toFixed(2)} — ตัวชี้วัดภายในอัลกอริทึม ไม่ใช่ความแม่นยำทางคลินิก`}
+                        {vitals.hrQuality?.level === 'low_confidence_warning' && ' · ความมั่นใจต่ำ ควรตีความด้วยความระมัดระวัง'}
+                      </p>
+                      <p className="rrisk-signal-warn">SpO2: ไม่มีข้อมูล — โหมด local ของ vitallens ไม่ประเมิน SpO2 และระบบจะไม่สร้างค่าแทน หากมีเครื่องวัดออกซิเจนแบบคลิปนิ้ว (Pulse Oximeter) ให้ใช้ค่าจากอุปกรณ์นั้นเป็นข้อมูลประกอบ</p>
+                    </div>
+                  )}
+                  {vitalsStatus === 'failed' && <p className="rrisk-signal-warn">⚠️ {vitalsMessage}</p>}
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {/* ===== คอลัมน์ขวา ===== */}
+        {/* ===== คอลัมน์ขวา: ตรวจคุณภาพวิดีโอ + ปุ่มเริ่ม ===== */}
         <div className="resp-col-side">
-          {(mode === 'video' || vitalsLoading || vitalsStatus !== 'idle') && (
-          <div className="resp-preview-card">
-            {mode === 'video' && videoFile && previewUrl ? (
-              <video key={previewUrl} src={previewUrl} controls muted playsInline />
-            ) : mode === 'video' ? (
-              <button type="button" className="resp-play-circle small" disabled aria-label="ยังไม่มีวิดีโอตัวอย่าง">
-                <PlayIcon />
-              </button>
-            ) : null}
-            {mode === 'video' && <p>{videoFile ? 'ตัวอย่างคลิปที่เลือก' : 'Preview วิดีโอจะแสดงที่นี่'}</p>}
-            {/* สัญญาณที่ 2 — สถานะ vitallens (ข้อความ/เงื่อนไขเดิมทุกอย่าง) */}
-            {vitalsLoading && <p className="rrisk-signal-warn" role="status">กำลังประมวลผลวิดีโอด้วย vitallens… (ประมาณ 10-60 วินาที)</p>}
-            {vitalsStatus === 'ok' && vitals && (
-              <div>
-                <p className="rrisk-signal-ok">
-                  vitallens (ประมวลผลในเครื่อง): HR {vitals.hrBpm !== null ? `${Math.round(vitals.hrBpm)} bpm` : 'ไม่มี'}
-                  {vitals.hrQuality && ` · Algorithm Confidence: ${vitals.hrQuality.confidence?.toFixed(2)} — ตัวชี้วัดภายในอัลกอริทึม ไม่ใช่ความแม่นยำทางคลินิก`}
-                  {vitals.hrQuality?.level === 'low_confidence_warning' && ' · ความมั่นใจต่ำ ควรตีความด้วยความระมัดระวัง'}
-                </p>
-                <p className="rrisk-signal-warn">SpO2: ไม่มีข้อมูล — โหมด local ของ vitallens ไม่ประเมิน SpO2 และระบบจะไม่สร้างค่าแทน หากมีเครื่องวัดออกซิเจนแบบคลิปนิ้ว (Pulse Oximeter) ให้ใช้ค่าจากอุปกรณ์นั้นเป็นข้อมูลประกอบ</p>
-              </div>
-            )}
-            {vitalsStatus === 'failed' && <p className="rrisk-signal-warn">⚠️ {vitalsMessage}</p>}
-          </div>
-          )}
-
           <div className="resp-quality-card">
             <h3>ตรวจคุณภาพวิดีโอ</h3>
             {mode === 'camera' && rr?.quality && (
@@ -586,13 +628,13 @@ export default function RespiratoryRiskAssessment() {
                 disabled={!readyForVideo}
                 onClick={handleStartVideo}
               >
-                <PlayIcon small /> เริ่มประเมินจากวิดีโอ
+                <PlayIcon /> เริ่มประเมินจากวิดีโอ
               </button>
             ) : (
               <button
                 type="button"
                 className="resp-btn-primary resp-btn-wide"
-                disabled={!readyForCamera || !consentReady}
+                disabled={!consentReady || cameraBusy}
                 onClick={handleRequestCamera}
                 title={!consentReady ? 'ต้องให้ความยินยอมก่อน' : undefined}
               >
@@ -600,13 +642,25 @@ export default function RespiratoryRiskAssessment() {
                 {cameraStatus === 'preparing'
                   ? 'กำลังเตรียมกล้อง…'
                   : cameraStatus === 'measuring'
-                    ? 'กำลังบันทึกสัญญาณ (ดูความคืบหน้าทางซ้าย)'
+                    ? 'กำลังบันทึกสัญญาณ (ดูความคืบหน้าที่การ์ดกล้อง)'
                     : 'เริ่มวิเคราะห์อัตราการหายใจ'}
               </button>
             )}
           </div>
         </div>
       </div>
+
+      {rr && (
+        <div className="rrisk-rr-outcome">
+          <p className={`rrisk-signal-${rr.quality?.canUseMeasurement && rr.reliable ? 'ok' : 'warn'}`} role="status">
+            {rr.quality?.canUseMeasurement && rr.reliable
+              ? `วัดได้ RR ${Math.round(rr.bpm)} ครั้ง/นาที (จาก ${rr.sampleCount} จุดตัวอย่าง, ${Math.round(rr.elapsedMs / 1000)} วินาที)`
+              : rr.rawBpm != null
+                ? `ค่าดิบที่ประมาณได้ ${Math.round(rr.rawBpm)} ครั้ง/นาที แต่ไม่ถูกนำไปใช้เพราะคุณภาพไม่ผ่านเกณฑ์`
+                : 'ประมาณค่า RR ไม่สำเร็จ — ค่านี้จะไม่ถูกนำไปใช้'}
+          </p>
+        </div>
+      )}
 
       {cancelNote && <p className="rrisk-signal-warn" role="status">{cancelNote}</p>}
 
@@ -818,6 +872,15 @@ function ShieldIcon() {
 }
 function PlayIcon() {
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
+}
+function PlayIconSmall() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7Z"/></svg>
+}
+function GearSmallIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+}
+function BulbIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg>
 }
 function CheckCircleIcon() {
   return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
