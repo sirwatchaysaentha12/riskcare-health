@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { analyzeCameraFrame, isVideoFrameReady } from '../utils/cameraQuality'
 import { computeBreathingRate, extractShoulderY } from '../utils/breathingRate'
 import { RISK_QUESTIONS, computeRiskLevel } from '../utils/riskQuestionnaire'
+import PageMenuButton from '../components/PageMenuButton'
 import '../styles/breathing.css'
 
 // ฟีเจอร์ทดลอง — ใช้โมเดล pose detection สำเร็จรูปจาก Google MediaPipe (pretrained)
@@ -89,6 +90,13 @@ function createVisionLoop({ landmarkerRef, videoRef, canvasRef, qualityCanvasRef
         try {
           const result = landmarkerRef.current.detectForVideo(video, performance.now())
           const landmarks = result?.landmarks?.[0] || null
+          // ซิงก์ขนาด canvas กับเฟรมวิดีโอจริง — จุดอ้างอิงจะได้ทับภาพตรงตำแหน่งทุก aspect ratio ของกล้อง
+          const overlayCanvas = canvasRef.current
+          if (overlayCanvas && video.videoWidth > 0 &&
+            (overlayCanvas.width !== video.videoWidth || overlayCanvas.height !== video.videoHeight)) {
+            overlayCanvas.width = video.videoWidth
+            overlayCanvas.height = video.videoHeight
+          }
           drawShoulderOverlay(canvasRef.current, landmarks)
           const now = performance.now()
           if (now - lastQualityCheckRef.current >= 500) {
@@ -485,190 +493,281 @@ export default function BreathingRateCheck() {
   return (
     <main className="br-page">
       <div className="br-shell">
-        <button type="button" className="br-back" onClick={() => navigate(-1)}>← กลับ</button>
-        <section className="br-card">
-          <div className="br-warning" role="note"><span aria-hidden="true">⚠</span><span>{DISCLAIMER}</span></div>
-          <h1 className="br-title">ตรวจอัตราการหายใจด้วยกล้อง</h1>
-          <p className="br-desc">ต้นแบบนี้ประมาณการเคลื่อนไหวจากภาพ ไม่ใช่การคัดกรองหรือวินิจฉัยโรค</p>
-          <p className="br-instructions">{mode === 'upload'
-            ? 'เลือกคลิปที่ถ่ายไว้ ระบบจะประมวลผลทีละเฟรมด้วยโมเดลเดียวกับโหมดกล้องสด แล้วประมาณอัตราการหายใจจากช่วงต้นคลิป (สูงสุด 30 วินาที)'
-            : 'นั่งนิ่ง วางกล้องให้อยู่ระดับลำตัว หันช่วงอกเข้ากล้อง และหายใจตามธรรมชาติ ให้เห็นช่วงไหล่และลำตัวส่วนบนชัดเจน'}</p>
+        <div className="br-topbar">
+          <button type="button" className="br-back" onClick={() => navigate(-1)}>← กลับ</button>
+          <PageMenuButton />
+        </div>
 
-          <div className="br-mode-tabs" role="tablist" aria-label="เลือกโหมดการตรวจ">
-            <button type="button" role="tab" aria-selected={mode === 'live'} className={mode === 'live' ? 'br-mode-tab is-active' : 'br-mode-tab'} onClick={() => switchMode('live')}>📷 กล้องสด</button>
-            <button type="button" role="tab" aria-selected={mode === 'upload'} className={mode === 'upload' ? 'br-mode-tab is-active' : 'br-mode-tab'} onClick={() => switchMode('upload')}>🎞 อัปโหลดคลิปวิดีโอ</button>
+        <div className="resp-warning-banner" role="note">
+          <WarningIcon />
+          <span>{DISCLAIMER}</span>
+        </div>
+
+        <header className="br-header">
+          <div className="br-header-icon" aria-hidden="true">
+            <CameraGlyph />
+          </div>
+          <div className="br-header-text">
+            <h1>ตรวจอัตราการหายใจด้วยกล้อง</h1>
+            <p>ต้นแบบนี้ประมาณการเคลื่อนไหวจากภาพ ไม่ใช่การคัดกรองหรือวินิจฉัยโรค</p>
+          </div>
+          <aside className="br-header-tips">
+            <p className="br-tips-title"><BulbGlyph /> {mode === 'upload' ? 'แนะนำการเลือกคลิป' : 'ตั้งกล้องให้พร้อม'}</p>
+            {(mode === 'upload'
+              ? ['เลือกคลิปที่ถ่ายไว้ ระบบประมวลผลทีละเฟรมในเบราว์เซอร์', 'ประมาณอัตราการหายใจจากช่วงต้นคลิป (สูงสุด 30 วินาที)', 'คลิปแนวตั้ง เห็นไหล่–ลำตัวชัด แสงพอดี']
+              : ['นั่งนิ่ง วางกล้องให้อยู่ระดับลำตัว หันช่วงอกเข้ากล้อง', 'หายใจตามธรรมชาติ ให้เห็นไหล่และลำตัวส่วนบนชัดเจน', 'ต้องการแสงสว่างเพียงพอ ไม่มืดหรือสว่างจ้าเกินไป']
+            ).map((tip) => (
+              <p key={tip} className="br-tip-row"><CheckGlyph /> {tip}</p>
+            ))}
+          </aside>
+        </header>
+
+        <div className="resp-mode-toggle" role="tablist" aria-label="เลือกโหมดการตรวจ">
+          <button type="button" role="tab" aria-selected={mode === 'live'} className={mode === 'live' ? 'active' : ''} onClick={() => switchMode('live')}>
+            <CameraGlyph size={16} /> กล้องสด
+          </button>
+          <button type="button" role="tab" aria-selected={mode === 'upload'} className={mode === 'upload' ? 'active' : ''} onClick={() => switchMode('upload')}>
+            <ClipGlyph size={16} /> อัปโหลดคลิปวิดีโอ
+          </button>
+        </div>
+
+        <div className="br-grid">
+          {/* ===== คอลัมน์ซ้าย: ความยินยอม + การใช้งาน ===== */}
+          <div className="br-col-main">
+            {canShowConsent && mode === 'live' && cameraSupported && secureContext && (
+              <div className="resp-consent-card" id="camera-privacy-notice">
+                <ShieldGlyph />
+                <div style={{ flex: 1 }}>
+                  <strong>ก่อนเปิดกล้อง — ความเป็นส่วนตัวและความยินยอม</strong>
+                  <p>เฟรมวิดีโอประมวลผลในเบราว์เซอร์และไม่ถูกส่งไป Backend หรือบันทึกเป็นไฟล์ — ไลบรารีและโมเดลโหลดจากไฟล์ในเครื่อง (public/mediapipe) จึงทำงานออฟไลน์ได้</p>
+                  <label className="br-consent-label">
+                    <input type="checkbox" checked={consentAccepted} onChange={(event) => setConsentAccepted(event.target.checked)} />
+                    <span>ฉันรับทราบการใช้กล้องและรายละเอียดข้างต้น และยินยอมให้ประมวลผลภาพในเบราว์เซอร์เพื่อการสาธิต</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {canShowConsent && mode === 'upload' && (
+              <div className="resp-consent-card" id="upload-privacy-notice">
+                <ShieldGlyph />
+                <div style={{ flex: 1 }}>
+                  <strong>ก่อนอัปโหลดคลิป — ความเป็นส่วนตัวและความยินยอม</strong>
+                  <p>คลิปของคุณประมวลผลในเบราว์เซอร์เท่านั้น ไม่ถูกส่งขึ้นเซิร์ฟเวอร์หรือบันทึกเป็นไฟล์ — ไลบรารีและโมเดลโหลดจากไฟล์ในเครื่อง เช่นเดียวกับโหมดกล้องสด</p>
+                  <label className="br-consent-label">
+                    <input type="checkbox" checked={consentAccepted} onChange={(event) => setConsentAccepted(event.target.checked)} />
+                    <span>ฉันรับทราบและยินยอมให้ประมวลผลคลิปของฉันในเบราว์เซอร์เพื่อการสาธิต</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {mode === 'upload' && status === 'idle' && (
+              <div className="resp-dropzone">
+                <button type="button" className="resp-play-circle" disabled={!consentAccepted} onClick={() => document.getElementById('br-file-input')?.click()} aria-label="เลือกไฟล์วิดีโอ">
+                  <ClipGlyph size={22} />
+                </button>
+                <p className="resp-dropzone-text">เลือกคลิปวิดีโอจากเครื่องของคุณ</p>
+                <div className="resp-dropzone-actions">
+                  <button type="button" className="resp-btn-outline" disabled={!consentAccepted} onClick={() => document.getElementById('br-file-input')?.click()}>
+                    เลือกไฟล์วิดีโอ
+                  </button>
+                  <button type="button" className="resp-btn-outline" disabled={!consentAccepted} onClick={handleDemoClick}>
+                    ใช้คลิปตัวอย่าง (โหมด Demo)
+                  </button>
+                </div>
+                <label className="br-file-hidden">
+                  <input id="br-file-input" type="file" accept="video/*" onChange={handleFileSelected} disabled={!consentAccepted} />
+                </label>
+                <p className="resp-dropzone-hint">รองรับ MP4, WebM, MOV · ขนาดไม่เกิน 200 MB</p>
+                <small className="br-hint">แนะนำคลิป 10–30 วินาที ถ่ายแนวตั้ง เห็นช่วงไหล่–ลำตัวชัด — ระบบวัดจากช่วงต้นคลิปสูงสุด 30 วินาที</small>
+                {uploadError && <div className="br-error" role="alert">{uploadError}</div>}
+              </div>
+            )}
+            {status === 'upload-preparing' && <div className="br-note" role="status">กำลังโหลดโมเดล pose… กรุณารอสักครู่</div>}
+
+            {mode === 'live' && status === 'idle' && (cameraSupported
+              ? secureContext
+                ? <div className="resp-cam-request">
+                    <div className="resp-cam-request-icon" aria-hidden="true"><CameraGlyph size={22} /></div>
+                    <strong>ยินยอมและเปิดกล้อง</strong>
+                    <p>กดปุ่มด้านล่างเพื่อขอสิทธิ์กล้อง โหลดโมเดล pose แล้วเข้าสู่หน้าจัดภาพก่อนเริ่มวัด</p>
+                    <button type="button" className="resp-btn-primary resp-btn-wide" onClick={handleStart} disabled={!consentAccepted}>ยินยอมและเปิดกล้อง</button>
+                    {!consentAccepted && <p className="resp-dropzone-hint">ต้องติ๊กยินยอมด้านบนก่อนจึงกดได้</p>}
+                  </div>
+                : <div className="br-plain-fallback">กล้องต้องใช้ผ่าน HTTPS หรือ localhost จึงจะเปิดได้</div>
+              : <div className="br-plain-fallback">เบราว์เซอร์นี้ไม่รองรับกล้อง หรือไม่ได้อยู่ในบริบทที่ปลอดภัย จึงเปิดฟีเจอร์นี้ไม่ได้</div>)}
+            {mode === 'live' && status === 'camera-requesting' && <div className="br-note" role="status">สถานะสิทธิ์: {permissionState} · กำลังขอสิทธิ์กล้องและโหลดโมเดล กรุณาเลือกอนุญาตในเบราว์เซอร์</div>}
+            {mode === 'live' && status === 'camera-denied' && (
+              <div className="br-error" role="alert">
+                <strong>ยังเข้าถึงกล้องไม่ได้</strong>
+                <span>{cameraErrorMessage} (สถานะ: {permissionState})</span>
+                {cameraSupported && secureContext && <button type="button" className="resp-btn-primary" onClick={handleStart} disabled={!consentAccepted}>ลองขอสิทธิ์อีกครั้ง</button>}
+              </div>
+            )}
+            {status === 'model-error' && (
+              <div className="br-plain-fallback" role="alert">
+                โหลดโมเดลไม่สำเร็จ ตรวจการเชื่อมต่อแล้วลองใหม่ได้
+                {mode === 'live'
+                  ? <button type="button" className="resp-btn-outline" onClick={handleStart} disabled={!consentAccepted}>ลองโหลดใหม่</button>
+                  : <button type="button" className="resp-btn-outline" onClick={() => setStatus('idle')}>กลับไปเลือกไฟล์ใหม่</button>}
+              </div>
+            )}
+
+            {['ready', 'measuring', 'done'].includes(status) && (
+              <div className="br-video-wrap">
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  src={mode === 'upload' ? uploadUrl : undefined}
+                  onLoadedMetadata={(event) => {
+                    const el = event.currentTarget
+                    if (mode === 'upload') {
+                      const raw = Number.isFinite(el.duration) ? Math.round(el.duration * 1000) : NaN
+                      if (Number.isFinite(raw) && raw > 0 && raw < 5000) {
+                        // fallback: คลิปสั้นกว่า 5 วินาที — สัญญาณไม่พอวิเคราะห์
+                        setUploadError('คลิปสั้นกว่า 5 วินาที กรุณาใช้คลิปยาวอย่างน้อย 5 วินาที')
+                        setStatus('idle')
+                        return
+                      }
+                      setMeasureDuration(Number.isFinite(raw) && raw > 0 ? Math.min(MEASURE_DURATION_MS, Math.max(5000, raw)) : MEASURE_DURATION_MS)
+                    }
+                    setVideoReady(isVideoFrameReady(el))
+                  }}
+                  onError={() => {
+                    if (mode === 'upload') {
+                      setUploadError('เปิดหรือถอดรหัสวิดีโอไม่สำเร็จ — ไฟล์อาจเสียหายหรือเบราว์เซอร์ไม่รองรับ codec นี้ ลองไฟล์อื่น')
+                      setStatus('idle')
+                    }
+                  }}
+                  onCanPlay={(event) => setVideoReady(isVideoFrameReady(event.currentTarget))}
+                  onPlaying={(event) => {
+                    const ready = isVideoFrameReady(event.currentTarget)
+                    setVideoReady(ready)
+                    setVideoPlaying(ready)
+                  }}
+                  onEnded={() => { if (mode === 'upload' && measuringRef.current) finishMeasurement() }}
+                  aria-label={mode === 'upload' ? 'คลิปวิดีโอที่เลือก' : 'ภาพตัวอย่างจากกล้อง'}
+                />
+                <canvas ref={canvasRef} width={640} height={480} aria-hidden="true" />
+              </div>
+            )}
+
+            {status === 'measuring' && (
+              <div className="br-measure-block">
+                <div className="br-countdown">เหลือ {Math.ceil(remainingMs / 1000)} วินาที</div>
+                <div className="br-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}>
+                  <div className="br-progress-fill" style={{ width: `${progressPct}%` }} />
+                </div>
+                <p className="br-hint">{shoulderHint ? 'มองไม่เห็นไหล่ชัด ลองหันช่วงอกเข้ากล้องและจัดเฟรมใหม่' : `หายใจตามธรรมชาติ กำลังเก็บข้อมูล (${sampleCount} จุด)`}</p>
+              </div>
+            )}
+            {status === 'done' && (
+              <div className="br-result">
+                <strong>{bpm === null ? (resultUnreliable ? 'วัดไม่ได้ ลองใหม่' : 'ไม่สามารถประมาณค่าได้') : `~${bpm} ครั้ง/นาที`}</strong>
+                <small>{bpm === null
+                  ? (resultUnreliable ? 'สัญญาณไม่น่าเชื่อถือ (ขยับมาก/สัญญาณรบกวน) — นั่งนิ่งกว่าแล้ววัดใหม่' : 'มองไม่เห็นไหล่ชัดพอ ลองจัดเฟรมแล้ววัดใหม่')
+                  : 'ค่าประมาณจากการเคลื่อนไหวในวิดีโอเท่านั้น ไม่ใช่ค่าทางการแพทย์'}</small>
+                <button type="button" className="resp-btn-outline" onClick={() => { setBpm(null); setResultUnreliable(false); setRiskResult(null); setStatus('ready'); retryQualityCheck() }}>วัดใหม่</button>
+              </div>
+            )}
+
+            {['ready', 'measuring', 'done'].includes(status) && (
+              <button type="button" className="br-stop-button" onClick={stopAndRevokeConsent}>
+                {mode === 'upload' ? 'ลบคลิปและถอนความยินยอม' : 'หยุดกล้องและถอนความยินยอม'}
+              </button>
+            )}
           </div>
 
-          {canShowConsent && mode === 'live' && cameraSupported && secureContext && (
-            <div className="br-privacy-panel" id="camera-privacy-notice">
-              <strong>ก่อนเปิดกล้อง — ความเป็นส่วนตัวและความยินยอม</strong>
-              <p>ตามโค้ดปัจจุบัน เฟรมวิดีโอประมวลผลในเบราว์เซอร์และไม่ถูกส่งไป Backend หรือบันทึกเป็นไฟล์ ไลบรารีและโมเดลจะถูกดาวน์โหลดจาก jsDelivr และ Google; ข้อมูลภาพชั่วคราวใช้ตรวจภาพในหน้านี้เท่านั้น</p>
-              <label className="br-consent-label">
-                <input type="checkbox" checked={consentAccepted} onChange={(event) => setConsentAccepted(event.target.checked)} />
-                <span>ฉันรับทราบการใช้กล้องและรายละเอียดข้างต้น และยินยอมให้ประมวลผลภาพในเบราว์เซอร์เพื่อการสาธิต</span>
-              </label>
-            </div>
-          )}
-
-          {canShowConsent && mode === 'upload' && (
-            <div className="br-privacy-panel" id="upload-privacy-notice">
-              <strong>ก่อนอัปโหลดคลิป — ความเป็นส่วนตัวและความยินยอม</strong>
-              <p>คลิปของคุณประมวลผลในเบราว์เซอร์เท่านั้น ไม่ถูกส่งขึ้นเซิร์ฟเวอร์หรือบันทึกเป็นไฟล์ ไลบรารีและโมเดลดาวน์โหลดจาก jsDelivr/Google เช่นเดียวกับโหมดกล้องสด</p>
-              <label className="br-consent-label">
-                <input type="checkbox" checked={consentAccepted} onChange={(event) => setConsentAccepted(event.target.checked)} />
-                <span>ฉันรับทราบและยินยอมให้ประมวลผลคลิปของฉันในเบราว์เซอร์เพื่อการสาธิต</span>
-              </label>
-            </div>
-          )}
-
-          {mode === 'upload' && status === 'idle' && (
-            <div className="br-upload-panel">
-              <label className="br-file-label">
-                <input type="file" accept="video/*" onChange={handleFileSelected} disabled={!consentAccepted} />
-                <span>เลือกไฟล์วิดีโอ (mp4, webm, mov — ไม่เกิน 200 MB)</span>
-              </label>
-              {uploadError && <div className="br-error" role="alert">{uploadError}</div>}
-              <small className="br-hint">แนะนำคลิป 10–30 วินาที ถ่ายแนวตั้ง เห็นช่วงไหล่–ลำตัวชัด แสงพอดี — ระบบวัดจากช่วงต้นคลิปสูงสุด 30 วินาที</small>
-              <button type="button" className="br-secondary-button" onClick={handleDemoClick}>ใช้คลิปตัวอย่าง (โหมด Demo)</button>
-            </div>
-          )}
-          {status === 'upload-preparing' && <div className="br-note" role="status">กำลังโหลดโมเดล pose… กรุณารอสักครู่</div>}
-
-          {mode === 'live' && status === 'idle' && (cameraSupported
-            ? secureContext
-              ? <button type="button" className="br-primary-button" onClick={handleStart} disabled={!consentAccepted}>ยินยอมและเปิดกล้อง</button>
-              : <div className="br-plain-fallback">กล้องต้องใช้ผ่าน HTTPS หรือ localhost จึงจะเปิดได้</div>
-            : <div className="br-plain-fallback">เบราว์เซอร์นี้ไม่รองรับกล้อง หรือไม่ได้อยู่ในบริบทที่ปลอดภัย จึงเปิดฟีเจอร์นี้ไม่ได้</div>)}
-          {mode === 'live' && status === 'camera-requesting' && <div className="br-note" role="status">สถานะสิทธิ์: {permissionState} · กำลังขอสิทธิ์กล้องและโหลดโมเดล กรุณาเลือกอนุญาตในเบราว์เซอร์</div>}
-          {mode === 'live' && status === 'camera-denied' && (
-            <div className="br-error" role="alert">
-              <strong>ยังเข้าถึงกล้องไม่ได้</strong>
-              <span>{cameraErrorMessage} (สถานะ: {permissionState})</span>
-              {cameraSupported && secureContext && <button type="button" className="br-primary-button" onClick={handleStart} disabled={!consentAccepted}>ลองขอสิทธิ์อีกครั้ง</button>}
-            </div>
-          )}
-          {status === 'model-error' && (
-            <div className="br-plain-fallback" role="alert">
-              โหลดโมเดลไม่สำเร็จ ตรวจการเชื่อมต่อแล้วลองใหม่ได้
-              {mode === 'live'
-                ? <button type="button" className="br-secondary-button" onClick={handleStart} disabled={!consentAccepted}>ลองโหลดใหม่</button>
-                : <button type="button" className="br-secondary-button" onClick={() => setStatus('idle')}>กลับไปเลือกไฟล์ใหม่</button>}
-            </div>
-          )}
-
-          {['ready', 'measuring', 'done'].includes(status) && (
-            <div className="br-video-wrap">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                src={mode === 'upload' ? uploadUrl : undefined}
-                onLoadedMetadata={(event) => {
-                  const el = event.currentTarget
-                  if (mode === 'upload') {
-                    const raw = Number.isFinite(el.duration) ? Math.round(el.duration * 1000) : NaN
-                    if (Number.isFinite(raw) && raw > 0 && raw < 5000) {
-                      // fallback: คลิปสั้นกว่า 5 วินาที — สัญญาณไม่พอวิเคราะห์
-                      setUploadError('คลิปสั้นกว่า 5 วินาที กรุณาใช้คลิปยาวอย่างน้อย 5 วินาที')
-                      setStatus('idle')
-                      return
-                    }
-                    setMeasureDuration(Number.isFinite(raw) && raw > 0 ? Math.min(MEASURE_DURATION_MS, Math.max(5000, raw)) : MEASURE_DURATION_MS)
-                  }
-                  setVideoReady(isVideoFrameReady(el))
-                }}
-                onError={() => {
-                  if (mode === 'upload') {
-                    setUploadError('เปิดหรือถอดรหัสวิดีโอไม่สำเร็จ — ไฟล์อาจเสียหายหรือเบราว์เซอร์ไม่รองรับ codec นี้ ลองไฟล์อื่น')
-                    setStatus('idle')
-                  }
-                }}
-                onCanPlay={(event) => setVideoReady(isVideoFrameReady(event.currentTarget))}
-                onPlaying={(event) => {
-                  const ready = isVideoFrameReady(event.currentTarget)
-                  setVideoReady(ready)
-                  setVideoPlaying(ready)
-                }}
-                onEnded={() => { if (mode === 'upload' && measuringRef.current) finishMeasurement() }}
-                aria-label={mode === 'upload' ? 'คลิปวิดีโอที่เลือก' : 'ภาพตัวอย่างจากกล้อง'}
-              />
-              <canvas ref={canvasRef} width={640} height={480} aria-hidden="true" />
-            </div>
-          )}
-
-          {['ready', 'measuring', 'done'].includes(status) && (
-            <div className={`br-quality br-quality--${cameraQuality.status}`} role="status" aria-live="polite">
-              <strong>{cameraQuality.status === 'checking' ? 'กำลังตรวจภาพเบื้องต้น…' : cameraQuality.status === 'ready' ? 'ภาพพร้อมสำหรับการสาธิตเบื้องต้น' : 'ภาพยังไม่พร้อมสำหรับการวัด'}</strong>
-              <p className="br-live-guide">{liveGuide}</p>
-              {cameraQuality.issues.length > 0
-                ? <ul>{cameraQuality.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>
-                : cameraQuality.status === 'ready' && <p>ตรวจแสง รายละเอียดภาพ การเปลี่ยนแปลงของเฟรม และการเห็นลำตัวส่วนบนแล้ว การตรวจนี้เป็นเพียง heuristic ไม่ใช่การยืนยันคุณภาพทางการแพทย์</p>}
-              {status === 'ready' && cameraQuality.status === 'warning' && <button type="button" className="br-secondary-button" onClick={retryQualityCheck}>ตรวจภาพอีกครั้ง</button>}
-            </div>
-          )}
-
-          {status === 'ready' && (
-            <button type="button" className="br-primary-button" onClick={startMeasurement} disabled={!videoPlaying || cameraQuality.status !== 'ready'}>
-              {!videoPlaying || !videoReady ? 'กำลังรอภาพจากกล้อง…' : cameraQuality.status !== 'ready' ? 'จัดภาพตามคำแนะนำก่อนเริ่ม' : 'เริ่มวัด 30 วินาที'}
-            </button>
-          )}
-          {['ready', 'measuring', 'done'].includes(status) && sampleMode && (
-            <div className="br-note" role="status">🏷 โหมดตัวอย่าง (Demo): ผลลัพธ์มาจากคลิปตัวอย่างในเครื่อง ไม่ใช่การวัดสด</div>
-          )}
-
-          {status === 'measuring' && (
-            <div>
-              <div className="br-countdown">เหลือ {Math.ceil(remainingMs / 1000)} วินาที</div>
-              <div className="br-progress" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progressPct}>
-                <div className="br-progress-fill" style={{ width: `${progressPct}%` }} />
+          {/* ===== คอลัมน์ขวา: สถานะคุณภาพภาพ + หมายเหตุโหมด Demo ===== */}
+          <aside className="br-col-side">
+            {['idle', 'camera-denied', 'model-error', 'upload-preparing'].includes(status) && (
+              <div className="br-steps-card">
+                <h3>ขั้นตอนการใช้งาน</h3>
+                <ol className="br-steps-list">
+                  <li>ติ๊กยินยอมความเป็นส่วนตัวด้านซ้าย</li>
+                  <li>{mode === 'upload' ? 'เลือกไฟล์คลิป หรือใช้คลิปตัวอย่าง' : 'กด "ยินยอมและเปิดกล้อง" เพื่อขอสิทธิ์กล้อง'}</li>
+                  <li>จัดภาพให้เห็นไหล่–ลำตัวส่วนบนจนระบบบอกว่าภาพพร้อม</li>
+                  <li>กดเริ่มวัด แล้วหายใจตามธรรมชาติ 30 วินาที</li>
+                  <li>อ่านผลประมาณการ + กรอกแบบประเมินปัจจัยเสี่ยง</li>
+                </ol>
               </div>
-              <p className="br-hint">{shoulderHint ? 'มองไม่เห็นไหล่ชัด ลองหันช่วงอกเข้ากล้องและจัดเฟรมใหม่' : `หายใจตามธรรมชาติ กำลังเก็บข้อมูล (${sampleCount} จุด)`}</p>
-            </div>
-          )}
-          {status === 'done' && (
-            <div className="br-result">
-              <strong>{bpm === null ? (resultUnreliable ? 'วัดไม่ได้ ลองใหม่' : 'ไม่สามารถประมาณค่าได้') : `~${bpm} ครั้ง/นาที`}</strong>
-              <small>{bpm === null
-                ? (resultUnreliable ? 'สัญญาณไม่น่าเชื่อถือ (ขยับมาก/สัญญาณรบกวน) — นั่งนิ่งกว่าแล้ววัดใหม่' : 'มองไม่เห็นไหล่ชัดพอ ลองจัดเฟรมแล้ววัดใหม่')
-                : 'ค่าประมาณจากการเคลื่อนไหวในวิดีโอเท่านั้น ไม่ใช่ค่าทางการแพทย์'}</small>
-              <button type="button" className="br-secondary-button" onClick={() => { setBpm(null); setResultUnreliable(false); setRiskResult(null); setStatus('ready'); retryQualityCheck() }}>วัดใหม่</button>
-            </div>
-          )}
+            )}
+            {['ready', 'measuring', 'done'].includes(status) && (
+              <div className={`br-quality br-quality--${cameraQuality.status}`} role="status" aria-live="polite">
+                <h3>{cameraQuality.status === 'checking' ? 'กำลังตรวจภาพเบื้องต้น…' : cameraQuality.status === 'ready' ? 'ภาพพร้อมสำหรับการสาธิตเบื้องต้น' : 'ภาพยังไม่พร้อมสำหรับการวัด'}</h3>
+                <p className="br-live-guide">{liveGuide}</p>
+                {cameraQuality.issues.length > 0
+                  ? <ul className="br-issue-list">{cameraQuality.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>
+                  : cameraQuality.status === 'ready' && <p className="br-quality-note">ตรวจแสง รายละเอียดภาพ การเปลี่ยนแปลงของเฟรม และการเห็นลำตัวส่วนบนแล้ว การตรวจนี้เป็นเพียง heuristic ไม่ใช่การยืนยันคุณภาพทางการแพทย์</p>}
+                {status === 'ready' && cameraQuality.status === 'warning' && <button type="button" className="resp-btn-outline" onClick={retryQualityCheck}>ตรวจภาพอีกครั้ง</button>}
+              </div>
+            )}
+            {['ready', 'measuring', 'done'].includes(status) && sampleMode && (
+              <div className="br-note" role="status">โหมดตัวอย่าง (Demo): ผลลัพธ์มาจากคลิปตัวอย่างในเครื่อง ไม่ใช่การวัดสด</div>
+            )}
+            {status === 'ready' && (
+              <div className="br-next-step">
+                <p className="br-tips-title"><CheckGlyph /> ขั้นถัดไป</p>
+                <p className="br-next-step-text">เมื่อภาพพร้อมแล้ว กด "เริ่มวัด 30 วินาที" เพื่อเริ่มเก็บสัญญาณการหายใจ</p>
+              </div>
+            )}
+            {status === 'ready' && (
+              <button type="button" className="resp-btn-primary resp-btn-wide" onClick={startMeasurement} disabled={!videoPlaying || cameraQuality.status !== 'ready'}>
+                {!videoPlaying || !videoReady ? 'กำลังรอภาพจากกล้อง…' : cameraQuality.status !== 'ready' ? 'จัดภาพตามคำแนะนำก่อนเริ่ม' : 'เริ่มวัด 30 วินาที'}
+              </button>
+            )}
+          </aside>
+        </div>
 
-          {status === 'done' && (
-            <div className="br-risk-panel">
-              <strong>แบบประเมินปัจจัยเสี่ยงเพิ่มเติม</strong>
-              <p className="br-risk-note">ผลรวมไม่ตัดสินจากค่าอัตราการหายใจอย่างเดียว — กรอกปัจจัยเสี่ยงด้านล่างเพื่อดูระดับความเสี่ยงรวม</p>
-              {RISK_QUESTIONS.map((question) => (
-                <label key={question.id} className="br-risk-question">
-                  <input
-                    type="checkbox"
-                    checked={Boolean(riskAnswers[question.id])}
-                    onChange={(event) => setRiskAnswers((current) => ({ ...current, [question.id]: event.target.checked }))}
-                  />
-                  <span>{question.label}</span>
-                </label>
-              ))}
-              <button type="button" className="br-secondary-button" onClick={() => setRiskResult(computeRiskLevel(riskAnswers))}>ประเมินระดับความเสี่ยง</button>
-              {riskResult && (
-                <div className="br-risk-result" role="status">
-                  <strong>ระดับความเสี่ยงจากแบบประเมิน: {riskResult.level}</strong>
-                  <p>{riskResult.advice}</p>
-                  <small>สรุปรวม: ค่าอัตราการหายใจ (ข้อมูลอ้างอิงเสริม) + ปัจจัยเสี่ยงจากแบบประเมิน — เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรค หากมีอาการควรพบแพทย์</small>
-                </div>
-              )}
-            </div>
-          )}
-
-          {['ready', 'measuring', 'done'].includes(status) && (
-            <button type="button" className="br-stop-button" onClick={stopAndRevokeConsent}>
-              {mode === 'upload' ? 'ลบคลิปและถอนความยินยอม' : 'หยุดกล้องและถอนความยินยอม'}
-            </button>
-          )}
-          <canvas ref={qualityCanvasRef} className="br-quality-canvas" width={64} height={48} aria-hidden="true" />
-        </section>
+        {status === 'done' && (
+          <section className="br-risk-panel">
+            <strong>แบบประเมินปัจจัยเสี่ยงเพิ่มเติม</strong>
+            <p className="br-risk-note">ผลรวมไม่ตัดสินจากค่าอัตราการหายใจอย่างเดียว — กรอกปัจจัยเสี่ยงด้านล่างเพื่อดูระดับความเสี่ยงรวม</p>
+            {RISK_QUESTIONS.map((question) => (
+              <label key={question.id} className="br-risk-question">
+                <input
+                  type="checkbox"
+                  checked={Boolean(riskAnswers[question.id])}
+                  onChange={(event) => setRiskAnswers((current) => ({ ...current, [question.id]: event.target.checked }))}
+                />
+                <span>{question.label}</span>
+              </label>
+            ))}
+            <button type="button" className="resp-btn-outline" onClick={() => setRiskResult(computeRiskLevel(riskAnswers))}>ประเมินระดับความเสี่ยง</button>
+            {riskResult && (
+              <div className="br-risk-result" role="status">
+                <strong>ระดับความเสี่ยงจากแบบประเมิน: {riskResult.level}</strong>
+                <p>{riskResult.advice}</p>
+                <small>สรุปรวม: ค่าอัตราการหายใจ (ข้อมูลอ้างอิงเสริม) + ปัจจัยเสี่ยงจากแบบประเมิน — เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรค หากมีอาการควรพบแพทย์</small>
+              </div>
+            )}
+          </section>
+        )}
+        <canvas ref={qualityCanvasRef} className="br-quality-canvas" width={64} height={48} aria-hidden="true" />
       </div>
     </main>
   )
+}
+
+/* ─── Icons (inline SVG — เข้าธีมเว็บ ไม่ใช้อีโมจิ) ─── */
+function WarningIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+}
+function CameraGlyph({ size = 20 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>
+}
+function ClipGlyph({ size = 20 }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+}
+function BulbGlyph() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg>
+}
+function CheckGlyph() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="m5 12 5 5L20 7"/></svg>
+}
+function ShieldGlyph() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5Z"/></svg>
 }
