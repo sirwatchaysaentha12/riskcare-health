@@ -25,7 +25,7 @@ export interface VertexForecastResult {
   complete: boolean
 }
 
-export const BASELINE_MODEL_VERSION = 'baseline-pers-ma7blend-v1'
+export const BASELINE_MODEL_VERSION = 'baseline-pers-ma7blend-w05-v1'
 
 let adminClient: SupabaseClient | undefined
 

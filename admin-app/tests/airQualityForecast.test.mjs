@@ -22,15 +22,16 @@ test('forecast: 3 days from the same history, marked derived/forecast', () => {
   }
 })
 
-test('forecast: blend formula = 0.7 × ค่าล่าสุด + 0.3 × MA7 (ตรงตามที่วัดบน holdout)', () => {
+test('forecast: h=1 blend = 0.7 × ค่าล่าสุด + 0.3 × MA7 · h=2-3 = 0.5/0.5 (ตาม round4 CV)', () => {
   // ประวัติ 8 จุด: last = 30, MA7 = (10+10+10+10+10+10+30)/7 = 12.857…
-  // blend = 0.7×30 + 0.3×12.857… = 24.857… → ปัดเป็น 24.9
   const forecast = buildForecast(mk([10, 10, 10, 10, 10, 10, 10, 30]), 3)
+  // h=1: 0.7×30 + 0.3×12.857… = 24.857… → 24.9
   assert.equal(forecast[0].value, 24.9)
-  // ทำนายทั้ง 3 วันจาก origin เดียวกัน — ค่าเท่ากันทุกวัน
-  assert.deepEqual(forecast.map((point) => point.value), [24.9, 24.9, 24.9])
+  // h=2,h=3: 0.5×30 + 0.5×12.857… = 21.428… → 21.4
+  assert.deepEqual(forecast.map((point) => point.value), [24.9, 21.4, 21.4])
+  assert.deepEqual(forecast.map((point) => point.horizonDays), [1, 2, 3])
   // ค่าอยู่ระหว่าง persistence (30) กับ MA7 (12.86) เสมอ
-  assert.ok(forecast[0].value < 30 && forecast[0].value > 12.85)
+  for (const point of forecast) assert.ok(point.value < 30 && point.value > 12.85)
 })
 
 test('forecast: history สั้นกว่า 7 วัน → MA7 fallback เป็นค่าล่าสุด (= persistence)', () => {
