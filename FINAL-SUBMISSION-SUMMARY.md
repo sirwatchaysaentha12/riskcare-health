@@ -45,6 +45,7 @@
 - Security: รหัสผ่านเดิมของบัญชีทดสอบ หมดจาก repo (env-based credential + Safe Error) · ไม่มี key/PII/dataset ใน Git
 - Privacy by design: consent ก่อนกล้อง, raw video ไม่เก็บ, temp ลบทุกครั้ง, error redaction
 - โครงสร้าง commit: content commit `7236ddd` (mixed-scope — ขอบเขตตาม RESPIRATORY-STAGING-LIST.txt) + corrective `18b66de` + security `f79a5b5`
+- **Phase 23 (06 ต.ค.) — Respiratory UI ตรง mockup แล้ว**: หน้า `/respiratory-risk` สร้าง UI ใหม่ตาม mockup design (toggle กล้องสด/อัปโหลด, dropzone, quality card, consent card) โดย**ใช้ logic/scoring/consent/quality gate เดิมที่ validate แล้วทั้งหมด ไม่เขียนใหม่** (`adddf5b`) · Regression รอบ freeze รันจริง: build 2 แอปผ่าน · unit **131/131** (frontend) + **30/30** (admin-app) · E2E **40/40** · เข้าทุกหน้า (ภาพรวม/นัดหมาย/แนวโน้ม/respiratory) console error = **0** · 2 บัญชีจริง (สายใจ/c453b639) ยืนยัน personalize ตรงตามกฎที่ data level (รหัสผ่านบัญชีจริงไม่อยู่ในระบบ จึงตรวจที่ data level ตามแนวทาง FINAL-RELEASE-GATE)
 
 ## สถานะ
 
