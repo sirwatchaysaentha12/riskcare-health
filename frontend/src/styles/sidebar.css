@@ -20,9 +20,8 @@
   transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.app-sidebar--mobile-hidden {
-  transform: translateX(-100%);
-}
+/* NOTE: .app-sidebar--mobile-hidden ต้องมีผลเฉพาะใน media query ด้านล่างเท่านั้น
+ * (desktop แสดง sidebar ตลอด — ห้ามย้ายกฎนี้ออกนอก @media อีก) */
 
 .app-sidebar-brand {
   display: flex;
@@ -106,7 +105,7 @@
 .sidebar-section-head:hover { background: rgba(148, 163, 184, 0.1); color: #f1f5f9; }
 .sidebar-section-head:focus-visible { outline: 2px solid #34d399; outline-offset: -2px; }
 
-.sidebar-section-head svg.section-icon { width: 17px; height: 17px; color: #34d399; flex-shrink: 0; }
+.sidebar-section-head svg.section-icon, .sidebar-section-head > svg { width: 17px; height: 17px; color: #34d399; flex-shrink: 0; }
 .sidebar-section-head .section-chevron {
   margin-left: auto;
   width: 14px;
@@ -247,7 +246,8 @@
 }
 
 @media (max-width: 1024px) {
-  .app-sidebar { transform: translateX(-100%); }
+  .app-sidebar,
+  .app-sidebar--mobile-hidden { transform: translateX(-100%); }
   .app-sidebar--mobile-open { transform: translateX(0); }
   .app-shell-content { margin-left: 0; }
   .sidebar-toggle { display: inline-flex; }
