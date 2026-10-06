@@ -67,13 +67,20 @@ try {
   const questionnaireOk = await page.locator('.rrisk-signal-ok, .rrisk-signal-warn').count()
   record('สัญญาณแบบประเมินโหลด/แจ้งสถานะ', questionnaireOk >= 1)
 
-  // ---- 4. Phase 5 Consent Gate: ไม่ยินยอม = ปุ่มวัด disabled + อัปโหลด locked + audit event ----
+  // ---- 4. Phase 5 Consent Gate: ไม่ยินยอม = ปุ่มวัด disabled (โหมดกล้อง) + อัปโหลด locked (โหมดวิดีโอ) + audit event ----
   const consentLogs = []
   page.on('console', (message) => {
     if (message.text().includes('[rrisk-consent]')) consentLogs.push(message.text())
   })
   const measureBtn = page.getByRole('button', { name: 'เริ่มวัดการหายใจ (30 วินาที)' })
+  // โหมดกล้อง (ยังไม่ยินยอม): ปุ่มวัดทั้งของ shell และของคอมโพเนนต์กล้องต้อง disabled
+  await page.getByRole('button', { name: 'กล้องสด' }).click()
+  await measureBtn.waitFor({ timeout: 5000 })
   record('Consent gate: ไม่ยินยอม → ปุ่มเริ่มวัด disabled (กล้องเปิดไม่ได้)', !(await measureBtn.isEnabled()))
+  const shellCameraBtn = page.getByRole('button', { name: 'เริ่มวิเคราะห์อัตราการหายใจ' })
+  record('Consent gate: ปุ่มเริ่มวิเคราะห์ของ shell ก็ disabled เช่นกัน', (await shellCameraBtn.count()) === 1 && !(await shellCameraBtn.isEnabled()))
+  // กลับโหมดวิดีโอ: input file ต้อง locked
+  await page.getByRole('button', { name: 'อัปโหลดคลิปวิดีโอ' }).click()
   const uploadInput = page.locator('input[type="file"]')
   record('Consent gate: ไม่ยินยอม → อัปโหลดวิดีโอ locked เช่นกัน', !(await uploadInput.isEnabled()))
   await page.getByText('ฉันรับทราบข้อมูลข้างต้นครบถ้วน').click()
@@ -81,23 +88,26 @@ try {
   record('Research consent ไม่ถูกเลือกไว้ล่วงหน้า', researchUnchecked === false)
   await page.getByText('ยินยอมให้เปิดกล้องเพื่อวัดสัญญาณตามที่ระบุ').click()
   await page.getByText('รับทราบข้อจำกัด: เป็นค่าประมาณจากกล้อง', { exact: false }).click()
-  record('Consent: ติ๊กครบ → ปุ่มเริ่มวัด enabled', await measureBtn.isEnabled())
-  record('Consent: อัปโหลดปลดล็อกหลังยินยอม', await uploadInput.isEnabled())
+  record('Consent: ติ๊กครบ → อัปโหลดปลดล็อก', await uploadInput.isEnabled())
   await page.waitForTimeout(300)
   record('Consent Audit Event (ไม่มีข้อมูลสุขภาพ — log เฉพาะสถานะยินยอม)', consentLogs.some((line) => line.includes('"granted"')), consentLogs.at(-1)?.slice(0, 140))
 
   // ---- 5. fallback: อัปโหลดวิดีโอไม่มีใบหน้า → vitallens ล้มเหลวแบบ soft failure (หลังยินยอม) ----
+  // (UI shell merge: เลือกไฟล์แล้วต้องกด "เริ่มประเมินจากวิดีโอ" — logic vitallens ตัวเดิม)
   await page.locator('input[type="file"]').setInputFiles(NOFACE_CLIP)
+  await page.getByRole('button', { name: 'เริ่มประเมินจากวิดีโอ' }).click()
   try {
-    await page.locator('.rrisk-section').nth(1).getByText('vitallens ประมวลผลไม่สำเร็จ').first().waitFor({ timeout: 120000 })
+    await page.getByText('vitallens ประมวลผลไม่สำเร็จ').first().waitFor({ timeout: 120000 })
   } catch {
-    const section2 = await page.locator('.rrisk-section').nth(1).innerText().catch(() => '(no section)')
-    throw new Error(`fallback ไม่แสดง — section 2: ${section2.replace(/\n/g, ' | ').slice(0, 300)}`)
+    const bodyText = await page.locator('main').innerText().catch(() => '(no main)')
+    throw new Error(`fallback ไม่แสดง — หน้า: ${bodyText.replace(/\n/g, ' | ').slice(0, 300)}`)
   }
   record('fallback: vitallens ล้มเหลว (ไม่มีใบหน้า) → แจ้งผู้ใช้ ไม่ crash', true)
   await page.screenshot({ path: path.join(OUT_DIR, '2-vitallens-fallback.png'), fullPage: true })
 
-  // ---- 6. กล้องจริง (สัญญาณคลิปคนจริง): วัด RR 30 วินาที + บันทึกคลิปส่ง vitallens ----
+  // ---- 6. กล้องจริง (สัญญาณคลิปคนจริง): สลับโหมดกล้องสด → วัด RR 30 วินาที + บันทึกคลิปส่ง vitallens ----
+  await page.getByRole('button', { name: 'กล้องสด' }).click()
+  await measureBtn.waitFor({ timeout: 5000 })
   await measureBtn.click()
   try {
     await page.getByText('กำลังวัด', { exact: false }).waitFor({ timeout: 35000 })
@@ -126,9 +136,9 @@ try {
   }
   await page.screenshot({ path: path.join(OUT_DIR, '5-quality-gate.png'), fullPage: true })
 
-  // vitallens — ข้อความ fallback เก่าถูกล้างตอนเริ่มอัปโหลด
+  // vitallens — ข้อความ fallback เก่าถูกล้างตอนเริ่มอัปโหลด (UI shell merge: สถานะอยู่คอลัมน์ขวา จึงค้นทั้งหน้า)
   await page.getByText(/vitallens \(ประมวลผลในเครื่อง\)|vitallens ประมวลผลไม่สำเร็จ|ไม่ได้รับคลิปวิดีโอ/).first().waitFor({ timeout: 180000 })
-  const vitalsOutcome = await page.locator('.rrisk-section').nth(1).locator('.rrisk-signal-ok, .rrisk-signal-warn').allTextContents()
+  const vitalsOutcome = await page.locator('.rrisk-signal-ok, .rrisk-signal-warn').allTextContents()
   const vitalsOk = vitalsOutcome.some((text) => /vitallens \(ประมวลผลในเครื่อง\)/.test(text))
   record('สัญญาณที่ 2 vitallens จากคลิปกล้อง', vitalsOk, vitalsOutcome.join(' | ').slice(0, 200))
   if (vitalsOk) {
@@ -196,7 +206,7 @@ try {
 
   // ---- Phase 5: Browser Lifecycle (context แยก ใช้ session เดิม + patch getUserMedia จับ stream) ----
   const storageState = await mainContext.storageState()
-  async function newLifecycleContext(getUserMediaPatch) {
+  async function newLifecycleContext(getUserMediaPatch, { switchToCamera = true } = {}) {
     const context = await browser.newContext({
       viewport: { width: 1280, height: 900 },
       permissions: ['geolocation'],
@@ -207,6 +217,8 @@ try {
     const lifecyclePage = await context.newPage()
     await lifecyclePage.goto(`${BASE}/respiratory-risk`, { waitUntil: 'domcontentloaded' })
     await lifecyclePage.getByRole('heading', { name: 'ประเมินความเสี่ยงโรคทางเดินหายใจ' }).waitFor({ timeout: 15000 })
+    // UI shell merge: ปุ่มวัดกล้องอยู่ในโหมด "กล้องสด" — สลับก่อนติ๊ก consent
+    if (switchToCamera) await lifecyclePage.getByRole('button', { name: 'กล้องสด' }).click()
     // ติ๊ก consent ให้พร้อมวัด
     await lifecyclePage.getByText('ฉันรับทราบข้อมูลข้างต้นครบถ้วน').click()
     await lifecyclePage.getByText('ยินยอมให้เปิดกล้องเพื่อวัดสัญญาณตามที่ระบุ').click()
@@ -274,11 +286,12 @@ try {
     await context.close()
   }
 
-  // (c) Backend error → soft failure message, ไม่ crash
+  // (c) Backend error → soft failure message, ไม่ crash (โหมดวิดีโอ: เลือกไฟล์แล้วกดเริ่มประเมิน)
   {
-    const { context, lifecyclePage } = await newLifecycleContext()
+    const { context, lifecyclePage } = await newLifecycleContext(null, { switchToCamera: false })
     await lifecyclePage.route('**/api/vital-signs', (route) => route.abort('failed'))
     await lifecyclePage.locator('input[type="file"]').setInputFiles(NOFACE_CLIP)
+    await lifecyclePage.getByRole('button', { name: 'เริ่มประเมินจากวิดีโอ' }).click()
     await lifecyclePage.getByText('vitallens ประมวลผลไม่สำเร็จ', { exact: false }).first().waitFor({ timeout: 30000 })
     record('Backend error (network abort) → soft failure + ไม่ crash', true)
     await context.close()

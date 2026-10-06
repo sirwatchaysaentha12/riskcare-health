@@ -447,6 +447,312 @@
   border: 1.5px solid #b91c1c;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   UI Shell (mockup merge 2026-10-06) — prefix resp-
+   สีอ้างตัวแปรรวมของเว็บ (design.md: เขียวหลัก #047857 WCAG AA) โดยมีค่า fallback
+   ───────────────────────────────────────────────────────────────────────────── */
+.resp-page {
+  --brand: var(--color-primary, #10b981);
+  --brand-deep: var(--color-primary-dark, #047857);
+  --ink: var(--color-neutral-900, #0f172a);
+  --muted: var(--color-neutral-500, #64748b);
+  --card-green: var(--color-primary-light, #ecfdf5);
+  --border-soft: #e3ece9;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  color: var(--ink);
+  font-family: inherit;
+}
+
+/* Banner คำเตือน */
+.resp-warning-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff7e6;
+  border: 1px solid #ffe3a3;
+  color: #8a6400;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+}
+.resp-warning-banner svg { flex-shrink: 0; color: #d99a00; }
+
+/* Header */
+.resp-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.resp-header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--brand-deep);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.resp-header-text { flex: 1; }
+.resp-header-text h1 { font-size: 24px; margin: 0 0 4px; }
+.resp-header-text p { margin: 0; color: var(--muted); font-size: 14px; }
+.resp-header-illustration { color: var(--brand-deep); opacity: 0.85; }
+
+/* แถบคำแนะนำ */
+.resp-tips-bar {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.resp-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.resp-tip-row svg { color: var(--brand-deep); flex-shrink: 0; }
+
+/* Toggle โหมด */
+.resp-mode-toggle {
+  display: inline-flex;
+  background: #f5f9f9;
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 20px;
+  gap: 4px;
+}
+.resp-mode-toggle button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.resp-mode-toggle button.active {
+  background: var(--brand-deep);
+  color: #fff;
+}
+
+/* Grid 2 คอลัมน์ */
+.resp-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .resp-grid { grid-template-columns: 1fr; }
+}
+
+.resp-col-main, .resp-col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* การ์ด consent */
+.resp-consent-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--card-green);
+  border: 1px solid #d7ece4;
+  border-radius: 14px;
+  padding: 16px;
+}
+.resp-consent-card > svg { color: var(--brand-deep); flex-shrink: 0; margin-top: 2px; }
+.resp-consent-card strong { display: block; font-size: 14.5px; margin-bottom: 4px; }
+.resp-consent-card p { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.resp-consent-card .rrisk-consent {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* กรอบเตือนก่อนเลือกไฟล์ */
+.resp-pending-banner {
+  border: 1px dashed #f0b65c;
+  background: #fff8ee;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+.resp-pending-banner strong { color: #b06a00; font-size: 13.5px; }
+.resp-pending-banner span { color: var(--muted); }
+
+/* Dropzone วิดีโอ */
+.resp-dropzone {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 36px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  flex: 1;
+}
+.resp-play-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--brand-deep);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.resp-play-circle.small { width: 44px; height: 44px; }
+.resp-play-circle:disabled { opacity: 0.5; cursor: not-allowed; }
+.resp-dropzone-text { font-size: 14px; color: var(--ink); margin: 0; }
+.resp-dropzone-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.resp-btn-outline {
+  border: 1px solid var(--brand-deep);
+  color: var(--brand-deep);
+  background: #fff;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.resp-btn-outline:disabled { opacity: 0.4; cursor: not-allowed; }
+.resp-dropzone-hint { font-size: 12px; color: var(--muted); margin: 0; }
+.resp-file-chip { font-size: 12.5px; color: var(--brand-deep); font-weight: 600; margin: 0; word-break: break-all; }
+
+/* โหมดกล้อง */
+.resp-camera-frame {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.resp-camera-frame .rrisk-camera-stage video { width: 100%; max-width: 480px; }
+
+/* ปุ่มหลัก */
+.resp-btn-primary {
+  background: var(--brand-deep);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 14.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.resp-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.resp-btn-wide { width: 100%; }
+
+/* คอลัมน์ขวา: preview + vitallens + quality */
+.resp-preview-card {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.resp-preview-card video {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 12px;
+  background: #eef3f2;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.resp-quality-card {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  padding: 18px;
+}
+.resp-quality-card h3 { font-size: 15px; margin: 0 0 12px; }
+.resp-quality-list { list-style: none; margin: 0 0 16px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.resp-quality-list li { display: flex; align-items: center; justify-content: space-between; font-size: 13px; gap: 8px; }
+.resp-quality-label { color: var(--ink); }
+.resp-quality-badge {
+  font-size: 11.5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef1f1;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.resp-quality-badge.status-ok { background: #e3f6ec; color: var(--brand-deep); }
+.resp-quality-badge.status-warn { background: #fff3da; color: #9a6a00; }
+.resp-quality-badge.status-fail { background: #fde8e8; color: #c23b3b; }
+
+.resp-ready-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 14px;
+  margin-bottom: 14px;
+}
+.resp-ready-row svg { color: var(--brand-deep); flex-shrink: 0; margin-top: 2px; }
+.resp-ready-row strong { display: block; font-size: 13.5px; }
+.resp-ready-row p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+
+/* Privacy accordion */
+.resp-privacy-accordion {
+  margin-top: 24px;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 14px 18px;
+  background: #fff;
+}
+.resp-privacy-accordion summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  list-style: none;
+}
+.resp-privacy-accordion summary::-webkit-details-marker { display: none; }
+.resp-privacy-accordion svg { color: var(--brand-deep); }
+.resp-privacy-accordion p { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+
 /* Print: แสดงเฉพาะรายงานสำหรับแพทย์ */
 @media print {
   body * { visibility: hidden; }

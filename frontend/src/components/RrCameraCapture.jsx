@@ -90,7 +90,7 @@ function drawShoulderOverlay(canvas, landmarks) {
   }
 }
 
-export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, onCancel, enabled = false }) {
+export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, onCancel, enabled = false, registerStart, onStatusChange }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const qualityCanvasRef = useRef(null)
@@ -331,6 +331,15 @@ export default function RrCameraCapture({ onRrResult, onVideoRecorded, onError, 
     }
     rafRef.current = requestAnimationFrame(loop)
   }, [enabled, finishMeasurement, onError])
+
+  // Additive (UI shell merge): ให้หน้าแม่เรียก start ผ่านปุ่มของตัวเอง + รู้สถานะไว้ปิดปุ่มซ้ำ — ไม่เปลี่ยน logic เดิม
+  useEffect(() => {
+    registerStart?.(start)
+    return () => registerStart?.(null)
+  }, [registerStart, start])
+  useEffect(() => {
+    onStatusChange?.(status)
+  }, [onStatusChange, status])
 
   // เก็บ landmarks ล่าสุดไว้ใช้ในส่วนวัดของลูป
   const landmarksCacheRef = useRef(null)
