@@ -1,0 +1,78 @@
+{
+ "persistence": {
+  "N": 1198,
+  "±2": 63.2,
+  "±3": 79.1,
+  "±5": 92.5,
+  "MAE": 2.1
+ },
+ "autogluon": {
+  "N": 1198,
+  "±2": 48.7,
+  "±3": 66.0,
+  "±5": 89.1,
+  "MAE": 2.62
+ },
+ "leaderboard_top5": [
+  {
+   "model": "WeightedEnsemble_L2",
+   "score_val": -2.1740674958974635,
+   "eval_metric": "mean_absolute_error",
+   "pred_time_val": 2.065678834915161,
+   "fit_time": 66.53071999549866,
+   "pred_time_val_marginal": 0.002011537551879883,
+   "fit_time_marginal": 0.05899453163146973,
+   "stack_level": 2,
+   "can_infer": true,
+   "fit_order": 5
+  },
+  {
+   "model": "LightGBM",
+   "score_val": -2.2419910038920614,
+   "eval_metric": "mean_absolute_error",
+   "pred_time_val": 0.7137091159820557,
+   "fit_time": 20.757848262786865,
+   "pred_time_val_marginal": 0.7137091159820557,
+   "fit_time_marginal": 20.757848262786865,
+   "stack_level": 1,
+   "can_infer": true,
+   "fit_order": 2
+  },
+  {
+   "model": "LightGBMXT",
+   "score_val": -2.2932819882595967,
+   "eval_metric": "mean_absolute_error",
+   "pred_time_val": 1.052847146987915,
+   "fit_time": 21.36067533493042,
+   "pred_time_val_marginal": 1.052847146987915,
+   "fit_time_marginal": 21.36067533493042,
+   "stack_level": 1,
+   "can_infer": true,
+   "fit_order": 1
+  },
+  {
+   "model": "RandomForestMSE",
+   "score_val": -2.4457547507621986,
+   "eval_metric": "mean_absolute_error",
+   "pred_time_val": 0.29711103439331055,
+   "fit_time": 24.353201866149902,
+   "pred_time_val_marginal": 0.29711103439331055,
+   "fit_time_marginal": 24.353201866149902,
+   "stack_level": 1,
+   "can_infer": true,
+   "fit_order": 3
+  },
+  {
+   "model": "CatBoost",
+   "score_val": -2.5226682018701156,
+   "eval_metric": "mean_absolute_error",
+   "pred_time_val": 0.017014503479003906,
+   "fit_time": 528.8028531074524,
+   "pred_time_val_marginal": 0.017014503479003906,
+   "fit_time_marginal": 528.8028531074524,
+   "stack_level": 1,
+   "can_infer": true,
+   "fit_order": 4
+  }
+ ]
+}
