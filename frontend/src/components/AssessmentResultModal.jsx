@@ -1,6 +1,13 @@
 import { useNavigate } from 'react-router-dom'
 
-function AssessmentResultModal({ isOpen, onClose, result, redFlag }) {
+const LEVEL_CRITERIA = [
+  { range: '0–4', label: 'ต่ำ', tone: 'low' },
+  { range: '5–9', label: 'ปานกลาง', tone: 'moderate' },
+  { range: '10–15', label: 'สูง', tone: 'high' },
+  { range: '16+ หรือมีสัญญาณฉุกเฉิน', label: 'ต้องได้รับการดูแลเร่งด่วน', tone: 'critical' },
+]
+
+function AssessmentResultModal({ isOpen, onClose, result, score, redFlag }) {
   const navigate = useNavigate()
   if (!isOpen) return null
 
@@ -37,9 +44,36 @@ function AssessmentResultModal({ isOpen, onClose, result, redFlag }) {
           </div>
         </div>
         <div className="result-modal-body">
-          <p className="result-modal-kicker">ผลการประเมินเบื้องต้น</p>
+          <p className="result-modal-kicker">ผลการประเมินสุขภาพ</p>
           <h2>{headline}</h2>
+
+          <p className="result-modal-zone-label">สถานะสุขภาพของคุณอยู่ในเกณฑ์</p>
+          <p className={`result-modal-zone-chip zone-chip--${tone}`}>
+            <span className="zone-dot" aria-hidden="true" />
+            {redFlag ? 'เร่งด่วน — ต้องได้รับการดูแลทันที' : `ระดับ${result.label}`}
+          </p>
+
+          <p className="result-modal-score">คะแนนรวมของคุณ: <b>{redFlag ? `${score} + สัญญาณฉุกเฉิน` : score}</b> / 31</p>
+
           <p className="result-modal-copy">{description}</p>
+
+          <details className="result-modal-criteria">
+            <summary>ดูเกณฑ์การประเมินที่ใช้</summary>
+            <table className="result-modal-criteria-table">
+              <thead>
+                <tr><th>คะแนน</th><th>ระดับ</th></tr>
+              </thead>
+              <tbody>
+                {LEVEL_CRITERIA.map((criteria) => (
+                  <tr key={criteria.tone} className={criteria.tone === tone ? 'is-current' : undefined}>
+                    <td>{criteria.range}</td>
+                    <td>{criteria.label}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="result-modal-criteria-note">เกณฑ์คัดกรองเบื้องต้นตามแบบประเมินของโครงการ — ไม่ใช่การวินิจฉัยโรค</p>
+          </details>
 
           <label className="result-modal-check">
             <input type="checkbox" defaultChecked />
@@ -61,3 +95,4 @@ function AssessmentResultModal({ isOpen, onClose, result, redFlag }) {
 }
 
 export default AssessmentResultModal
+

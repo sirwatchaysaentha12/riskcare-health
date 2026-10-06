@@ -89,6 +89,41 @@
 .result-modal-body h2 { margin: 0 0 10px; color: #0f172a; font-size: 20px; font-weight: 800; line-height: 1.35; word-break: break-word; }
 .result-modal-copy { margin: 0 0 18px; color: var(--modal-body-text); font-size: 14px; line-height: 1.7; word-break: break-word; }
 
+/* ─── Phase 23: zone status chip + criteria table ─── */
+.result-modal-zone-label { margin: 0 0 6px; color: #64748b; font-size: 12px; font-weight: 700; }
+.result-modal-zone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--modal-accent) 14%, #ffffff);
+  color: var(--modal-ink);
+  font-size: 14px;
+  font-weight: 800;
+}
+.zone-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--modal-accent); flex-shrink: 0; }
+.result-modal-score { margin: 0 0 14px; color: #0f172a; font-size: 14px; }
+.result-modal-score b { color: var(--modal-ink); }
+
+.result-modal-criteria { margin: 0 0 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+.result-modal-criteria summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 12px;
+}
+.result-modal-criteria summary:hover { color: #0f172a; }
+.result-modal-criteria[open] summary { border-bottom: 1px solid #e2e8f0; }
+.result-modal-criteria-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.result-modal-criteria-table th, .result-modal-criteria-table td { padding: 7px 12px; text-align: left; color: #334155; }
+.result-modal-criteria-table th { color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+.result-modal-criteria-table tr.is-current td { background: color-mix(in srgb, var(--modal-accent) 12%, #ffffff); font-weight: 800; color: var(--modal-ink); }
+.result-modal-criteria-note { margin: 0; padding: 8px 12px 10px; color: #94a3b8; font-size: 11px; }
+
 .result-modal-check {
   display: flex;
   align-items: flex-start;
