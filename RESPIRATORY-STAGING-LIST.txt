@@ -1,0 +1,52 @@
+# RESPIRATORY-STAGING-LIST.txt — รายการไฟล์ที่อนุมัติให้ stage (Phase 16)
+# ที่มา: COMPETITION-FILE-MANIFEST.md §1-2 — stage ด้วยการระบุไฟล์ทีละไฟล์เท่านั้น (ห้าม git add .)
+# แบ่งกลุ่ม: Respiratory Phase 9-15 · ห้าม stage: OpenAQ/Vertex, unrelated, sensitive (ดู manifest §3-4)
+
+# --- Modified (Respiratory Phase 9-15) ---
+frontend/src/pages/RespiratoryRiskAssessment.jsx
+frontend/src/styles/respiratory-risk.css
+frontend/src/utils/measurementContract.js
+frontend/tests/e2e-respiratory-risk.mjs
+frontend/scripts/auth-smoke.mjs
+frontend/.env.example
+
+# --- Phase 9: Evidence-Based Data / Provenance / UI Credibility (docs) ---
+DATASET-RESEARCH-QUESTIONS.md
+EXTERNAL-DATASET-REVIEW.md
+DATASET-GOVERNANCE-AND-LICENSE-GATE.md
+EXTERNAL-DATA-SCHEMA.md
+MODEL-TRAINING-PLAN.md
+MODEL-EVALUATION-PLAN.md
+UI-CREDIBILITY-REQUIREMENTS.md
+
+# --- Phase 12: Modality Decision / COHFACE Review / Approval Form ---
+VALIDATION-MODALITY-DECISION.md
+COHFACE-LICENSE-REVIEW.md
+VALIDATION-APPROVAL-FORM.md
+PHASE-12-MODALITY-DECISION-REPORT.md
+
+# --- Phase 13: Track A BIDMC Offline Validation ---
+FREE-DATA-SOURCE-REVIEW.md
+TRACK-A-APPROVAL-RECORD.md
+BIDMC-DATASET-REVIEW.md
+BIDMC-QC-REPORT.md
+BIDMC-EVALUATION-SPEC.md
+BIDMC-SPLIT-MANIFEST.md
+TRACK-A-OFFLINE-VALIDATION-REPORT.md
+scripts/bidmc-download.mjs
+scripts/bidmc-qc-validate.mjs
+
+# --- Phase 14: Competition Submission Package ---
+COMPETITION-SUBMISSION-README.md
+PROJECT-ABSTRACT-TH.md
+PROJECT-ABSTRACT-EN.md
+JUDGING-FAQ.md
+VALIDATION-EVIDENCE-SUMMARY.md
+KNOWN-LIMITATIONS-FOR-JUDGES.md
+COMPETITION-DEMO-SCRIPT.md
+COMPETITION-SUBMISSION-CHECKLIST.md
+COMPETITION-READINESS-REPORT.md
+
+# --- Phase 15: Public Submission Safety / Handoff ---
+COMPETITION-FILE-MANIFEST.md
+COMPETITION-HANDOFF-REPORT.md
