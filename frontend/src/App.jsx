@@ -10,6 +10,7 @@ import './styles/dashboard.css'
 import './styles/home.css'
 import './styles/modal.css'
 import './styles/overview.css'
+import './styles/sidebar.css'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import AdminDashboard from './pages/AdminDashboard'
@@ -25,6 +26,7 @@ import AppointmentCalendar from './pages/AppointmentCalendar'
 import AddAppointment from './pages/AddAppointment'
 import AirQualityTrend from './pages/AirQualityTrend'
 import BreathingRateCheck from './pages/BreathingRateCheck'
+import HourlyForecast from './pages/HourlyForecast'
 import './styles/breathing.css'
 import RespiratoryRiskAssessment from './pages/RespiratoryRiskAssessment'
 import './styles/respiratory-risk.css'
@@ -41,22 +43,23 @@ function App() {
           <Route path="/dashboard" element={<RegionalDashboard />} />
           <Route path="/appointments" element={<AppointmentCalendar />} />
           <Route path="/air-quality-trend" element={<AirQualityTrend />} />
+          <Route path="/hourly-forecast" element={<HourlyForecast />} />
           <Route path="/breathing-check" element={<BreathingRateCheck />} />
+          <Route path="/assessment" element={<Assessment />} />
+          <Route path="/risk-assessment" element={<Assessment />} />
+          <Route path="/overview" element={<Overview />} />
+          <Route path="/respiratory-risk" element={<RespiratoryRiskAssessment />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/health-planning" element={<HealthPlanning />} />
+          <Route path="/exercise-plan" element={<ExercisePlan />} />
+          <Route path="/health-tracker" element={<HealthTracker />} />
+          <Route path="/add-appointment" element={<AddAppointment />} />
+          <Route path="/workout-plan" element={<WorkoutPlan />} />
+          <Route path="/exercise-detail" element={<ExerciseDetail />} />
         </Route>
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
-        <Route path="/risk-assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
-        <Route path="/overview" element={<ProtectedRoute><Overview /></ProtectedRoute>} />
-        <Route path="/respiratory-risk" element={<ProtectedRoute><RespiratoryRiskAssessment /></ProtectedRoute>} />
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
-        <Route path="/health-planning" element={<ProtectedRoute><HealthPlanning /></ProtectedRoute>} />
-        <Route path="/exercise-plan" element={<ProtectedRoute><ExercisePlan /></ProtectedRoute>} />
-        <Route path="/health-tracker" element={<ProtectedRoute><HealthTracker /></ProtectedRoute>} />
-        <Route path="/add-appointment" element={<ProtectedRoute><AddAppointment /></ProtectedRoute>} />
-        <Route path="/workout-plan" element={<ProtectedRoute><WorkoutPlan /></ProtectedRoute>} />
-        <Route path="/exercise-detail" element={<ProtectedRoute><ExerciseDetail /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -65,3 +68,4 @@ function App() {
 }
 
 export default App
+
