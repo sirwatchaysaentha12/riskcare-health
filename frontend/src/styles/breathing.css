@@ -1,118 +1,312 @@
-
-
-/* Hallmark · pre-emit critique: P5 H5 E5 S4 R5 V4
- * Camera assessment refinement: calm step-by-step workflow, clear consent, strong focus states.
- */
+/* Hallmark · macrostructure: Workbench · tone: utilitarian · anchor hue: emerald-green
+ * Hallmark · pre-emit critique: P4 H5 E5 S4 R5 V4
+ * redesign ของ /breathing-check ภายใต้ design.md (RiskCare Emerald · modern-minimal · motion-cut)
+ * โครง 2 คอลัมน์: ฝั่งซ้าย = ความยินยอม + การใช้งาน, ฝั่งขวา = สถานะคุณภาพภาพ — ปุ่ม/การ์ดใช้
+ * design language เดียวกับ /respiratory-risk (resp-* global classes) */
 .br-page {
+  /* ชี้ตัวแปรที่ resp-* ใช้ กลับเข้าสู่ธีม design.md — ตัวแปรพวกนี้ scope อยู่ที่ .resp-page บนหน้าอื่น */
+  --brand: var(--color-primary);
+  --brand-deep: var(--color-primary-dark);
+  --ink: var(--color-neutral-900);
+  --muted: var(--color-neutral-600);
+  --card-green: var(--color-primary-light);
+  --border-soft: var(--color-neutral-200);
   min-height: 100vh;
-  padding: clamp(24px, 5vw, 56px) 16px 72px;
-  background: linear-gradient(180deg, var(--color-neutral-50), var(--color-neutral-100));
+  padding: 24px 16px 64px;
+  background: var(--color-neutral-50);
   color: var(--color-neutral-800);
 }
-.br-shell { max-width: 980px; margin: 0 auto; }
+.br-shell { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
 .br-back {
-  margin-bottom: 16px;
+  align-self: flex-start;
+  padding: 8px 14px;
   border: 1px solid var(--color-neutral-200);
   border-radius: 10px;
-  color: var(--color-neutral-700);
   background: var(--color-neutral-white);
-  box-shadow: var(--shadow);
-}
-.br-card {
-  padding: clamp(18px, 4vw, 38px);
-  border: 1px solid var(--color-neutral-200);
-  border-radius: 22px;
-  background: var(--color-neutral-white);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, .07);
-}
-.br-warning {
-  position: static;
-  margin: 0 0 26px;
-  padding: 12px 14px;
-  border: 1px solid #f0d39b;
-  border-radius: 10px;
-  background: #fffaf0;
-  color: #7c4a03;
-  font-size: 13px;
-  line-height: 1.55;
-}
-.br-title {
-  margin-bottom: 10px;
-  color: var(--color-neutral-900);
-  font-size: clamp(28px, 4vw, 42px);
-  letter-spacing: -.025em;
-}
-.br-title::before {
-  display: block;
-  width: 44px;
-  height: 4px;
-  margin-bottom: 16px;
-  content: '';
-  border-radius: 999px;
-  background: var(--color-primary);
-}
-.br-desc { max-width: 62ch; margin-bottom: 22px; color: var(--color-neutral-600); line-height: 1.7; }
-.br-instructions {
-  margin-bottom: 22px;
-  padding: 14px 16px;
-  border-left: 4px solid var(--color-primary);
-  border-radius: 0 10px 10px 0;
-  background: var(--color-primary-light);
   color: var(--color-neutral-700);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .18s ease;
 }
-.br-mode-tabs { gap: 6px; margin: 0 0 22px; padding: 4px; border: 1px solid var(--color-neutral-200); border-radius: 12px; background: var(--color-neutral-50); }
-.br-mode-tab { min-height: 44px; border: 0; border-radius: 8px; color: var(--color-neutral-600); background: transparent; font-weight: 700; }
-.br-mode-tab:hover { color: var(--color-primary-dark); background: var(--color-primary-light); }
-.br-mode-tab.is-active { color: var(--color-neutral-white); background: var(--color-primary-dark); }
-.br-privacy-panel, .br-quality {
-  margin: 0 0 20px;
-  padding: 18px;
-  border: 1px solid var(--color-neutral-200);
-  border-radius: 14px;
-  background: var(--color-neutral-50);
-  color: var(--color-neutral-700);
+.br-back:hover { border-color: var(--color-primary); }
+
+/* Header: ไอคอนวงกลม + ชื่อ + กล่องคำแนะนำ (เปลี่ยนตามโหมด) */
+.br-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
-.br-privacy-panel > strong, .br-quality strong { color: var(--color-neutral-900); }
-.br-consent-label { padding-top: 4px; }
-.br-consent-label input { accent-color: var(--color-primary-dark); }
-.br-primary-button, .br-secondary-button {
-  min-height: 46px;
-  border-radius: 9px !important;
+.br-header-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--color-primary-dark);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.br-header-text { flex: 1; }
+.br-header-text h1 {
+  margin: 0 0 4px;
+  font-size: clamp(24px, 3vw, 34px);
   font-weight: 700;
-  transition: background .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+  color: var(--color-neutral-900);
 }
-.br-primary-button { padding-inline: 22px; background: var(--color-primary-dark) !important; }
-.br-primary-button:hover:not(:disabled) { background: var(--color-primary-hover) !important; box-shadow: 0 8px 18px var(--color-primary-glow); transform: translateY(-1px); }
-.br-secondary-button { margin-left: 8px; border: 1px solid var(--color-primary-dark) !important; color: var(--color-primary-dark) !important; background: var(--color-neutral-white) !important; }
-.br-secondary-button:hover:not(:disabled) { background: var(--color-primary-light) !important; }
-.br-video-wrap { max-width: 720px; margin: 24px auto 18px; border-radius: 16px; box-shadow: 0 12px 28px rgba(15, 23, 42, .16); }
-.br-quality { margin: 0 auto 18px; max-width: 720px; }
-.br-quality--warning { border-color: #f0d39b; background: #fffaf0; color: #7c4a03; }
-.br-live-guide { border-left-color: var(--color-primary); background: var(--color-primary-light); color: var(--color-neutral-700); }
-.br-countdown { margin: 16px 0 8px; color: var(--color-primary-dark); font-size: clamp(24px, 4vw, 34px); }
-.br-progress { height: 10px; margin: 8px 0 14px; background: var(--color-neutral-200); }
-.br-progress-fill { background: var(--color-primary-dark); }
-.br-hint { color: #8a5a00; }
+.br-header-text p { margin: 0; color: var(--color-neutral-600); font-size: 14px; }
+.br-header-tips {
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary-soft);
+  border-radius: 12px;
+  padding: 12px 14px;
+  max-width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.br-tips-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+.br-tip-row {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--color-neutral-700);
+}
+.br-tip-row svg { flex-shrink: 0; margin-top: 2px; color: var(--color-primary-dark); }
+
+/* Grid 2 คอลัมน์: การใช้งาน · สถานะคุณภาพ */
+.br-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .br-grid { grid-template-columns: 1fr; }
+  .br-header { flex-wrap: wrap; }
+  .br-header-tips { max-width: none; }
+}
+.br-col-main, .br-col-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* ความยินยอม (ใช้ resp-consent-card) — จัด checkbox ให้อ่านง่าย */
+.br-consent-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 6px;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+.br-consent-label input { margin-top: 2px; accent-color: var(--color-primary-dark); }
+
+/* กล่องขออนุญาตกล้อง (resp-cam-request มาจาก respiratory-risk.css) */
+
+/* สถานะ/ข้อผิดพลาด */
+.br-note {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--color-neutral-200);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 10px;
+  background: var(--color-neutral-white);
+  color: var(--color-neutral-700);
+  font-size: 13.5px;
+}
+.br-error {
+  padding: 12px 14px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 13.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.br-error strong { font-size: 14px; }
+.br-plain-fallback {
+  padding: 12px 14px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 10px;
+  background: var(--color-neutral-white);
+  color: var(--color-neutral-600);
+  font-size: 13.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.br-hint { margin: 0; color: var(--color-neutral-600); font-size: 12px; }
+
+/* วิดีโอ + canvas overlay — ซ้อนกันเต็มกรอบ (จุดอ้างอิงทับภาพเสมอ) */
+.br-video-wrap {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 16px;
+  background: #0f172a;
+}
+.br-video-wrap video { width: 100%; display: block; }
+.br-video-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* ระหว่างวัด */
+.br-measure-block { padding: 4px 2px; }
+.br-countdown {
+  margin: 0 0 8px;
+  color: var(--color-primary-dark);
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 700;
+}
+.br-progress { height: 8px; margin: 0 0 8px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden; }
+.br-progress-fill { height: 100%; border-radius: 999px; background: var(--color-primary-dark); transition: width .2s linear; }
+
+/* ผลวัด */
 .br-result {
-  margin: 22px 0;
-  padding: 24px;
+  padding: 20px;
   border: 1px solid var(--color-primary-soft);
   border-radius: 16px;
   background: var(--color-primary-light);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.br-result strong { color: var(--color-primary-dark); font-size: clamp(32px, 6vw, 50px); }
-.br-risk-panel { margin-top: 22px; padding: 20px; border: 1px solid var(--color-neutral-200); border-radius: 16px; background: var(--color-neutral-50); }
-.br-risk-result { border-color: var(--color-primary-soft); background: var(--color-neutral-white); }
-.br-stop-button { margin-top: 22px; border-radius: 9px; color: var(--color-neutral-700); }
-.br-primary-button:focus-visible, .br-secondary-button:focus-visible, .br-mode-tab:focus-visible, .br-back:focus-visible, .br-stop-button:focus-visible { outline: 3px solid var(--color-primary-soft); outline-offset: 3px; }
+.br-result strong {
+  color: var(--color-primary-dark);
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 700;
+  line-height: 1.15;
+}
+.br-result small { color: var(--color-neutral-600); font-size: 12.5px; }
+.br-result .resp-btn-outline { align-self: flex-start; }
+
+/* ปุ่มถอนความยินยอม — โครงร่างเทา ไม่ใช่ปุ่มหลัก */
+.br-stop-button {
+  align-self: flex-start;
+  padding: 9px 16px;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 10px;
+  background: var(--color-neutral-white);
+  color: var(--color-neutral-600);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .18s ease, color .18s ease;
+}
+.br-stop-button:hover { border-color: #fca5a5; color: #b91c1c; }
+
+/* คอลัมน์ขวา: คุณภาพภาพ / หมายเหตุ Demo / ขั้นถัดไป */
+.br-quality {
+  padding: 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 16px;
+  background: var(--color-neutral-white);
+}
+.br-quality h3 { margin: 0 0 8px; font-size: 15px; font-weight: 700; color: var(--color-neutral-900); }
+.br-quality--ready { border-color: var(--color-primary-soft); background: var(--color-primary-light); }
+.br-quality--warning { border-color: #f0d39b; background: #fffaf0; }
+.br-quality--warning h3 { color: #7c4a03; }
+.br-live-guide {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--color-neutral-700);
+  font-weight: 600;
+}
+.br-issue-list { margin: 0 0 8px; padding-left: 18px; font-size: 13px; color: #7c4a03; display: flex; flex-direction: column; gap: 4px; }
+.br-quality-note { margin: 0; font-size: 12.5px; color: var(--color-neutral-600); }
+.br-quality .resp-btn-outline { width: 100%; }
+.br-next-step {
+  padding: 14px 16px;
+  border: 1px dashed var(--color-primary);
+  border-radius: 12px;
+  background: var(--color-primary-light);
+}
+.br-next-step-text { margin: 4px 0 0; font-size: 12.5px; color: var(--color-neutral-700); }
+
+/* การ์ดขั้นตอน (คอลัมน์ขวา ตอนยังไม่เริ่มวัด) */
+.br-steps-card {
+  padding: 16px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 16px;
+  background: var(--color-neutral-white);
+}
+.br-steps-card h3 { margin: 0 0 10px; font-size: 15px; font-weight: 700; color: var(--color-neutral-900); }
+.br-steps-list {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+.br-steps-list li::marker { color: var(--color-primary-dark); font-weight: 700; }
+
+/* แบบประเมินปัจจัยเสี่ยงเพิ่มเติม (เต็มความกว้าง เฉพาะหลังวัดเสร็จ) */
+.br-risk-panel {
+  padding: 20px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 16px;
+  background: var(--color-neutral-white);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.br-risk-panel > strong { font-size: 15px; color: var(--color-neutral-900); }
+.br-risk-note { margin: 0; font-size: 13px; color: var(--color-neutral-600); }
+.br-risk-question {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-neutral-200);
+  border-radius: 10px;
+  background: var(--color-neutral-50);
+  font-size: 13.5px;
+  color: var(--color-neutral-700);
+  cursor: pointer;
+}
+.br-risk-question input { margin-top: 2px; accent-color: var(--color-primary-dark); }
+.br-risk-question:hover { border-color: var(--color-primary-soft); }
+.br-risk-result {
+  padding: 14px 16px;
+  border: 1px solid var(--color-primary-soft);
+  border-radius: 10px;
+  background: var(--color-primary-light);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.br-risk-result strong { color: var(--color-primary-dark); font-size: 14.5px; }
+.br-risk-result p { margin: 0; font-size: 13.5px; color: var(--color-neutral-700); }
+.br-risk-result small { color: var(--color-neutral-600); font-size: 12px; }
+
+.br-file-hidden { display: none; }
+
+/* Focus ring ตาม design.md — ทันที ไม่ animate */
+.br-back:focus-visible,
+.br-stop-button:focus-visible,
+.br-consent-label input:focus-visible,
+.br-risk-question input:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
 
 @media (max-width: 560px) {
-  .br-page { padding: 18px 12px 48px; }
-  .br-card { padding: 18px 16px; border-radius: 16px; }
-  .br-mode-tabs { flex-direction: column; }
-  .br-mode-tab { width: 100%; }
-  .br-secondary-button { margin: 10px 0 0; }
-  .br-primary-button, .br-secondary-button { width: 100%; justify-content: center; }
-  .br-video-wrap { margin-inline: -2px; border-radius: 12px; }
-  .br-privacy-panel, .br-quality, .br-risk-panel { padding: 15px; }
+  .br-page { padding: 16px 12px 48px; }
+  .br-result .resp-btn-outline { align-self: stretch; }
+  .br-stop-button { align-self: stretch; text-align: center; }
 }
