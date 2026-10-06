@@ -186,6 +186,33 @@ export async function getOpenAQDailyHistory(sensorId: number, fromDate: string, 
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
+export type HourlyMeasurementPoint = { tsUtc: string; pm25: number }
+
+// ดึงค่าวัดรายชั่วโมงล่าสุดของ sensor (endpoint ทางการ /measurements/hourly — รองรับ datetime filter)
+// ใช้สำหรับโหมดพยากรณ์รายชั่วโมง: เรียงเก่า→ใหม่, กรองช่วงเวลาเป็น +07:00, dt_to บีบไม่เกิน now (422 ถ้าอนาคต)
+export async function getOpenAQRecentHourly(sensorId: number, hoursBack = 12): Promise<HourlyMeasurementPoint[]> {
+  const apiKey = getApiKey()
+  const end = new Date()
+  const start = new Date(end.getTime() - hoursBack * 60 * 60 * 1000)
+  const query = new URLSearchParams({
+    datetime_from: start.toISOString(),
+    datetime_to: end.toISOString(),
+    limit: '1000',
+  })
+  const measurements = await fetchJson<OpenAQMeasurementsResponse>(
+    `${OPENAQ_API_URL}/sensors/${sensorId}/measurements/hourly?${query}`,
+    { 'X-API-Key': apiKey },
+  )
+  const points: HourlyMeasurementPoint[] = (measurements.results || [])
+    .map((item) => {
+      const value = Number(item.value)
+      const tsUtc = String(item.period?.datetimeFrom?.utc || item.datetime?.utc || '')
+      return { tsUtc, pm25: value }
+    })
+    .filter((p) => Number.isFinite(p.pm25) && p.tsUtc)
+  return points.sort((a, b) => a.tsUtc.localeCompare(b.tsUtc))
+}
+
 export async function compareOpenAQWithAir4Thai(lat: number, lon: number, openAQLatest: number) {
   const payload = await fetchJson<Air4ThaiResponse>(AIR4THAI_URL)
   const stations = payload.stations || []
