@@ -20,7 +20,7 @@ export async function OPTIONS() {
 
 // ---- Content-type detection จาก magic bytes (ไม่เชื่อชื่อไฟล์/MIME ที่ client อ้าง) ----
 // webm/matroska เริ่มด้วย EBML header 1A 45 DF A3; mp4 มี "ftyp" ที่ offset 4
-function detectVideoContainer(bytes) {
+function detectVideoContainer(bytes: Buffer) {
   if (bytes.length >= 4 &&
     bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3) {
     return 'webm'
@@ -33,7 +33,7 @@ function detectVideoContainer(bytes) {
 }
 
 /** ปกปิด local path / ข้อมูลสภาพแวดล้อม ออกจาก error ก่อนส่งกลับ client */
-function redactError(message) {
+function redactError(message: string) {
   if (typeof message !== 'string') return 'unexpected error'
   return message
     .replace(/[A-Za-z]:\\[^\s'",;)]*/g, '[path]')
