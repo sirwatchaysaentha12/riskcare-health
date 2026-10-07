@@ -84,7 +84,7 @@ export default function Login() {
         if (signInError) return setMessage('เข้าสู่ระบบไม่สำเร็จ กรุณายืนยันข้อมูลก่อนลองใหม่')
         setSuccess(true)
         setMessage('สมัครสมาชิกเรียบร้อยแล้ว')
-        setTimeout(() => navigate('/risk-assessment', { replace: true }), 800)
+        setTimeout(() => navigate('/onboarding/assessment', { replace: true }), 800)
         return
       }
 
@@ -112,7 +112,7 @@ export default function Login() {
       if (profileError || !userProfile?.role) return setMessage('ไม่พบสิทธิ์ผู้ใช้ กรุณาติดต่อผู้ดูแลระบบ')
       if (userProfile.role === 'admin') return navigate('/admin/dashboard', { replace: true })
       if (userProfile.role !== 'user') return setMessage('ไม่มีสิทธิ์เข้าใช้งาน กรุณาติดต่อผู้ดูแลระบบ')
-      navigate(userProfile.has_completed_assessment === true ? '/' : '/risk-assessment', { replace: true })
+      navigate(userProfile.has_completed_assessment === true ? '/' : '/onboarding/assessment', { replace: true })
     } finally {
       setLoading(false)
     }

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LogoIcon from '../components/LogoIcon'
 import AssessmentResultModal from '../components/AssessmentResultModal'
@@ -131,12 +131,28 @@ function getHealthProfileCondition(answers) {
   return conditions.length ? conditions.join(' / ') : 'ไม่มีโรคประจำตัว'
 }
 
-function Assessment() {
+// คีย์ draft ของโหมด onboarding — ผู้ใช้ใหม่ปิดหน้ากลางทางแล้วกลับมา คำตอบต้องไม่หาย
+// (ฉบับร่างเก็บในเครื่องเท่านั้น — ข้อมูลจริงถูกบันทึกลง Supabase ตอนกดประเมินสำเร็จ)
+const ONBOARDING_DRAFT_KEY = 'riskcare_assessment_draft_v1'
+
+function loadOnboardingDraft() {
+  try {
+    const raw = localStorage.getItem(ONBOARDING_DRAFT_KEY)
+    const draft = raw ? JSON.parse(raw) : null
+    return draft && typeof draft === 'object' ? draft : null
+  } catch {
+    return null
+  }
+}
+
+function Assessment({ mode = 'default' }) {
+  const isOnboarding = mode === 'onboarding'
+  const onboardingDraft = isOnboarding ? loadOnboardingDraft() : null
   const navigate = useNavigate()
   const resultRef = useRef(null)
-  const [answers, setAnswers] = useState({})
-  const [region, setRegion] = useState('')
-  const [province, setProvince] = useState('')
+  const [answers, setAnswers] = useState(() => onboardingDraft?.answers ?? {})
+  const [region, setRegion] = useState(() => onboardingDraft?.region ?? '')
+  const [province, setProvince] = useState(() => onboardingDraft?.province ?? '')
   const [submitted, setSubmitted] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -150,6 +166,17 @@ function Assessment() {
   const answeredCount = Object.keys(answers).length
   const isFormComplete = answeredCount >= questions.length && region && province
   const [validationMessage, setValidationMessage] = useState('')
+  const VALIDATION_MESSAGE = isOnboarding
+    ? 'กรุณาตอบคำถามให้ครบทุกข้อและเลือกภาค/จังหวัดก่อนกดประเมินความเสี่ยง'
+    : 'กรุณากรอกข้อมูลให้ครบทุกข้อก่อนกดดูผลการประเมิน'
+
+  // บันทึกฉบับร่างอัตโนมัติ (เฉพาะโหมด onboarding) — กลับมาแก้ต่อได้แม้ปิดหน้า
+  useEffect(() => {
+    if (!isOnboarding) return
+    try {
+      localStorage.setItem(ONBOARDING_DRAFT_KEY, JSON.stringify({ answers, region, province }))
+    } catch { /* พื้นที่เต็ม/โหมดส่วนตัว — ข้าม ไม่กระทบการทำแบบประเมิน */ }
+  }, [isOnboarding, answers, region, province])
 
   const progressPercent = Math.round((answeredCount / questions.length) * 100)
 
@@ -162,7 +189,7 @@ function Assessment() {
   async function handleSubmit(event) {
     event.preventDefault()
     if (!isFormComplete || isProcessing) {
-      setValidationMessage('กรุณากรอกคำถามให้ครบทุกข้อก่อนกดดูผลการประเมิน')
+      setValidationMessage(VALIDATION_MESSAGE)
       const firstUnanswered = questions.find((question) => !answers[question.id])
       if (firstUnanswered) {
         const element = document.querySelector(`[name="${firstUnanswered.id}"]`)
@@ -208,6 +235,10 @@ function Assessment() {
       // (บันทึก DB เสร็จแล้ว แต่ยังไม่เปิด modal ทันที — ผู้ใช้ขอ delay)
       await new Promise((resolve) => setTimeout(resolve, 1800))
 
+      if (isOnboarding) {
+        try { localStorage.removeItem(ONBOARDING_DRAFT_KEY) } catch { /* ข้ามได้ */ }
+      }
+
       setIsProcessing(false)
       setSubmitted(true)
       setIsModalOpen(true)
@@ -219,9 +250,9 @@ function Assessment() {
   }
 
   return (
-    <main className="assessment-page">
+    <main className={isOnboarding ? 'assessment-page assessment-page--onboarding' : 'assessment-page'}>
       <header className="assessment-header">
-        <button className="back-button" type="button" onClick={() => navigate('/')}>← กลับหน้าภาพรวม</button>
+        {!isOnboarding && <button className="back-button" type="button" onClick={() => navigate('/')}>← กลับหน้าภาพรวม</button>}
         <div className="assessment-brand"><LogoIcon /></div>
         <span className="progress-label">ตอบแล้ว {answeredCount}/{questions.length}</span>
         <div className="assessment-progress-track">
@@ -231,14 +262,32 @@ function Assessment() {
       <section className="assessment-shell">
         <AssessmentResultModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} result={result} score={score} redFlag={redFlag} />
         <div className="assessment-intro">
-          <p className="eyebrow">แบบประเมินคัดกรองเบื้องต้น</p>
-          <h1>รู้จักความเสี่ยง<br />ของระบบทางเดินหายใจ</h1>
-          <p>ตอบคำถามสั้น ๆ ตามอาการและการสัมผัสในช่วง 4 สัปดาห์ที่ผ่านมา ใช้เวลาประมาณ 3 นาที</p>
+          {isOnboarding ? (
+            <>
+              <p className="eyebrow">ขั้นตอนแรกของการใช้งาน</p>
+              <h1>คัดกรองความเสี่ยงระบบทางเดินหายใจ<br />ด้วยมาตรฐานสากล</h1>
+              <p>
+                แบบสอบถามนี้ใช้ประเมินปัจจัยเสี่ยงส่วนบุคคล ประวัติสุขภาพ และการสัมผัสมลพิษ PM2.5
+                ในชีวิตประจำวัน ใช้เวลาประมาณ 3 นาที เพื่อให้ระบบดูแลสุขภาพของคุณได้ตรงจุดตั้งแต่วันแรก
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="eyebrow">แบบประเมินคัดกรองเบื้องต้น</p>
+              <h1>รู้จักความเสี่ยง<br />ของระบบทางเดินหายใจ</h1>
+              <p>ตอบคำถามสั้น ๆ ตามอาการและการสัมผัสในช่วง 4 สัปดาห์ที่ผ่านมา ใช้เวลาประมาณ 3 นาที</p>
+            </>
+          )}
           <div className="assessment-note"><strong>สำคัญ</strong><span>ผลนี้เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยโรค</span></div>
         </div>
         {submitted && (
           <section ref={resultRef} className={`result-card ${result.tone}`} aria-live="polite">
             <div><span className="result-kicker">ผลการคัดกรอง</span><h2>ระดับความเสี่ยง: {result.label}</h2><p>{result.advice}</p></div>
+            {isOnboarding && (
+              <button type="button" className="assessment-submit" onClick={() => navigate('/', { replace: true })}>
+                เข้าสู่หน้าหลัก <span>→</span>
+              </button>
+            )}
           </section>
         )}
         <form className="assessment-form" onSubmit={handleSubmit}>
@@ -270,30 +319,30 @@ function Assessment() {
           <div
             className="submit-wrapper"
             onMouseEnter={() => {
-              if (!isFormComplete) setValidationMessage('กรุณากรอกข้อมูลให้ครบทุกข้อก่อนกดดูผลการประเมิน')
+              if (!isFormComplete) setValidationMessage(VALIDATION_MESSAGE)
             }}
             onMouseLeave={() => {
               if (!isFormComplete) setValidationMessage('')
             }}
             onFocus={() => {
-              if (!isFormComplete) setValidationMessage('กรุณากรอกข้อมูลให้ครบทุกข้อก่อนกดดูผลการประเมิน')
+              if (!isFormComplete) setValidationMessage(VALIDATION_MESSAGE)
             }}
             onBlur={() => {
               if (!isFormComplete) setValidationMessage('')
             }}
             onTouchStart={() => {
-              if (!isFormComplete) setValidationMessage('กรุณากรอกข้อมูลให้ครบทุกข้อก่อนกดดูผลการประเมิน')
+              if (!isFormComplete) setValidationMessage(VALIDATION_MESSAGE)
             }}
             onClick={() => {
-              if (!isFormComplete) setValidationMessage('กรุณากรอกข้อมูลให้ครบทุกข้อก่อนกดดูผลการประเมิน')
+              if (!isFormComplete) setValidationMessage(VALIDATION_MESSAGE)
             }}
           >
             <button className="assessment-submit" type="submit" disabled={!isFormComplete || isProcessing}>
-              {isProcessing ? 'กำลังประมวลผล...' : 'ดูผลการประเมิน'} <span>→</span>
+              {isProcessing ? 'กำลังประมวลผล...' : isOnboarding ? 'ประเมินความเสี่ยง' : 'ดูผลการประเมิน'} <span>→</span>
             </button>
           </div>
           <p className={`form-hint ${!isFormComplete ? 'is-visible' : ''}`} role="status" aria-live="polite">
-            {validationMessage || 'ตอบคำถามให้ครบทุกข้อเพื่อดูผลการประเมิน'}
+            {validationMessage || (isOnboarding ? 'ตอบคำถามให้ครบทุกข้อเพื่อประเมินความเสี่ยง' : 'ตอบคำถามให้ครบทุกข้อเพื่อดูผลการประเมิน')}
           </p>
         </form>
       </section>

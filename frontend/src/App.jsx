@@ -11,7 +11,6 @@ import './styles/home.css'
 import './styles/modal.css'
 import './styles/overview.css'
 import './styles/sidebar.css'
-import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 import AdminDashboard from './pages/AdminDashboard'
 import RegionalDashboard from './pages/RegionalDashboard'
@@ -31,6 +30,7 @@ import './styles/breathing.css'
 import RespiratoryRiskAssessment from './pages/RespiratoryRiskAssessment'
 import './styles/respiratory-risk.css'
 import AppLayout from './components/AppLayout'
+import { AssessmentGuard, OnboardingGuard } from './components/AssessmentAccessGuard'
 import './styles/profile.css'
 import './styles/health-planning.css'
 
@@ -38,7 +38,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        <Route element={<AssessmentGuard><AppLayout /></AssessmentGuard>}>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<RegionalDashboard />} />
           <Route path="/appointments" element={<AppointmentCalendar />} />
@@ -59,6 +59,7 @@ function App() {
           <Route path="/exercise-detail" element={<ExerciseDetail />} />
         </Route>
         <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/onboarding/assessment" element={<OnboardingGuard><Assessment mode="onboarding" /></OnboardingGuard>} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />

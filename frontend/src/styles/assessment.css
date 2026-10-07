@@ -601,3 +601,9 @@
   .assessment-intro h1 { font-size: 22px; line-height: 1.35; }
   .question-title { line-height: 1.5; }
 }
+
+/* ─── Onboarding (ผู้ใช้ใหม่ — หน้าแบบสอบถามแยก ไม่มีเมนูข้าง) ── */
+.result-card .assessment-submit { margin-top: 16px; }
+@media (max-width: 480px) {
+  .assessment-page--onboarding .assessment-intro h1 { font-size: 22px; line-height: 1.35; }
+}
