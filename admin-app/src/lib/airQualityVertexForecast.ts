@@ -47,12 +47,16 @@ export async function getVertexForecasts(stationId: string, horizonDays = 3): Pr
   // ตารางอาจยังไม่ถูกสร้าง (ผู้ใช้ยังไม่รัน migration) — ถือว่าไม่มีผล Vertex แล้ว fallback baseline
   let rows: Record<string, unknown>[] | null = null
   let missingTable = false
+  const todayKey = new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10)
   {
     const { data, error } = await client
       .from('pm25_forecast_daily')
       .select('station_id,date,pm25,pm25_min,pm25_max,horizon,model_version,updated_at')
       .eq('station_id', stationId)
-      .order('date', { ascending: true })
+      // กรองวันเก่าที่ตกค้างใน query — ไม่งั้นมันกิน quota limit จนวันใหม่ขาด
+      .gte('date', todayKey)
+      // ตารางสะสมแถวเก่าหลายเดือน — ต้องเอา "ใหม่สุด" (ascending+limit จะได้แถว มี.ค. แล้วถูกกรองวันที่ตัดหมด → fallback ตลอด)
+      .order('date', { ascending: false })
       .limit(horizonDays * 2)
     if (error) {
       // ตารางยังไม่ถูกสร้าง: Postgres 42P01 หรือ PostgREST PGRST205 ("Could not find the table ... in the schema cache")
@@ -65,7 +69,6 @@ export async function getVertexForecasts(stationId: string, horizonDays = 3): Pr
 
   // Validate before serving (spec: "Backend ต้องตรวจ Schema และชนิดข้อมูลก่อนส่ง Frontend")
   const points: VertexForecastPoint[] = []
-  const todayKey = new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10)
   for (const row of rows) {
     const date = String(row.date ?? '').slice(0, 10)
     const value = Number(row.pm25)
@@ -84,5 +87,7 @@ export async function getVertexForecasts(stationId: string, horizonDays = 3): Pr
     })
   }
   if (!points.length) return null
-  return { points: points.slice(0, horizonDays), complete: points.length >= horizonDays }
+  points.sort((a, b) => a.date.localeCompare(b.date))  // คืนเรียงเก่า→ใหม่ (desc query แล้ว)
+  // ตัดเอาวันใหม่สุด N วัน — แถววันเก่าตกค้าง (publish รอบก่อน) ห้ามกินโควตา
+  return { points: points.slice(-horizonDays), complete: points.length >= horizonDays }
 }

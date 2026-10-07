@@ -3,11 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "test:auth": "node ../frontend/scripts/auth-smoke.mjs"
+    "test:auth": "node ../frontend/scripts/auth-smoke.mjs",
+    "test:trend": "node --test tests/pm25Trend.test.mjs",
+    "openaq:health": "node scripts/check-openaq-health.mjs",
+    "air-quality:backfill": "node --import ./scripts/register-ts-aliases.mjs ./scripts/run-air-quality-script.mjs backfill",
+    "air-quality:daily": "node --import ./scripts/register-ts-aliases.mjs ./scripts/run-air-quality-script.mjs daily"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
