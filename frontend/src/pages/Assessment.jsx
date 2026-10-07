@@ -204,6 +204,10 @@ function Assessment() {
       })
       if (healthProfileError) throw healthProfileError
 
+      // ให้หน้า "กำลังประมวลผล" ค้างไว้ช่วงสั้น ๆ ก่อนเด้ง popup สถานะสุขภาพ
+      // (บันทึก DB เสร็จแล้ว แต่ยังไม่เปิด modal ทันที — ผู้ใช้ขอ delay)
+      await new Promise((resolve) => setTimeout(resolve, 1800))
+
       setIsProcessing(false)
       setSubmitted(true)
       setIsModalOpen(true)
