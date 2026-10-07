@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Publish ML forecasts: pm25_model_production.joblib → Supabase pm25_forecast_daily
-รันวันละครั้งหลัง ingest (หรือรันมือเมื่อต้องการ) — dashboard API จะใช้ผลนี้ทันที
-(modelVersion = ml-local-v3.0) · ลบแถวในตาราง = rollback กลับ baseline อัตโนมัติ
-Features ต้องตรงกับ train_production.py ทุกตัว (lag_1 = ค่าของวัน origin เอง)
+Publish ML forecasts: pm25_model_v4_residual.joblib → Supabase pm25_forecast_daily
+รันวันละครั้งหลัง ingest (หรือรันมือเมื่อต้องการ) — dashboard API ใช้ผลนี้ทันที
+(modelVersion = ml-local-v4.0) · ลบแถวในตาราง = rollback กลับ baseline อัตโนมัติ
+
+สูตรต่อ horizon (เลือกจาก rolling-origin CV, round4/round6 — data/vertex/round6_daily_deep.json):
+  - h=1 (24 ชม.): residual HGB (deep features) + persistence — CV ±5 68.9% / ±3 51.8% / MAE 4.37
+    (ชนะ persistence 68.8/50.5/4.50 และ blend50 เดิม ml-local-v3.0)
+  - h=2-3 (48-72 ชม.): 0.5×ค่าล่าสุด + 0.5×MA7 — CV ±5 57.0/53.0% (ดีที่สุด, ±5 holdout 85.1/80.7%)
+สถานีที่ feature ไม่ครบ (ประวัติ < ~31 วัน) → ทั้ง 3 วันใช้ w05 blend (ยังอยู่ใน v4.0 pipeline)
 """
 import sys
 sys.stdout.reconfigure(encoding="utf-8")
@@ -55,8 +60,8 @@ def fetch_live_daily(sensor_id: int, days: int = 60):
     """คืน dict date(str) -> pm25 เฉลี่ยรายวัน จาก OpenAQ live (ค่าเฉลี่ยเหมือน openAqClient.ts)"""
     if not OPENAQ_KEY:
         return {}
-    frm = (pd.Timestamp.utcnow().tz_localize(None) - pd.Timedelta(days=days)).date()
-    to = pd.Timestamp.utcnow().tz_localize(None).date()
+    frm = (pd.Timestamp.now(tz="UTC").tz_localize(None) - pd.Timedelta(days=days)).date()
+    to = pd.Timestamp.now(tz="UTC").tz_localize(None).date()
     acc = {}
     try:
         r = requests.get(
@@ -86,30 +91,33 @@ def build_series(g, live):
     idx = pd.to_datetime(sorted(merged))
     return pd.Series([merged[d.date()] for d in idx], index=idx, name="pm25").asfreq("D")
 
-# ── features (ต้องตรง train_production.py ทุกตัว: lag_1 = ค่าของวัน origin เอง) ──
-def build_features_from_series(s: pd.Series) -> pd.DataFrame:
-    f = pd.DataFrame(index=s.index)
-    for k in [1, 2, 3, 4, 5, 6, 7, 14]:
-        f[f"lag_{k}"] = s.shift(k - 1)
-    for w in [3, 7, 14]:
-        f[f"roll_mean_{w}"] = s.rolling(w).mean()
-        f[f"roll_std_{w}"] = s.rolling(w).std()
-    for w in [3, 7]:
-        f[f"roll_min_{w}"] = s.rolling(w).min()
-        f[f"roll_max_{w}"] = s.rolling(w).max()
-    f["day_of_week"] = f.index.dayofweek
-    f["month"] = f.index.month
-    f["is_high_season"] = f["month"].isin([12, 1, 2, 3]).astype(int)
-    return f
-
-bundle = joblib.load(Path(r"C:\Users\ACER\projectweb\notebooks\pm25_model_production.joblib"))
-models, blend = bundle["models"], bundle["blend"]
+# ── features ต้องตรง train_v4_residual.py ทุกตัว (lag1 = เมื่อวาน, ค่า origin อยู่คอลัมน์ pm25) ──
+bundle = joblib.load(Path(r"C:\Users\ACER\projectweb\notebooks\pm25_model_v4_residual.joblib"))
+model = bundle["model"]
 FEATS = bundle["features"]
 MODEL_VERSION = bundle["version"]
 
+def build_features(s: pd.Series) -> pd.DataFrame:
+    f = pd.DataFrame(index=s.index)
+    f["pm25"] = s
+    for lag in range(1, 15):
+        f[f"lag{lag}"] = s.shift(lag)
+    for w in (3, 7, 14, 30):
+        f[f"rm{w}"] = s.shift(1).rolling(w, min_periods=max(2, w // 2)).mean()
+        f[f"rs{w}"] = s.shift(1).rolling(w, min_periods=max(2, w // 2)).std()
+    f["min7"] = s.shift(1).rolling(7, min_periods=3).min()
+    f["max7"] = s.shift(1).rolling(7, min_periods=3).max()
+    f["min14"] = s.shift(1).rolling(14, min_periods=7).min()
+    f["max14"] = s.shift(1).rolling(14, min_periods=7).max()
+    f["roc1"] = s.shift(1) - s.shift(2)
+    f["roc7"] = s.shift(1) - s.shift(8)
+    f["mom3_7"] = s.shift(1).rolling(3, min_periods=2).mean() - s.shift(1).rolling(7, min_periods=3).mean()
+    return f
+
 upserts = []
 import time
-live_ok = live_fail = 0
+live_ok = live_fail = ml_ok = 0
+series_by_station = {}
 for sid, g in df.groupby("station_id"):
     g = g.dropna(subset=["pm25"]).sort_values("date")
     if len(g) < 3:
@@ -123,17 +131,32 @@ for sid, g in df.groupby("station_id"):
     s = s.dropna()
     if len(s) < 3:
         continue
+    series_by_station[str(sid)] = s
+
+# sp_lag: ค่าเฉลี่ยสถานีอื่น ณ แต่ละวัน (ตาม train_v4_residual.py)
+all_series = pd.DataFrame(series_by_station)
+cross_mean = all_series.mean(axis=1)
+
+for sid, s in series_by_station.items():
     d_last = s.index.max()
-    fe = build_features_from_series(s)
+    last = float(s.loc[d_last])
+    last7 = s.loc[:d_last].tail(7)
+    ma7 = float(last7.mean()) if len(last7) == 7 else last
+    fe = build_features(s)
+    fe["sp_lag"] = fe.index.map(cross_mean)
+    fe["dow"] = fe.index.dayofweek
+    fe["month"] = fe.index.month
+    fe["is_hs"] = fe.index.month.isin([12, 1, 2, 3]).astype(int)
     if d_last not in fe.index:
         continue
     x = fe.loc[[d_last], FEATS]
-    lag1 = float(fe.loc[d_last, "lag_1"]) if np.isfinite(fe.loc[d_last, "lag_1"]) else None
+    features_ok = bool(np.isfinite(x.to_numpy()).all())
     for h in [1, 2, 3]:
-        ml_pred = float(models[h].predict(x)[0])
-        # blend50 เหมือนตอนเทรน: lag เป็น NaN → fallback ค่า ML
-        base = lag1 if lag1 is not None else ml_pred
-        pred = max(0.0, 0.5 * ml_pred + 0.5 * base)
+        if h == 1 and features_ok:
+            pred = max(0.0, float(model.predict(x)[0]) + last)   # residual + persistence
+            ml_ok += 1
+        else:
+            pred = max(0.0, 0.5 * last + 0.5 * ma7)              # w05 blend (CV-best สำหรับ h2-3)
         upserts.append({
             "station_id": str(sid),
             "date": str((d_last + timedelta(days=h)).date()),
@@ -155,5 +178,6 @@ for i in range(0, len(upserts), 500):
     r.raise_for_status()
     saved += len(chunk)
 stations = len({u["station_id"] for u in upserts})
-print(f"publish แล้ว: {saved} แถว forecast · {stations} สถานี · live_ok={live_ok} live_fail={live_fail} · model_version={MODEL_VERSION}")
+print(f"publish แล้ว: {saved} แถว forecast · {stations} สถานี · live_ok={live_ok} live_fail={live_fail} · "
+      f"ml_h1={ml_ok} (ที่เหลือ w05) · model_version={MODEL_VERSION}")
 print("ตัวอย่าง:", upserts[0])
