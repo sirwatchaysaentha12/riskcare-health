@@ -14,7 +14,6 @@ import '../styles/breathing.css'
 // โหลดจากไฟล์ในเครื่อง (public/mediapipe/) — ทำงานออฟไลน์ได้ ไม่พึ่ง CDN ตอนรัน (ไฟล์ตรวจด้วย npm run demo-check)
 const TASKS_VISION_URL = '/mediapipe'
 const POSE_MODEL_URL = '/mediapipe/pose_landmarker_lite.task'
-const SAMPLE_CLIP_URL = '/demo/sample-breathing.mp4'
 const MEASURE_DURATION_MS = 30000
 const DISCLAIMER = 'ฟีเจอร์ทดลอง ใช้โมเดล pose detection สำเร็จรูป ความแม่นยำจำกัด ใช้เพื่อสาธิตแนวคิดเท่านั้น ไม่ใช่ค่าทางการแพทย์'
 
@@ -157,15 +156,9 @@ export default function BreathingRateCheck() {
   const [qualityInterruption, setQualityInterruption] = useState(false)
   const [videoPlaying, setVideoPlaying] = useState(false) // กล้องบางตัวใช้เวลาเริ่มส่ง frame — ปุ่มวัดต้องรอจนเล่นได้จริง
   const [videoReady, setVideoReady] = useState(false)
-  const [mode, setMode] = useState('live') // 'live' = กล้องสด | 'upload' = อัปโหลดคลิปวิดีโอ
-  const [, setUploadFileName] = useState('') // ชื่อไฟล์ไม่ถูกแสดงใน UI — ใช้เฉพาะ setter ตอนรีเซ็ต/เลือกคลิป
-  const [uploadError, setUploadError] = useState('')
-  const [uploadUrl, setUploadUrl] = useState('')
   const [resultUnreliable, setResultUnreliable] = useState(false)
-  const [sampleMode, setSampleMode] = useState(false)
   const [riskAnswers, setRiskAnswers] = useState({})
   const [riskResult, setRiskResult] = useState(null)
-  const uploadUrlRef = useRef(null)
   const durationMsRef = useRef(MEASURE_DURATION_MS)
   const [durationMs, setDurationMs] = useState(MEASURE_DURATION_MS) // มิเรอร์ของ durationMsRef เพื่อคำนวณ progress ใน render โดยไม่อ่าน ref ระหว่าง render
   // จุดเดียวที่เปลี่ยนความยาวการวัด — อัปเดตทั้ง ref (ให้ vision loop อ่านค่าล่าสุดเสมอ) และ state (ให้ progress bar render ถูกต้อง)
@@ -199,19 +192,17 @@ export default function BreathingRateCheck() {
   // ผูก stream กับ video element หลังจาก element ถูก render (status เข้าสู่ ready/measuring/done)
   // — ตอน getUserMedia สำเร็จ video ยังไม่อยู่ใน DOM จึงต้อง attach ทีหลัง (บั๊กที่พบจริงตอนทดสอบ)
   useEffect(() => {
-    if (mode !== 'live') return
     if ((status === 'ready' || status === 'measuring' || status === 'done') && videoRef.current && streamRef.current) {
       if (videoRef.current.srcObject !== streamRef.current) {
         videoRef.current.srcObject = streamRef.current
         videoRef.current.play().catch(() => { /* autoplay block ไม่กระทบ */ })
       }
     }
-  }, [status, mode])
+  }, [status])
 
   useEffect(() => () => {
     stoppedRef.current = true
     stopCamera()
-    if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current)
     closePoseLandmarker(landmarkerRef.current)
   }, [])
 
@@ -342,14 +333,6 @@ export default function BreathingRateCheck() {
 
   const stopAndRevokeConsent = () => {
     stopCamera()
-    if (uploadUrlRef.current) {
-      URL.revokeObjectURL(uploadUrlRef.current)
-      uploadUrlRef.current = null
-    }
-    setUploadUrl('')
-    setUploadFileName('')
-    setUploadError('')
-    setSampleMode(false)
     setResultUnreliable(false)
     setRiskResult(null)
     setRiskAnswers({})
@@ -362,120 +345,6 @@ export default function BreathingRateCheck() {
     setPermissionState('not_requested')
     setCameraQuality({ status: 'checking', issues: [], torsoVisible: false, distanceStatus: 'unknown' })
     setStatus('idle')
-  }
-
-  // สลับโหมด: หยุดทุกอย่างที่กำลังทำ (กล้อง/คลิป/โมเดล) แล้วกลับสู่ idle ของโหมดใหม่
-  const switchMode = (next) => {
-    if (next === mode) return
-    stopCamera()
-    visionLoopRef.current?.stop()
-    if (uploadUrlRef.current) {
-      URL.revokeObjectURL(uploadUrlRef.current)
-      uploadUrlRef.current = null
-    }
-    setUploadUrl('')
-    setUploadFileName('')
-    setUploadError('')
-    setSampleMode(false)
-    setResultUnreliable(false)
-    setRiskResult(null)
-    setRiskAnswers({})
-    setMeasureDuration(MEASURE_DURATION_MS)
-    measuringRef.current = false
-    stoppedRef.current = true
-    closePoseLandmarker(landmarkerRef.current)
-    landmarkerRef.current = null
-    setBpm(null)
-    setSampleCount(0)
-    setRemainingMs(MEASURE_DURATION_MS)
-    setVideoPlaying(false)
-    setVideoReady(false)
-    setShoulderHint(false)
-    setQualityInterruption(false)
-    setCameraQuality({ status: 'checking', issues: [], torsoVisible: false, distanceStatus: 'unknown' })
-    setConsentAccepted(false)
-    setPermissionState('not_requested')
-    setCameraErrorMessage('ตรวจสิทธิ์กล้องและลองอีกครั้ง')
-    setStatus('idle')
-    setMode(next)
-  }
-
-  const MAX_UPLOAD_BYTES = 200 * 1024 * 1024
-
-  // โหมด Demo: ใช้คลิปตัวอย่างในเครื่อง (public/demo/sample-breathing.mp4) — เผื่อกล้อง/เน็ตมีปัญหาวันแข่ง
-  const handleDemoClick = async () => {
-    setUploadError('')
-    try {
-      const probe = await fetch(SAMPLE_CLIP_URL, { method: 'HEAD' })
-      if (!probe.ok) {
-        setUploadError('ยังไม่มีคลิปตัวอย่างในเครื่อง — วางไฟล์ไว้ที่ frontend/public/demo/sample-breathing.mp4 แล้วลองใหม่')
-        return
-      }
-      setStatus('upload-preparing')
-      landmarkerRef.current = await loadPoseLandmarker()
-      if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current)
-      uploadUrlRef.current = null
-      setMeasureDuration(MEASURE_DURATION_MS)
-      setUploadUrl(SAMPLE_CLIP_URL)
-      setUploadFileName('คลิปตัวอย่าง (Demo)')
-      setSampleMode(true)
-      stoppedRef.current = false
-      previousFrameRef.current = null
-      lastQualityCheckRef.current = 0
-      setCameraQuality({ status: 'checking', issues: [], torsoVisible: false, distanceStatus: 'unknown' })
-      setVideoReady(false)
-      setVideoPlaying(false)
-      setBpm(null)
-      setResultUnreliable(false)
-      setShoulderHint(false)
-      setQualityInterruption(false)
-      setStatus('ready')
-      startVision()
-    } catch {
-      setUploadError('โหลดโมเดลไม่สำเร็จ ตรวจการเชื่อมต่อแล้วลองใหม่')
-      setStatus('idle')
-    }
-  }
-
-  // อัปโหลดคลิป: ตรวจไฟล์ → โหลดโมเดลเดียวกับโหมดสด → สร้าง objectURL (ประมวลผลในเบราว์เซอร์เท่านั้น)
-  const handleFileSelected = async (event) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('video/')) {
-      setUploadError('ไฟล์ต้องเป็นวิดีโอ (เช่น mp4, webm, mov)')
-      event.target.value = ''
-      return
-    }
-    if (file.size > MAX_UPLOAD_BYTES) {
-      setUploadError('ไฟล์ใหญ่เกิน 200 MB — กรุณาตัดคลิปให้สั้นลงแล้วลองใหม่')
-      event.target.value = ''
-      return
-    }
-    setUploadError('')
-    setStatus('upload-preparing')
-    try {
-      landmarkerRef.current = await loadPoseLandmarker()
-    } catch {
-      setStatus('model-error')
-      return
-    }
-    if (uploadUrlRef.current) URL.revokeObjectURL(uploadUrlRef.current)
-    const url = URL.createObjectURL(file)
-    uploadUrlRef.current = url
-    setMeasureDuration(MEASURE_DURATION_MS)
-    setUploadUrl(url)
-    setUploadFileName(file.name)
-    stoppedRef.current = false
-    previousFrameRef.current = null
-    lastQualityCheckRef.current = 0
-    setCameraQuality({ status: 'checking', issues: [], torsoVisible: false, distanceStatus: 'unknown' })
-    setVideoReady(false)
-    setVideoPlaying(false)
-    setBpm(null)
-    setShoulderHint(false)
-    setQualityInterruption(false)
-    setStatus('ready')
-    startVision()
   }
 
   const progressPct = Math.min(100, Math.max(0, Math.round(((durationMs - remainingMs) / Math.max(durationMs, 1)) * 100)))
@@ -512,29 +381,17 @@ export default function BreathingRateCheck() {
             <p>ต้นแบบนี้ประมาณการเคลื่อนไหวจากภาพ ไม่ใช่การคัดกรองหรือวินิจฉัยโรค</p>
           </div>
           <aside className="br-header-tips">
-            <p className="br-tips-title"><BulbGlyph /> {mode === 'upload' ? 'แนะนำการเลือกคลิป' : 'ตั้งกล้องให้พร้อม'}</p>
-            {(mode === 'upload'
-              ? ['เลือกคลิปที่ถ่ายไว้ ระบบประมวลผลทีละเฟรมในเบราว์เซอร์', 'ประมาณอัตราการหายใจจากช่วงต้นคลิป (สูงสุด 30 วินาที)', 'คลิปแนวตั้ง เห็นไหล่–ลำตัวชัด แสงพอดี']
-              : ['นั่งนิ่ง วางกล้องให้อยู่ระดับลำตัว หันช่วงอกเข้ากล้อง', 'หายใจตามธรรมชาติ ให้เห็นไหล่และลำตัวส่วนบนชัดเจน', 'ต้องการแสงสว่างเพียงพอ ไม่มืดหรือสว่างจ้าเกินไป']
-            ).map((tip) => (
+            <p className="br-tips-title"><BulbGlyph /> ตั้งกล้องให้พร้อม</p>
+            {['นั่งนิ่ง วางกล้องให้อยู่ระดับลำตัว หันช่วงอกเข้ากล้อง', 'หายใจตามธรรมชาติ ให้เห็นไหล่และลำตัวส่วนบนชัดเจน', 'ต้องการแสงสว่างเพียงพอ ไม่มืดหรือสว่างจ้าเกินไป'].map((tip) => (
               <p key={tip} className="br-tip-row"><CheckGlyph /> {tip}</p>
             ))}
           </aside>
         </header>
 
-        <div className="resp-mode-toggle" role="tablist" aria-label="เลือกโหมดการตรวจ">
-          <button type="button" role="tab" aria-selected={mode === 'live'} className={mode === 'live' ? 'active' : ''} onClick={() => switchMode('live')}>
-            <CameraGlyph size={16} /> กล้องสด
-          </button>
-          <button type="button" role="tab" aria-selected={mode === 'upload'} className={mode === 'upload' ? 'active' : ''} onClick={() => switchMode('upload')}>
-            <ClipGlyph size={16} /> อัปโหลดคลิปวิดีโอ
-          </button>
-        </div>
-
         <div className="br-grid">
           {/* ===== คอลัมน์ซ้าย: ความยินยอม + การใช้งาน ===== */}
           <div className="br-col-main">
-            {canShowConsent && mode === 'live' && cameraSupported && secureContext && (
+            {canShowConsent && cameraSupported && secureContext && (
               <div className="resp-consent-card" id="camera-privacy-notice">
                 <ShieldGlyph />
                 <div style={{ flex: 1 }}>
@@ -548,45 +405,7 @@ export default function BreathingRateCheck() {
               </div>
             )}
 
-            {canShowConsent && mode === 'upload' && (
-              <div className="resp-consent-card" id="upload-privacy-notice">
-                <ShieldGlyph />
-                <div style={{ flex: 1 }}>
-                  <strong>ก่อนอัปโหลดคลิป — ความเป็นส่วนตัวและความยินยอม</strong>
-                  <p>คลิปของคุณประมวลผลในเบราว์เซอร์เท่านั้น ไม่ถูกส่งขึ้นเซิร์ฟเวอร์หรือบันทึกเป็นไฟล์ — ไลบรารีและโมเดลโหลดจากไฟล์ในเครื่อง เช่นเดียวกับโหมดกล้องสด</p>
-                  <label className="br-consent-label">
-                    <input type="checkbox" checked={consentAccepted} onChange={(event) => setConsentAccepted(event.target.checked)} />
-                    <span>ฉันรับทราบและยินยอมให้ประมวลผลคลิปของฉันในเบราว์เซอร์เพื่อการสาธิต</span>
-                  </label>
-                </div>
-              </div>
-            )}
-
-            {mode === 'upload' && status === 'idle' && (
-              <div className="resp-dropzone">
-                <button type="button" className="resp-play-circle" disabled={!consentAccepted} onClick={() => document.getElementById('br-file-input')?.click()} aria-label="เลือกไฟล์วิดีโอ">
-                  <ClipGlyph size={22} />
-                </button>
-                <p className="resp-dropzone-text">เลือกคลิปวิดีโอจากเครื่องของคุณ</p>
-                <div className="resp-dropzone-actions">
-                  <button type="button" className="resp-btn-outline" disabled={!consentAccepted} onClick={() => document.getElementById('br-file-input')?.click()}>
-                    เลือกไฟล์วิดีโอ
-                  </button>
-                  <button type="button" className="resp-btn-outline" disabled={!consentAccepted} onClick={handleDemoClick}>
-                    ใช้คลิปตัวอย่าง (โหมด Demo)
-                  </button>
-                </div>
-                <label className="br-file-hidden">
-                  <input id="br-file-input" type="file" accept="video/*" onChange={handleFileSelected} disabled={!consentAccepted} />
-                </label>
-                <p className="resp-dropzone-hint">รองรับ MP4, WebM, MOV · ขนาดไม่เกิน 200 MB</p>
-                <small className="br-hint">แนะนำคลิป 10–30 วินาที ถ่ายแนวตั้ง เห็นช่วงไหล่–ลำตัวชัด — ระบบวัดจากช่วงต้นคลิปสูงสุด 30 วินาที</small>
-                {uploadError && <div className="br-error" role="alert">{uploadError}</div>}
-              </div>
-            )}
-            {status === 'upload-preparing' && <div className="br-note" role="status">กำลังโหลดโมเดล pose… กรุณารอสักครู่</div>}
-
-            {mode === 'live' && status === 'idle' && (cameraSupported
+            {status === 'idle' && (cameraSupported
               ? secureContext
                 ? <div className="resp-cam-request">
                     <div className="resp-cam-request-icon" aria-hidden="true"><CameraGlyph size={22} /></div>
@@ -597,8 +416,8 @@ export default function BreathingRateCheck() {
                   </div>
                 : <div className="br-plain-fallback">กล้องต้องใช้ผ่าน HTTPS หรือ localhost จึงจะเปิดได้</div>
               : <div className="br-plain-fallback">เบราว์เซอร์นี้ไม่รองรับกล้อง หรือไม่ได้อยู่ในบริบทที่ปลอดภัย จึงเปิดฟีเจอร์นี้ไม่ได้</div>)}
-            {mode === 'live' && status === 'camera-requesting' && <div className="br-note" role="status">สถานะสิทธิ์: {permissionState} · กำลังขอสิทธิ์กล้องและโหลดโมเดล กรุณาเลือกอนุญาตในเบราว์เซอร์</div>}
-            {mode === 'live' && status === 'camera-denied' && (
+            {status === 'camera-requesting' && <div className="br-note" role="status">สถานะสิทธิ์: {permissionState} · กำลังขอสิทธิ์กล้องและโหลดโมเดล กรุณาเลือกอนุญาตในเบราว์เซอร์</div>}
+            {status === 'camera-denied' && (
               <div className="br-error" role="alert">
                 <strong>ยังเข้าถึงกล้องไม่ได้</strong>
                 <span>{cameraErrorMessage} (สถานะ: {permissionState})</span>
@@ -608,9 +427,7 @@ export default function BreathingRateCheck() {
             {status === 'model-error' && (
               <div className="br-plain-fallback" role="alert">
                 โหลดโมเดลไม่สำเร็จ ตรวจการเชื่อมต่อแล้วลองใหม่ได้
-                {mode === 'live'
-                  ? <button type="button" className="resp-btn-outline" onClick={handleStart} disabled={!consentAccepted}>ลองโหลดใหม่</button>
-                  : <button type="button" className="resp-btn-outline" onClick={() => setStatus('idle')}>กลับไปเลือกไฟล์ใหม่</button>}
+                <button type="button" className="resp-btn-outline" onClick={handleStart} disabled={!consentAccepted}>ลองโหลดใหม่</button>
               </div>
             )}
 
@@ -621,35 +438,14 @@ export default function BreathingRateCheck() {
                   autoPlay
                   playsInline
                   muted
-                  src={mode === 'upload' ? uploadUrl : undefined}
-                  onLoadedMetadata={(event) => {
-                    const el = event.currentTarget
-                    if (mode === 'upload') {
-                      const raw = Number.isFinite(el.duration) ? Math.round(el.duration * 1000) : NaN
-                      if (Number.isFinite(raw) && raw > 0 && raw < 5000) {
-                        // fallback: คลิปสั้นกว่า 5 วินาที — สัญญาณไม่พอวิเคราะห์
-                        setUploadError('คลิปสั้นกว่า 5 วินาที กรุณาใช้คลิปยาวอย่างน้อย 5 วินาที')
-                        setStatus('idle')
-                        return
-                      }
-                      setMeasureDuration(Number.isFinite(raw) && raw > 0 ? Math.min(MEASURE_DURATION_MS, Math.max(5000, raw)) : MEASURE_DURATION_MS)
-                    }
-                    setVideoReady(isVideoFrameReady(el))
-                  }}
-                  onError={() => {
-                    if (mode === 'upload') {
-                      setUploadError('เปิดหรือถอดรหัสวิดีโอไม่สำเร็จ — ไฟล์อาจเสียหายหรือเบราว์เซอร์ไม่รองรับ codec นี้ ลองไฟล์อื่น')
-                      setStatus('idle')
-                    }
-                  }}
+                  onLoadedMetadata={(event) => setVideoReady(isVideoFrameReady(event.currentTarget))}
                   onCanPlay={(event) => setVideoReady(isVideoFrameReady(event.currentTarget))}
                   onPlaying={(event) => {
                     const ready = isVideoFrameReady(event.currentTarget)
                     setVideoReady(ready)
                     setVideoPlaying(ready)
                   }}
-                  onEnded={() => { if (mode === 'upload' && measuringRef.current) finishMeasurement() }}
-                  aria-label={mode === 'upload' ? 'คลิปวิดีโอที่เลือก' : 'ภาพตัวอย่างจากกล้อง'}
+                  aria-label="ภาพตัวอย่างจากกล้อง"
                 />
                 <canvas ref={canvasRef} width={640} height={480} aria-hidden="true" />
               </div>
@@ -676,19 +472,19 @@ export default function BreathingRateCheck() {
 
             {['ready', 'measuring', 'done'].includes(status) && (
               <button type="button" className="br-stop-button" onClick={stopAndRevokeConsent}>
-                {mode === 'upload' ? 'ลบคลิปและถอนความยินยอม' : 'หยุดกล้องและถอนความยินยอม'}
+                หยุดกล้องและถอนความยินยอม
               </button>
             )}
           </div>
 
           {/* ===== คอลัมน์ขวา: สถานะคุณภาพภาพ + หมายเหตุโหมด Demo ===== */}
           <aside className="br-col-side">
-            {['idle', 'camera-denied', 'model-error', 'upload-preparing'].includes(status) && (
+            {['idle', 'camera-denied', 'model-error'].includes(status) && (
               <div className="br-steps-card">
                 <h3>ขั้นตอนการใช้งาน</h3>
                 <ol className="br-steps-list">
                   <li>ติ๊กยินยอมความเป็นส่วนตัวด้านซ้าย</li>
-                  <li>{mode === 'upload' ? 'เลือกไฟล์คลิป หรือใช้คลิปตัวอย่าง' : 'กด "ยินยอมและเปิดกล้อง" เพื่อขอสิทธิ์กล้อง'}</li>
+                  <li>กด "ยินยอมและเปิดกล้อง" เพื่อขอสิทธิ์กล้อง</li>
                   <li>จัดภาพให้เห็นไหล่–ลำตัวส่วนบนจนระบบบอกว่าภาพพร้อม</li>
                   <li>กดเริ่มวัด แล้วหายใจตามธรรมชาติ 30 วินาที</li>
                   <li>อ่านผลประมาณการ + กรอกแบบประเมินปัจจัยเสี่ยง</li>
@@ -704,9 +500,6 @@ export default function BreathingRateCheck() {
                   : cameraQuality.status === 'ready' && <p className="br-quality-note">ตรวจแสง รายละเอียดภาพ การเปลี่ยนแปลงของเฟรม และการเห็นลำตัวส่วนบนแล้ว การตรวจนี้เป็นเพียง heuristic ไม่ใช่การยืนยันคุณภาพทางการแพทย์</p>}
                 {status === 'ready' && cameraQuality.status === 'warning' && <button type="button" className="resp-btn-outline" onClick={retryQualityCheck}>ตรวจภาพอีกครั้ง</button>}
               </div>
-            )}
-            {['ready', 'measuring', 'done'].includes(status) && sampleMode && (
-              <div className="br-note" role="status">โหมดตัวอย่าง (Demo): ผลลัพธ์มาจากคลิปตัวอย่างในเครื่อง ไม่ใช่การวัดสด</div>
             )}
             {status === 'ready' && (
               <div className="br-next-step">
@@ -758,9 +551,6 @@ function WarningIcon() {
 }
 function CameraGlyph({ size = 20 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2Z"/><circle cx="12" cy="13" r="4"/></svg>
-}
-function ClipGlyph({ size = 20 }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 8-6 4 6 4V8Z"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
 }
 function BulbGlyph() {
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.4 1 2.3h6c0-.9.4-1.8 1-2.3A7 7 0 0 0 12 2Z"/></svg>
