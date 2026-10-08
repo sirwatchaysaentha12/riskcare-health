@@ -20,6 +20,7 @@ debug.log
 
 # Large model binaries (train artifacts — keep local only)
 notebooks/*.joblib
+!notebooks/pm25_model_v4_residual.joblib
 
 # Zero-byte shell-redirect artifacts at repo root
 /cd
