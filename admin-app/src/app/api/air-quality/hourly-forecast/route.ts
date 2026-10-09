@@ -88,6 +88,10 @@ export async function GET(request: NextRequest) {
     if (error instanceof UpstreamRequestError) {
       return NextResponse.json({ state: 'error', error: 'UPSTREAM_UNAVAILABLE', upstreamStatus: error.upstreamStatus, message: 'บริการข้อมูลขาขึ้นไม่พร้อมใช้งาน ลองใหม่อีกครั้ง', modelVersion: HOURLY_MODEL_VERSION, updatedAt: new Date().toISOString() }, { status: 502, headers: RESPONSE_HEADERS })
     }
+    if (error instanceof Error && error.message.startsWith('OPENAQ_NETWORK_ERROR')) {
+      console.error('[hourly-forecast] upstream network unavailable', { code: error.message.split(':').at(-1) })
+      return NextResponse.json({ state: 'error', error: 'UPSTREAM_NETWORK_UNAVAILABLE', message: 'เชื่อมต่อบริการข้อมูลฝุ่นไม่ได้ชั่วคราว กรุณาลองใหม่ภายหลัง', modelVersion: HOURLY_MODEL_VERSION, updatedAt: new Date().toISOString() }, { status: 503, headers: RESPONSE_HEADERS })
+    }
     console.error('[hourly-forecast] unexpected error', error instanceof Error ? error.name : error)
     return NextResponse.json({ state: 'error', error: 'HOURLY_FORECAST_FAILED', message: 'เกิดข้อผิดพลาด ลองใหม่อีกครั้ง', modelVersion: HOURLY_MODEL_VERSION, updatedAt: new Date().toISOString() }, { status: 500, headers: RESPONSE_HEADERS })
   }

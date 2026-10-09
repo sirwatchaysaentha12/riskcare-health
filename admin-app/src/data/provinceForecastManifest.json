@@ -1,0 +1,7 @@
+{
+  "modelVersion": "ml-local-v4.0",
+  "trainedUntil": "2026-09-30",
+  "supportedProvinces": ["กรุงเทพมหานคร"],
+  "recipe": "h1 = residual HGB + persistence; h2-3 = 0.5×persistence + 0.5×MA7",
+  "note": "โมเดลเทรนบนสถานี 33 แห่งใน กทม. เท่านั้น — จังหวัดอื่นยังไม่รองรับ (ห้ามยืมค่า)"
+}

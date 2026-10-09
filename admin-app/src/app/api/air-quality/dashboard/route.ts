@@ -3,8 +3,14 @@ import { findOpenAQStations, getOpenAQDailyHistory, type OpenAQStation } from '@
 import { OpenAQConfigurationError, UpstreamRequestError } from '@/lib/openAqErrors'
 import { buildForecast } from '@/lib/airQualityForecast'
 import { getVertexForecasts, BASELINE_MODEL_VERSION } from '@/lib/airQualityVertexForecast'
+import { getProvincePm25Forecast, PM25_FROZEN_MODEL_SUPPORTED_PROVINCES, PM25_FROZEN_MODEL_TRAINED_UNTIL, PM25_FROZEN_MODEL_VERSION } from '@/lib/provincePm25Forecast'
 import { pm25Status } from '@/lib/pm25Status'
 import { pm25ToAqi } from '@/lib/aqiStatus'
+import { getGriddedPm25 } from '@/lib/griddedPm25'
+import { ensureEnvChecked } from '@/lib/envCheck'
+
+const GRIDDED_PM25_MODEL_VERSION = 'cams-gridded-global-v1'
+const GRIDDED_FALLBACK_NOTE = 'จังหวัดนี้ไม่มีผลจากโมเดลที่ฝึกในโครงการ จึงใช้แบบจำลองพื้นที่ PM2.5 แทน ค่านี้เป็นค่าประมาณ ไม่ใช่ค่าตรวจวัดจากสถานี'
 
 const CORS_HEADERS = { 'Access-Control-Allow-Origin': 'http://localhost:5173', 'Access-Control-Allow-Methods': 'GET, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' }
 // ข้อมูลรายวันเปลี่ยนตามเวลา — ห้ามเบราว์เซอร์ cache (ไม่งั้นสลับ PM2.5/AQI อาจได้ค่าเก่า)
@@ -13,6 +19,72 @@ const RESPONSE_HEADERS = { ...CORS_HEADERS, 'Cache-Control': 'no-store' }
 export function OPTIONS() { return new NextResponse(null, { status: 204, headers: RESPONSE_HEADERS }) }
 
 const isValidLatLng = (lat: number, lon: number) => Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180
+
+async function griddedFallbackResponse(lat: number, lon: number, fromDate: string, toDate: string, metric: 'AQI' | 'PM2.5', isSensitive: boolean) {
+  const grid = await getGriddedPm25(lat, lon, fromDate, toDate, 3)
+  if (grid.historical.length === 0 && grid.forecast.length === 0) return null
+  const toMetric = (value: number) => metric === 'AQI' ? (pm25ToAqi(value) ?? Math.round(value)) : value
+  const mapPoint = (point: { date: string; pm25: number }, isForecast: boolean) => {
+    const status = pm25Status(point.pm25, isSensitive)
+    return {
+      date: point.date,
+      value: toMetric(point.pm25),
+      unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+      status: status?.status ?? 'รอข้อมูล',
+      advice: status?.advice ?? '',
+      isForecast,
+      dataType: 'estimated',
+      dataSource: 'gridded-estimate',
+    }
+  }
+  const historical = grid.historical.map((point) => mapPoint(point, false))
+  const forecast = grid.forecast.map((point) => mapPoint(point, true))
+  return NextResponse.json({
+    station: null,
+    metric,
+    unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+    historical,
+    forecast,
+    days: historical,
+    todayEstimate: null,
+    forecastNote: 'ค่าฝุ่นจากแบบจำลองพื้นที่ เป็นค่าประมาณ ไม่ใช่ค่าตรวจวัดจากสถานี',
+    dataNotice: 'กำลังแสดงค่าประมาณจากแบบจำลองพื้นที่ เนื่องจากไม่มีค่าตรวจวัดในช่วงที่เลือก',
+    modelVersion: null,
+    dataSource: 'gridded-estimate',
+    observedThrough: historical.at(-1)?.date ?? null,
+    forecastThrough: forecast.at(-1)?.date ?? null,
+    updatedAt: new Date().toISOString(),
+    state: 'success',
+  }, { headers: RESPONSE_HEADERS })
+}
+
+async function getGriddedProvinceForecast(lat: number, lon: number, fromDate: string, toDate: string) {
+  try {
+    return (await getGriddedPm25(lat, lon, fromDate, toDate, 3)).forecast
+  } catch {
+    // A failed area-model request must not turn real station history into an API error.
+    return []
+  }
+}
+
+function mapGriddedForecast(points: Array<{ date: string; pm25: number }>, metric: 'AQI' | 'PM2.5', isSensitive: boolean, updatedAt: string) {
+  return points.map((point, index) => {
+    const status = pm25Status(point.pm25, isSensitive)
+    return {
+      date: point.date,
+      value: metric === 'AQI' ? (pm25ToAqi(point.pm25) ?? Math.round(point.pm25)) : point.pm25,
+      unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+      status: status?.status ?? 'รอข้อมูล',
+      advice: status?.advice ?? '',
+      isForecast: true,
+      dataType: 'estimated',
+      dataSource: 'gridded-estimate',
+      horizon: index + 1,
+      modelVersion: GRIDDED_PM25_MODEL_VERSION,
+      updatedAt,
+    }
+  })
+}
 
 export async function GET(request: NextRequest) {
   const params = new URL(request.url).searchParams
@@ -27,6 +99,8 @@ export async function GET(request: NextRequest) {
   const metric = params.get('metric') === 'AQI' ? 'AQI' : 'PM2.5'
   // กลุ่มสุขภาพผู้ใช้ (จาก frontend getPersonalizedAudience) → คำแนะนำเฉพาะบุคคล
   const isSensitive = params.get('risk') === 'sensitive'
+  const useFrozenProvinceModel = params.get('forecastModel') === 'v27'
+  const requestedProvince = params.get('province')?.trim() || ''
   const latRaw = params.get('lat')
   const lonRaw = params.get('lon')
   // พิกัดจำเป็น — Number(null) เป็น 0 ได้ จึงต้องแยกกรณีค่าหายก่อนแปลง
@@ -46,6 +120,9 @@ export async function GET(request: NextRequest) {
     toDate = bangkokDate(0)
   }
 
+  // ตรวจ env ตอนเริ่ม (ไม่พิมพ์ค่า — แค่บันทึก present/missing)
+  ensureEnvChecked()
+
   // พิกัดจำเป็น — ไม่มี fallback ไปกรุงเทพฯ แบบเงียบ ๆ (แผนเฟส 2)
   if (!isValidLatLng(lat, lon)) {
     return NextResponse.json({
@@ -59,6 +136,81 @@ export async function GET(request: NextRequest) {
     // เฟส 2: ค้นหาสถานี PM2.5 ใกล้สุดจากพิกัดก่อนเสมอ (ไม่มีสถานี → รายงานสถานะตรง ๆ)
     const stations = await findOpenAQStations(lat, lon)
     if (!stations.length) {
+      if (useFrozenProvinceModel) {
+        const result = requestedProvince
+          ? await getProvincePm25Forecast(requestedProvince, PM25_FROZEN_MODEL_VERSION)
+          : null
+        let forecast: Array<Record<string, unknown>> = (result?.points ?? []).map((point) => {
+          const status = pm25Status(point.value, isSensitive)
+          return {
+            date: point.date,
+            value: metric === 'AQI' ? (pm25ToAqi(point.value) ?? Math.round(point.value)) : point.value,
+            unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+            status: status?.status ?? 'รอข้อมูล',
+            advice: status?.advice ?? '',
+            isForecast: true,
+            dataType: 'forecast',
+            horizon: point.horizon,
+            modelVersion: point.modelVersion,
+            updatedAt: point.updatedAt,
+            stationCount: point.stationCount,
+          }
+        })
+        if (!forecast.length) {
+          const griddedPoints = await getGriddedProvinceForecast(lat, lon, fromDate, toDate)
+          if (griddedPoints.length) {
+            const updatedAt = new Date().toISOString()
+            forecast = mapGriddedForecast(griddedPoints, metric, isSensitive, updatedAt)
+            return NextResponse.json({
+              station: null,
+              metric,
+              unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+              historical: [],
+              forecast,
+              days: [],
+              todayEstimate: null,
+              forecastNote: GRIDDED_FALLBACK_NOTE,
+              forecastUpdatedAt: updatedAt,
+              forecastStale: false,
+              forecastStationCount: 0,
+              forecastModelTrainedUntil: null,
+              provinceForecast: requestedProvince || null,
+              modelVersion: GRIDDED_PM25_MODEL_VERSION,
+              dataSource: 'gridded-estimate',
+              updatedAt,
+              state: 'partial',
+            }, { headers: RESPONSE_HEADERS })
+          }
+        }
+        return NextResponse.json({
+          station: null,
+          metric,
+          unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+          historical: [],
+          forecast,
+          days: [],
+          todayEstimate: null,
+          forecastNote: result && !result.schemaReady
+            ? 'ยังไม่ได้ติดตั้งโครงสร้างตารางพยากรณ์ กรุณารันไฟล์ SQL migration ก่อน'
+            : result?.stale
+              ? 'ข้อมูลพยากรณ์ล้าสมัย — ไม่มีผลใหม่ในช่วง 2 วันที่ผ่านมา'
+              : requestedProvince
+                ? 'พยากรณ์โดยโมเดล ข้อมูลฝึกถึง 30 ก.ย. 2569'
+                : 'การพยากรณ์ชุดนี้ใช้จังหวัดในโปรไฟล์ — เลือกจังหวัดเพื่อดูผล',
+          forecastUpdatedAt: result?.updatedAt ?? null,
+          forecastStale: result?.stale ?? false,
+          forecastStationCount: result?.stationCount ?? 0,
+          forecastModelTrainedUntil: PM25_FROZEN_MODEL_TRAINED_UNTIL,
+          provinceForecast: requestedProvince || null,
+          modelVersion: PM25_FROZEN_MODEL_VERSION,
+          dataSource: 'OpenAQ',
+          updatedAt: new Date().toISOString(),
+          state: forecast.length ? 'partial' : 'empty',
+          message: forecast.length ? undefined : 'ยังไม่มีข้อมูลพยากรณ์สำหรับจังหวัดนี้',
+        }, { headers: RESPONSE_HEADERS })
+      }
+      const fallback = await griddedFallbackResponse(lat, lon, fromDate, toDate, metric, isSensitive)
+      if (fallback) return fallback
       return NextResponse.json({
         station: null, metric, unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
         historical: [], forecast: [], updatedAt: new Date().toISOString(), dataSource: 'OpenAQ', state: 'no_station_nearby',
@@ -85,6 +237,10 @@ export async function GET(request: NextRequest) {
         throw error
       }
     }
+    if (history.length === 0) {
+      const fallback = await griddedFallbackResponse(lat, lon, fromDate, toDate, metric, isSensitive)
+      if (fallback) return fallback
+    }
     if (!station) {
       // throw error เดิมเฉพาะเมื่อไม่มีสถานีใด fetch สำเร็จเลย ส่วน "fetch สำเร็จแต่ว่าง" รายงาน empty ตรง ๆ
       if (!sawUpstreamSuccess && lastUpstreamError) throw lastUpstreamError
@@ -109,17 +265,70 @@ export async function GET(request: NextRequest) {
     // (backend ตรวจ schema แล้วเท่านั้น) → ถ้าไม่มี ใช้ baseline MA3+trend จากข้อมูลจริงของสถานีเดิม
     // ทุกแถวพยากรณ์มี dataType/horizon/modelVersion/updatedAt เพื่อย้อนตรวจได้
     const bangkokToday = bangkokDate(0)
-    // ตาราง pm25_forecast_daily ใช้ station_id = sensor ID (เดียวกับ air_quality_daily.station_id)
-    const vertexFetched = await getVertexForecasts(String(station.sensorId), 3)
-    // กันชน: ตัดผล ML ที่ซ้อนกับวันที่มีข้อมูลจริงแล้ว (ผลจากข้อมูลล้าหลัง) —
-    // วันที่ ≤ observed ต้องแสดง "ข้อมูลจริง" ไม่ใช่ "คาดการณ์"; เหลือ 0 วัน → fallback baseline
+    const provinceForecast = useFrozenProvinceModel && requestedProvince
+      ? await getProvincePm25Forecast(requestedProvince, PM25_FROZEN_MODEL_VERSION)
+      : null
+    const griddedProvinceForecast = useFrozenProvinceModel && !provinceForecast?.points.length
+      ? await getGriddedProvinceForecast(lat, lon, fromDate, toDate)
+      : []
+    // Legacy callers retain their existing Vertex/baseline behavior. The profile-province
+    // forecast path is strict: it reads only frozen-model rows and never falls back to baseline.
+    const vertexFetched = useFrozenProvinceModel ? null : await getVertexForecasts(String(station.sensorId), 3)
     const observedLastDate = historical.length ? historical[historical.length - 1].date : null
     const vertexFreshPoints = vertexFetched?.points.filter((p) => !observedLastDate || p.date > observedLastDate) ?? []
     const vertex = vertexFreshPoints.length ? { points: vertexFreshPoints, complete: vertexFreshPoints.length >= 3 } : null
     let forecast: Array<Record<string, unknown>>
     let modelVersion: string
     let dataSourceLabel: string
-    if (vertex) {
+    let forecastUpdatedAt: string | null = null
+    let forecastStale = false
+    let forecastStationCount = 0
+    let forecastNote: string
+    if (useFrozenProvinceModel) {
+      modelVersion = PM25_FROZEN_MODEL_VERSION
+      dataSourceLabel = 'ML model (server)'
+      forecastUpdatedAt = provinceForecast?.updatedAt ?? null
+      forecastStale = provinceForecast?.stale ?? false
+      forecastStationCount = provinceForecast?.stationCount ?? 0
+      forecast = (provinceForecast?.points ?? []).map((point) => {
+        const status = pm25Status(point.value, isSensitive)
+        return {
+          date: point.date,
+          value: toMetric(point.value),
+          unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+          status: status?.status ?? 'รอข้อมูล',
+          advice: status?.advice ?? '',
+          isForecast: true,
+          dataSource: dataSourceLabel,
+          dataType: 'forecast',
+          horizon: point.horizon,
+          modelVersion: point.modelVersion,
+          updatedAt: point.updatedAt,
+          stationCount: point.stationCount,
+        }
+      })
+      forecastNote = provinceForecast && !provinceForecast.schemaReady
+        ? 'ยังไม่ได้ติดตั้งโครงสร้างตารางพยากรณ์ กรุณารันไฟล์ SQL migration ก่อน'
+        : !requestedProvince
+          ? 'การพยากรณ์ชุดนี้ใช้จังหวัดในโปรไฟล์ — เลือกจังหวัดเพื่อดูผล'
+        : provinceForecast?.stale
+          ? 'ข้อมูลพยากรณ์ล้าสมัย — ไม่มีผลใหม่ในช่วง 2 วันที่ผ่านมา'
+          : !PM25_FROZEN_MODEL_SUPPORTED_PROVINCES.includes(requestedProvince as typeof PM25_FROZEN_MODEL_SUPPORTED_PROVINCES[number])
+            ? `โมเดลรุ่นนี้รองรับสถานีใน${PM25_FROZEN_MODEL_SUPPORTED_PROVINCES.join(' และ ')}เท่านั้น จึงยังไม่มีผลพยากรณ์สำหรับจังหวัด${requestedProvince}`
+          : !provinceForecast?.points.length
+            ? 'ยังไม่มีข้อมูลพยากรณ์สำหรับจังหวัดนี้ — ไม่มีสถานีที่รองรับส่งค่าของวันล่าสุด'
+            : 'พยากรณ์โดยโมเดล ข้อมูลฝึกถึง 30 ก.ย. 2569'
+      if (!forecast.length && griddedProvinceForecast.length) {
+        const updatedAt = new Date().toISOString()
+        modelVersion = GRIDDED_PM25_MODEL_VERSION
+        dataSourceLabel = 'CAMS gridded model'
+        forecast = mapGriddedForecast(griddedProvinceForecast, metric, isSensitive, updatedAt)
+        forecastUpdatedAt = updatedAt
+        forecastStale = false
+        forecastStationCount = 0
+        forecastNote = GRIDDED_FALLBACK_NOTE
+      }
+    } else if (vertex) {
       modelVersion = vertex.points[0]?.modelVersion ?? 'vertex-unknown'
       // label ตามความจริงของแหล่งโมเดล: vertex-* = Vertex AI, อื่น ๆ = โมเดล ML ฝั่งเซิร์ฟเวอร์
       const isVertex = modelVersion.toLowerCase().includes('vertex')
@@ -141,6 +350,11 @@ export async function GET(request: NextRequest) {
           ...(point.min != null && point.max != null ? { min: toMetric(point.min), max: toMetric(point.max) } : {}),
         }
       })
+      forecastUpdatedAt = vertex.points.map((point) => point.updatedAt).sort().at(-1) ?? null
+      forecastStationCount = 1
+      forecastNote = dataSourceLabel === 'Vertex AI'
+        ? 'คาดการณ์โดยโมเดล Vertex AI — ไม่ใช่ค่าที่วัดจริง'
+        : 'คาดการณ์โดยโมเดลเรียนรู้ข้อมูลฝุ่นย้อนหลัง (ML) — ไม่ใช่ค่าที่วัดจริง'
     } else {
       modelVersion = BASELINE_MODEL_VERSION
       dataSourceLabel = 'derived'
@@ -157,6 +371,9 @@ export async function GET(request: NextRequest) {
         modelVersion,
         updatedAt: new Date().toISOString(),
       }))
+      forecastUpdatedAt = forecast.length ? new Date().toISOString() : null
+      forecastStationCount = forecast.length ? 1 : 0
+      forecastNote = 'คาดการณ์จากแนวโน้มย้อนหลัง — ไม่ใช่ข้อมูลจริง'
     }
 
     // "วันนี้" — ใช้ข้อมูลจริงก่อน; ถ้าสถานียังไม่ส่งข้อมูลวันนี้ ให้ประมาณการด้วยสูตรเดียวกับ
@@ -164,7 +381,7 @@ export async function GET(request: NextRequest) {
     // ห้ามปลอมเป็นค่าที่วัดจริง
     const hasTodayObserved = historical.some((row) => row.date === bangkokToday)
     let todayEstimate: Record<string, unknown> | null = null
-    if (!hasTodayObserved && history.length >= 3) {
+    if (!useFrozenProvinceModel && !hasTodayObserved && history.length >= 3) {
       const last = history[history.length - 1].pm25
       const last7 = history.slice(-7).map((point) => point.pm25)
       const ma7 = last7.length === 7 ? last7.reduce((sum, value) => sum + value, 0) / 7 : last
@@ -204,11 +421,12 @@ export async function GET(request: NextRequest) {
       forecast,
       days: historical,
       todayEstimate,
-      forecastNote: dataSourceLabel === 'Vertex AI'
-        ? 'คาดการณ์โดยโมเดล Vertex AI — ไม่ใช่ค่าที่วัดจริง'
-        : dataSourceLabel === 'ML model (server)'
-          ? 'คาดการณ์โดยโมเดลเรียนรู้ข้อมูลฝุ่นย้อนหลัง (ML) — ไม่ใช่ค่าที่วัดจริง'
-          : 'คาดการณ์จากแนวโน้มย้อนหลัง — ไม่ใช่ข้อมูลจริง',
+      forecastNote,
+      forecastUpdatedAt,
+      forecastStale,
+      forecastStationCount,
+      forecastModelTrainedUntil: modelVersion === PM25_FROZEN_MODEL_VERSION ? PM25_FROZEN_MODEL_TRAINED_UNTIL : null,
+      provinceForecast: useFrozenProvinceModel ? requestedProvince || null : null,
       modelVersion,
       dataSource: 'OpenAQ',
       observedThrough,
@@ -217,6 +435,15 @@ export async function GET(request: NextRequest) {
       state: historical.length ? (forecast.length ? 'success' : 'partial') : 'empty',
     }, { headers: RESPONSE_HEADERS })
   } catch (error) {
+    try {
+      const fallback = await griddedFallbackResponse(lat, lon, fromDate, toDate, metric, isSensitive)
+      if (fallback) {
+        console.warn('[Dashboard] using gridded fallback after station-source failure')
+        return fallback
+      }
+    } catch (fallbackError) {
+      console.error('[Dashboard] gridded fallback failed', fallbackError instanceof Error ? fallbackError.message : 'unknown error')
+    }
     const upstreamStatus = error instanceof UpstreamRequestError ? error.upstreamStatus : undefined
     let errorCode = 'AIR_QUALITY_PROCESSING_FAILED'
     let message = 'ไม่สามารถประมวลผลข้อมูลคุณภาพอากาศได้'

@@ -1,0 +1,147 @@
+{
+  "version": "1.0-2026-09-28",
+  "embedding_model": "paraphrase-multilingual-MiniLM-L12-v2",
+  "embedding_dim": 384,
+  "chunks": [
+    {
+      "id": "pcd-tier-overview",
+      "title": "เกณฑ์คุณภาพอากาศ PM2.5 ของกรมควบคุมมลพิษ (พ.ศ. 2566)",
+      "content": "ค่า PM2.5 แบ่งเป็น 5 ระดับตามเกณฑ์กรมควบคุมมลพิษ พ.ศ. 2566: ต่ำกว่า 15 ไมโครกรัม/ลูกบาศก์เมตร = ดีมาก, 15.1–25 = ดี, 25.1–37.5 = ปานกลาง, 37.6–75 = เริ่มมีผลกระทบต่อสุขภาพ, มากกว่า 75 = มีผลกระทบต่อสุขภาพ แต่ละระดับมีคำแนะนำกิจกรรมกลางแจ้งและคำแนะนำเฉพาะกลุ่มเสี่ยงแตกต่างกัน",
+      "source": "pm25Status.ts — เกณฑ์ กสม. พ.ศ. 2566 (pcd.go.th/pcd_news/30028)",
+      "tags": ["pm25", "คุณภาพอากาศ", "เกณฑ์", "กรมควบคุมมลพิษ", "AQI"]
+    },
+    {
+      "id": "pcd-tier-very-good",
+      "title": "PM2.5 ระดับดีมาก (0–15 µg/m³)",
+      "content": "ค่า PM2.5 ต่ำกว่า 15 ไมโครกรัมต่อลูกบาศก์เมตร ถือเป็นระดับดีมาก ทำกิจกรรมกลางแจ้งได้ตามปกติ กลุ่มเสี่ยงก็ทำกิจกรรมกลางแจ้งได้ตามปกติ แต่ควรพกยาและอุปกรณ์ติดตัวตามคำแนะนำแพทย์",
+      "source": "pm25Status.ts — เกณฑ์ กสม. พ.ศ. 2566",
+      "tags": ["pm25", "ดีมาก", "กิจกรรมกลางแจ้ง", "กลุ่มเสี่ยง"]
+    },
+    {
+      "id": "pcd-tier-good",
+      "title": "PM2.5 ระดับดี (15.1–25 µg/m³)",
+      "content": "ค่า PM2.5 ระหว่าง 15.1–25 ไมโครกรัมต่อลูกบาศก์เมตร ถือเป็นระดับดี ทำกิจกรรมได้ตามปกติและควรสังเกตอาการผิดปกติ กลุ่มเสี่ยงทำกิจกรรมได้ตามปกติแต่ควรเฝ้าระวังอาการใกล้ชิดและพกยาประจำตัว",
+      "source": "pm25Status.ts — เกณฑ์ กสม. พ.ศ. 2566",
+      "tags": ["pm25", "ดี", "กิจกรรมกลางแจ้ง", "กลุ่มเสี่ยง"]
+    },
+    {
+      "id": "pcd-tier-moderate",
+      "title": "PM2.5 ระดับปานกลาง (25.1–37.5 µg/m³)",
+      "content": "ค่า PM2.5 ระหว่าง 25.1–37.5 ไมโครกรัมต่อลูกบาศก์เมตร ถือเป็นระดับปานกลาง ควรลดกิจกรรมกลางแจ้งที่ใช้แรงมาก กลุ่มเสี่ยงควรลดกิจกรรมกลางแจ้งที่ใช้แรงมากและเตรียมยาหรืออุปกรณ์ติดตัว",
+      "source": "pm25Status.ts — เกณฑ์ กสม. พ.ศ. 2566",
+      "tags": ["pm25", "ปานกลาง", "ออกกำลังกาย", "กลุ่มเสี่ยง"]
+    },
+    {
+      "id": "pcd-tier-start-affect",
+      "title": "PM2.5 ระดับเริ่มมีผลกระทบต่อสุขภาพ (37.6–75 µg/m³)",
+      "content": "ค่า PM2.5 ระหว่าง 37.6–75 ไมโครกรัมต่อลูกบาศก์เมตร ถือเป็นระดับเริ่มมีผลกระทบต่อสุขภาพ ควรลดหรือเลี่ยงกิจกรรมกลางแจ้งและสวมหน้ากากป้องกัน PM2.5 กลุ่มเสี่ยงควรเลี่ยงกิจกรรมกลางแจ้ง สวมหน้ากากป้องกัน PM2.5 และเฝ้าระวังอาการใกล้ชิด",
+      "source": "pm25Status.ts — เกณฑ์ กสม. พ.ศ. 2566",
+      "tags": ["pm25", "ผลกระทบสุขภาพ", "หน้ากาก", "กลุ่มเสี่ยง"]
+    },
+    {
+      "id": "pcd-tier-affect",
+      "title": "PM2.5 ระดับมีผลกระทบต่อสุขภาพ (มากกว่า 75 µg/m³)",
+      "content": "ค่า PM2.5 มากกว่า 75 ไมโครกรัมต่อลูกบาศก์เมตร ถือเป็นระดับมีผลกระทบต่อสุขภาพ ควรงดกิจกรรมกลางแจ้ง และหากมีอาการผิดปกติให้รีบพบแพทย์ กลุ่มเสี่ยงต้องอยู่ในพื้นที่ปลอดภัย เตรียมยาและอุปกรณ์พร้อมใช้ และหากมีอาการผิดปกติรีบพบแพทย์",
+      "source": "pm25Status.ts — เกณฑ์ กสม. พ.ศ. 2566",
+      "tags": ["pm25", "ผลกระทบสุขภาพ", "งดกิจกรรม", "พบแพทย์", "กลุ่มเสี่ยง"]
+    },
+    {
+      "id": "sensitive-group-definition",
+      "title": "กลุ่มเสี่ยง (Sensitive Group) คือใคร",
+      "content": "กลุ่มเสี่ยงตามระบบนี้ใช้นิยาม EPA sensitive group ที่บันทึกไว้ใน resech_data.md ได้แก่ เด็กเล็ก ผู้สูงอายุ หญิงตั้งครรภ์ ผู้ป่วยโรคระบบทางเดินหายใจเรื้อรัง เช่น โรคหืด และโรคปอดอุดกั้นเรื้อรัง ผู้ป่วยโรคหัวใจและหลอดเลือด รวมถึงผู้ที่ต้องออกแรงงานกลางแจ้งเป็นเวลานาน คำแนะนำสำหรับกลุ่มเสี่ยงจะเข้มขึ้นกว่าคำแนะนำทั่วไปในทุกระดับค่า PM2.5",
+      "source": "pm25Status.ts (อ้างอิง resech_data.md / EPA sensitive group)",
+      "tags": ["กลุ่มเสี่ยง", "EPA", "โรคหืด", "ผู้สูงอายุ", "เด็ก", "หญิงตั้งครรภ์"]
+    },
+    {
+      "id": "forecast-goal",
+      "title": "เป้าหมายระบบพยากรณ์ PM2.5 ของ RiskCARE",
+      "content": "ระบบ Predictive Alert มีเป้าหมายพยากรณ์ค่า PM2.5 ล่วงหน้า 1–3 วันจากข้อมูลย้อนหลัง รูปแบบโมเดลที่เหมาะสมต้องประเมินย้อนหลัง (backtest) กับข้อมูลจริงของพื้นที่ก่อนใช้งานจริง เนื่องจากไม่มีรูปแบบใดเหมาะกับทุกจังหวัด",
+      "source": "docs/research/pm25-forecast-references.md",
+      "tags": ["พยากรณ์", "forecast", "pm25", "backtest", "RiskCARE"]
+    },
+    {
+      "id": "research-hatyai-arima-ann-qreg",
+      "title": "งานวิจัย: โมเดลผสม ARIMA–ANN–Quantile Regression (หาดใหญ่)",
+      "content": "งานวิจัยใน Nature Scientific Reports ปี 2025 ศึกษาข้อมูล PM2.5 จาก Air4Thai สถานีในหาดใหญ่ช่วงปี 2020–2024 เปรียบเทียบ ARIMA, ANN และโมเดลผสม ARIMA–ANN–QREG พบว่าโมเดลผสมช่วยจับทั้งแนวโน้มเชิงเส้น ความไม่เชิงเส้น และความไม่แน่นอนได้ดีขึ้น โมเดลฐานคือ ARIMA(1,1,2) และงานอ้างว่า ARIMA(1,1,1) เหมาะกับพยากรณ์รายชั่วโมงระยะสั้นถึง 48 ชั่วโมง ส่วน ARIMA(0,1,3) เหมาะกับค่าเฉลี่ย 24 ชั่วโมงในช่วงยาวถึง 31 วัน",
+      "source": "docs/research/pm25-forecast-references.md (nature.com/articles/s41598-025-27294-1)",
+      "tags": ["งานวิจัย", "ARIMA", "ANN", "quantile regression", "หาดใหญ่", "Air4Thai"]
+    },
+    {
+      "id": "research-beijing-hybrid",
+      "title": "งานวิจัย: Hybrid ARIMA pipeline (เบจิ่ง)",
+      "content": "งานวิจัยเบจิ่งเสนอ pipeline แบบ hybrid สำหรับพยากรณ์ PM2.5 โดยใช้ ADF test ตรวจ stationarity เลือก order ของ ARIMA ด้วย AIC ร่วมกับ grid search และแยกองค์ประกอบฤดูกาล (seasonal decomposition) ก่อนพยากรณ์ เป็นแนวทางที่เป็นระบบสำหรับตรวจสอบข้อมูลและเลือกโมเดล แต่ order ที่ได้ต้องเลือกใหม่จาก series ของพื้นที่เป้าหมายเอง",
+      "source": "docs/research/pm25-forecast-references.md (pmc.ncbi.nlm.nih.gov/articles/PMC9800338)",
+      "tags": ["งานวิจัย", "ARIMA", "ADF", "AIC", "seasonal decomposition", "เบจิ่ง"]
+    },
+    {
+      "id": "research-seoul-ets-arima",
+      "title": "งานวิจัย: Exponential Smoothing เทียบกับ ARIMA (โซล)",
+      "content": "งานวิจัยเปรียบเทียบ ETS (exponential smoothing) กับ ARIMA จากข้อมูล PM2.5 รายชั่วโมงในกรุงโซล รายงานว่า ETS แบบมี trend และ seasonality ทำได้ดีกว่า ARIMA ในชุดทดสอบของกรณีศึกษา รายงาน ARIMA(2,1,1) สำหรับการวิเคราะห์หนึ่งส่วน ข้อควรระวังคือผลนี้เป็นบริบทของโซล ไม่ควรนำ order ไปใช้กับไทยโดยไม่ทำ backtest",
+      "source": "docs/research/pm25-forecast-references.md (arxiv.org/pdf/2309.09579)",
+      "tags": ["งานวิจัย", "ETS", "ARIMA", "โซล", "exponential smoothing"]
+    },
+    {
+      "id": "data-sources-air4thai-gdcc-ddc",
+      "title": "แหล่งข้อมูล PM2.5 ของไทย",
+      "content": "แหล่งข้อมูลคุณภาพอากาศของไทยที่ใช้อ้างอิงได้ ได้แก่ Air4Thai ของกรมควบคุมมลพิษ (air4thai.pcd.go.th, มี JSON endpoint getNewAQI_JSON.php), Open Government Data GDCC Air Pollution (gdcc.data.go.th) สำหรับ backfill และตรวจสอบความครบถ้วน และกรมควบคุมโรค Open Data (opendata.ddc.moph.go.th) สำหรับข้อมูลรายวันระดับจังหวัด ก่อนใช้ต้องตรวจ schema และความถี่ของข้อมูลจาก metadata จริงทุกครั้ง",
+      "source": "docs/research/pm25-forecast-references.md",
+      "tags": ["แหล่งข้อมูล", "Air4Thai", "GDCC", "กรมควบคุมโรค", "open data"]
+    },
+    {
+      "id": "forecast-recommended-approach",
+      "title": "แนวทางการเลือกโมเดลพยากรณ์ที่แนะนำ",
+      "content": "แนวทางที่เอกสารวิจัยแนะนำ: เริ่มจาก baseline แบบ Moving Average และ Exponential Smoothing/ETS เพราะใช้ง่ายและมีงานวิจัยรองรับ จากนั้นทดลอง ARIMA ตามหลักฐาน และเลือกโมเดลด้วย rolling-origin backtest แยกตามจังหวัดหรือสถานี เปรียบเทียบ MAE RMSE และ MAPE พร้อมตรวจ missing value outlier และ seasonality เครื่องมือ Python ที่แนะนำคือ statsmodels สำหรับ ARIMA/SARIMAX/exponential smoothing และ pandas, scikit-learn สำหรับจัดการข้อมูลและวัดผล",
+      "source": "docs/research/pm25-forecast-references.md",
+      "tags": ["โมเดล", "baseline", "backtest", "MAE", "RMSE", "MAPE", "statsmodels"]
+    },
+    {
+      "id": "respiratory-scope-disclaimer",
+      "title": "ขอบเขตของระบบประเมินการหายใจผ่านกล้อง",
+      "content": "ระบบประเมินการหายใจจากกล้องเป็น screening tool ไม่ใช่เครื่องมือวินิจฉัยโรค ไม่ผ่านการรับรองทางการแพทย์ และยังไม่มี validation รองรับ risk score หรือการวินิจฉัย ห้ามนำข้อมูลจริงของผู้ป่วยมาเก็บหรือใช้จนกว่าจะผ่านการทบทวนด้านการแพทย์ ความเป็นส่วนตัว ความปลอดภัย และข้อกำกับที่เกี่ยวข้อง หน้า UI ต้องมี disclaimer และต้องมีช่องให้แพทย์ override พร้อมบันทึกความเห็น",
+      "source": "docs/RESPIRATORY-RISK-SPEC.md",
+      "tags": ["กล้อง", "respiratory", "screening", "disclaimer", "ข้อจำกัด"]
+    },
+    {
+      "id": "respiratory-pipeline",
+      "title": "ขั้นตอนการประมวลผลสัญญาณการหายใจจากกล้อง",
+      "content": "pipeline การวัดอัตราการหายใจจากกล้อง: 1) จับภาพ webcam ผ่าน getUserMedia ขนาด 1280x720 ที่ 30fps 2) กำหนด ROI ที่หน้าอก คอ และท้อง 3) ดึงสัญญาณการเคลื่อนไหวจากค่าความสว่างเฉลี่ยต่อเฟรมหรือ optical flow 4) กรองสัญญาณด้วย bandpass 0.1–1.0 Hz (Butterworth order 4) พร้อม detrend 5) คำนวณอัตราการหายใจ RR = (จำนวน peak / ระยะเวลาวินาที) × 60 หรือแบบ breath-by-breath 60/T_R 6) คำนวณ amplitude ต่อจังหวะหายใจและ duty cycle = T_insp / (T_insp + T_exp)",
+      "source": "docs/RESPIRATORY-RISK-SPEC.md",
+      "tags": ["pipeline", "กล้อง", "ROI", "bandpass", "อัตราการหายใจ", "RR"]
+    },
+    {
+      "id": "respiratory-features",
+      "title": "ฟีเจอร์ที่ระบบประเมินการหายใจดึงได้",
+      "content": "ฟีเจอร์หลักที่ระบบสกัดจากสัญญาณการหายใจ ได้แก่ rr_mean_bpm (อัตราการหายใจเฉลี่ย) rr_std_bpm, rr_min/max_bpm, inspiratory_time_mean_sec, expiratory_time_mean_sec, duty_cycle, chest_amplitude_mean, abdomen_amplitude_mean, chest_abdomen_phase_diff_deg, respiratory_rate_variability_index, alternans_index, asynchronous_abdomen_index, accessory_muscle_activity_index, apnea_events_count, hypopnea_events_count และ signal_quality_score โดย 4 กลุ่ม kinematic indices ใช้ตรวจลักษณะการหายใจเหนื่อย (labored breathing) ได้แก่ จังหวะไม่สม่ำเสมอ การใช้กล้ามเนื้อช่วยหายใจ ท้องเคลื่อนสวนทางกับหน้าอก และ respiratory alternans",
+      "source": "docs/RESPIRATORY-RISK-SPEC.md",
+      "tags": ["features", "อัตราการหายใจ", "labored breathing", "apnea", "signal quality"]
+    },
+    {
+      "id": "respiratory-risk-levels",
+      "title": "ระดับความเสี่ยงของระบบประเมินการหายใจ",
+      "content": "โมเดลความเสี่ยงใช้ logistic regression P = sigmoid(b0 + sum bk*xk) แล้วแปลงเป็น risk_score = P × 100 โดยแบ่งระดับเป็น 0–30 = low, 31–60 = medium, 61–100 = high (threshold ปรับได้) API จะตอบกลับ risk_score, risk_level และ key_drivers ที่อธิบายปัจจัยหลัก พร้อมบันทึก model version, features, risk_score และ physician override",
+      "source": "docs/RESPIRATORY-RISK-SPEC.md",
+      "tags": ["risk score", "risk level", "logistic regression", "API"]
+    },
+    {
+      "id": "respiratory-medical-requirements",
+      "title": "ข้อกำหนดก่อนประเมินจริงทางการแพทย์",
+      "content": "ก่อนใช้ผลประเมินจริง ระบบต้องมี reference RR จากอุปกรณ์มาตรฐานสำหรับ validation มี protocol และ consent ที่เหมาะสม เข้ารหัสวิดีโอและข้อมูลสุขภาพ จำกัดสิทธิ์การเข้าถึง กำหนด development/test split ล่วงหน้า และ signal_quality_score ต้องบล็อกผลที่คุณภาพต่ำ การประเมินต้องวัด MAE/RMSE/Bias และ Bland–Altman ของอัตราการหายใจ รวมทั้งอัตราความล้มเหลวแยกตามแสง ระยะ เสื้อผ้า ท่าทาง และอุปกรณ์ ก่อนทำ external validation",
+      "source": "docs/RESPIRATORY-RISK-SPEC.md + docs/research/respiratory-camera-prototype.md",
+      "tags": ["validation", "consent", "เข้ารหัส", "Bland-Altman", "external validation"]
+    },
+    {
+      "id": "respiratory-prototype-status",
+      "title": "สถานะปัจจุบันของต้นแบบตรวจการหายใจผ่านกล้อง",
+      "content": "ต้นแบบปัจจุบันใช้หน้า BreathingRateCheck.jsx วิเคราะห์ภาพจากกล้องผ่าน video/canvas ในเบราว์เซอร์โดยขอสิทธิ์กล้องเมื่อผู้ใช้ยินยอม ไม่พบการอัปโหลดภาพไป API หรือบันทึกไฟล์ภาพ ใช้ไลบรารี MediaPipe Tasks Vision เวอร์ชัน 0.10.14 และโมเดล Pose Landmarker Lite float16 สำหรับวางกรอบและหาตำแหน่งไหล่เท่านั้น ไม่ใช่โมเดลตรวจโรค unit tests ที่มีตรวจ business logic เท่านั้น ไม่ใช่ clinical validation และห้ามนำไปอ้างเป็นสมรรถนะทางการแพทย์",
+      "source": "docs/research/respiratory-camera-prototype.md",
+      "tags": ["prototype", "MediaPipe", "Pose Landmarker", "กล้อง", "unit test"]
+    },
+    {
+      "id": "respiratory-communication-limits",
+      "title": "ข้อจำกัดการสื่อสารผลการตรวจการหายใจ",
+      "content": "จนกว่าจะทำ validation ครบตามข้อกำหนด ระบบต้องแสดงผลเป็นค่าประมาณจากการเคลื่อนไหวของภาพพร้อมข้อจำกัดเท่านั้น ห้ามแสดงคะแนนความเสี่ยงโรค ห้ามกล่าวว่าเป็นหรือไม่เป็นโรค และห้ามแนะนำยา",
+      "source": "docs/research/respiratory-camera-prototype.md",
+      "tags": ["ข้อจำกัด", "การสื่อสาร", "screening", "ห้ามวินิจฉัย"]
+    }
+  ]
+}

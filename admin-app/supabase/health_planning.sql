@@ -55,7 +55,7 @@ alter table public.health_appointments add column if not exists preparation text
 alter table public.health_appointments add column if not exists symptoms text;
 alter table public.health_appointments add column if not exists status text not null default 'scheduled';
 alter table public.health_appointments drop constraint if exists health_appointments_status_check;
-alter table public.health_appointments add constraint health_appointments_status_check check (status in ('scheduled', 'cancelled'));
+alter table public.health_appointments add constraint health_appointments_status_check check (status in ('scheduled', 'cancelled', 'completed'));
 alter table public.health_appointments add column if not exists contact_name text;
 alter table public.health_appointments add column if not exists contact_value text;
 alter table public.health_appointments add column if not exists reminder_sent_at timestamptz;

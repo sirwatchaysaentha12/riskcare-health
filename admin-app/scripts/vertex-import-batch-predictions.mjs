@@ -91,7 +91,7 @@ for (const [, rows] of byStation) {
 let saved = 0
 for (let i = 0; i < upserts.length; i += 500) {
   const chunk = upserts.slice(i, i + 500)
-  const { error } = await db.from('pm25_forecast_daily').upsert(chunk, { onConflict: 'station_id,date' })
+  const { error } = await db.from('pm25_forecast_daily').upsert(chunk, { onConflict: 'station_id,date,model_version' })
   if (error) { console.error('UPSERT_FAILED', error.code, error.message.slice(0, 200)); process.exit(1) }
   saved += chunk.length
 }
