@@ -15,9 +15,8 @@ export const NAV_SECTIONS = [
     id: 'respiratory',
     label: 'สุขภาพทางเดินหายใจ',
     items: [
-      { to: '/respiratory-risk', label: 'ประเมินความเสี่ยงโรคทางเดินหายใจ' },
-      { to: '/breathing-check', label: 'ตรวจการหายใจด้วยกล้อง' },
-      { to: '/assessment', label: 'แบบประเมินสุขภาพ 14 ข้อ' },
+      { to: '/respiratory-check', label: 'ประเมินความเสี่ยงด้วยกล้องหรือวิดีโอ', badge: 'AI' },
+      { to: '/assessment', label: 'แบบประเมินสุขภาพ' },
     ],
   },
   {
@@ -25,17 +24,6 @@ export const NAV_SECTIONS = [
     label: 'นัดหมาย',
     items: [
       { to: '/appointments', label: 'ปฏิทินนัดหมาย' },
-      { to: '/add-appointment', label: 'เพิ่มนัดหมาย' },
-    ],
-  },
-  {
-    id: 'health-plan',
-    label: 'แผนสุขภาพ',
-    items: [
-      { to: '/health-planning', label: 'แผนสุขภาพส่วนตัว' },
-      { to: '/exercise-plan', label: 'โปรแกรมออกกำลังกาย' },
-      { to: '/health-tracker', label: 'บันทึกสุขภาพ' },
-      { to: '/workout-plan', label: 'แผนออกกำลังกายรายวัน' },
     ],
   },
   {

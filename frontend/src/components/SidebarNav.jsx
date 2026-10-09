@@ -23,6 +23,7 @@ const SECTIONS = [
       { to: '/dashboard', label: 'ภาพรวมฝุ่น PM2.5', icon: <path d="M12 3a9 9 0 1 0 9 9h-9V3Z" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
       { to: '/air-quality-trend', label: 'แนวโน้มฝุ่นรายวัน', icon: <path d="M3 17l6-6 4 4 8-8M15 7h6v6" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
       { to: '/hourly-forecast', label: 'ฝุ่นรายชั่วโมง', icon: <path d="M12 8v4l3 3M12 3a9 9 0 1 0 .01 0Z" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
+      { to: '/pm25-forecast', label: 'ค่าฝุ่นล่วงหน้า', icon: <path d="M3 3v18h18M7 15l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
     ],
   },
   {
@@ -34,9 +35,8 @@ const SECTIONS = [
       </svg>
     ),
     items: [
-      { to: '/respiratory-risk', label: 'ประเมินความเสี่ยงโรคทางเดินหายใจ', icon: <path d="M12 5c-1.5-2-5-2.5-6.5 0S4 11 6 13s5 3.5 6 6c1-2.5 4-4 6-6s2-5.5.5-8S13.5 3 12 5Z" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
-      { to: '/breathing-check', label: 'ตรวจการหายใจด้วยกล้อง', icon: <rect x="3" y="5" width="18" height="14" rx="2" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
-      { to: '/assessment', label: 'แบบประเมินสุขภาพ 14 ข้อ', icon: <path d="M9 11l3 3 8-8M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
+      { to: '/respiratory-check', label: 'ประเมินความเสี่ยงด้วยกล้องหรือวิดีโอ', badge: 'AI', icon: <><rect x="3" y="5" width="18" height="14" rx="2" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /><path d="m8 15 2.5-3 2 2 1.5-2 2 3" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /></> },
+      { to: '/assessment', label: 'แบบประเมินสุขภาพ', icon: <path d="M9 11l3 3 8-8M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
     ],
   },
   {
@@ -49,7 +49,6 @@ const SECTIONS = [
     ),
     items: [
       { to: '/appointments', label: 'ปฏิทินนัดหมาย', icon: <rect x="3" y="5" width="18" height="16" rx="2" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
-      { to: '/add-appointment', label: 'เพิ่มนัดหมาย', icon: <path d="M12 5v14M5 12h14" strokeLinecap="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
     ],
   },
   {
@@ -62,9 +61,6 @@ const SECTIONS = [
     ),
     items: [
       { to: '/health-planning', label: 'แผนสุขภาพส่วนตัว', icon: <path d="M20.8 8.6a5.5 5.5 0 0 0-9.8-3.4 5.5 5.5 0 0 0-9.8 3.4c0 6 9.8 11.4 9.8 11.4s9.8-5.4 9.8-11.4Z" transform="translate(1 1) scale(0.92)" /> },
-      { to: '/exercise-plan', label: 'โปรแกรมออกกำลังกาย', icon: <path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12" strokeLinecap="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
-      { to: '/health-tracker', label: 'บันทึกสุขภาพ', icon: <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
-      { to: '/workout-plan', label: 'แผนออกกำลังกายรายวัน', icon: <path d="M12 3a9 9 0 1 0 .01 0ZM12 7v5l3 3" strokeLinecap="round" strokeLinejoin="round" fill="none" stroke="currentColor" strokeWidth="2" /> },
     ],
   },
   {
@@ -81,10 +77,6 @@ const SECTIONS = [
     ],
   },
 ]
-
-const ALL_ITEMS = SECTIONS.flatMap((section) =>
-  section.items.map((item) => ({ ...item, sectionLabel: section.label, sectionId: section.id })),
-)
 
 function getInitials(username) {
   if (!username) return 'ผู้ใช้'
@@ -104,10 +96,13 @@ export default function SidebarNav() {
   const [username, setUsername] = useState('')
 
   useEffect(() => {
-    setMobileOpen(false)
-    setQuery('')
-    const current = SECTIONS.find((section) => section.items.some((item) => item.to === location.pathname))
-    if (current) setCollapsed((state) => ({ ...state, [current.id]: true }))
+    const timer = window.setTimeout(() => {
+      setMobileOpen(false)
+      setQuery('')
+      const current = SECTIONS.find((section) => section.items.some((item) => item.to === location.pathname))
+      if (current) setCollapsed((state) => ({ ...state, [current.id]: true }))
+    }, 0)
+    return () => window.clearTimeout(timer)
   }, [location.pathname])
 
   useEffect(() => {
@@ -211,6 +206,7 @@ export default function SidebarNav() {
                     >
                       <svg className="item-icon" viewBox="0 0 24 24" aria-hidden="true">{item.icon}</svg>
                       <span>{item.label}</span>
+                      {item.badge && <span className="sidebar-item-badge">{item.badge}</span>}
                     </NavLink>
                   ))}
                 </div>

@@ -154,6 +154,7 @@
   background: var(--color-primary);
 }
 .sidebar-item.active svg.item-icon { color: var(--color-primary); }
+.sidebar-item-badge { margin-left: auto; padding: 2px 6px; border-radius: 6px; color: #4338CA; background: #E0E7FF; font-size: 9px; font-weight: 700; line-height: 1.5; white-space: nowrap; }
 
 .sidebar-empty { padding: 8px 12px; color: var(--color-neutral-500); font-size: 12.5px; font-style: italic; }
 

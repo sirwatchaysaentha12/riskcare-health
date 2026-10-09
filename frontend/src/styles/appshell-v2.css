@@ -1,0 +1,537 @@
+/* App Shell v2 — header + hamburger drawer (port จาก stitch-design/code.html)
+ * ค่าทั้งหมดอิง DESIGN.md (Clinical Clarity): primary #047857, light #ECFDF5,
+ * border #D1FAE5, surface #F8FAFC, text #1F2937, radius การ์ด 16px / ปุ่ม 8-12px
+ * ใช้คลาส rc2-* ทั้งหมดเพื่อไม่ชนระบบ CSS เดิม */
+
+.rc2-root {
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #1f2937;
+  font-family: 'Noto Sans Thai', 'Noto Sans', 'Prompt', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ─── Backdrop ─── */
+.rc2-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease-in-out;
+}
+.rc2-backdrop.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Drawer sidebar ─── */
+.rc2-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 320px;
+  max-width: 85vw;
+  background: #fff;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateX(-100%);
+  transition: transform 300ms ease-out;
+}
+.rc2-drawer.is-open {
+  transform: translateX(0);
+}
+
+.rc2-drawer-head {
+  height: 64px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fff;
+  flex-shrink: 0;
+}
+.rc2-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rc2-brand-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #047857;
+  flex-shrink: 0;
+}
+.rc2-brand-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: #047857;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.rc2-brand-sub {
+  font-size: 10px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.rc2-icon-btn {
+  padding: 8px;
+  border-radius: 12px;
+  color: #64748b;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+.rc2-icon-btn:hover {
+  color: #334155;
+  background: #f1f5f9;
+}
+.rc2-icon-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.3);
+}
+
+.rc2-drawer-search {
+  padding: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+  background: rgba(248, 250, 252, 0.5);
+}
+.rc2-search-wrap {
+  position: relative;
+}
+.rc2-search-wrap > svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+.rc2-drawer-search input {
+  width: 100%;
+  padding: 6px 12px 6px 36px;
+  font-size: 12px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  color: #1e293b;
+}
+.rc2-drawer-search input:focus {
+  outline: none;
+  border-color: #047857;
+  box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.3);
+}
+
+.rc2-drawer-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.rc2-menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rc2-menu-group-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #94a3b8;
+  padding: 0 12px;
+  letter-spacing: 0.08em;
+}
+.rc2-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease;
+  border: 1px solid transparent;
+}
+.rc2-nav-item svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+.rc2-nav-item:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+.rc2-nav-item.active {
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+  border-color: rgba(209, 250, 229, 0.6);
+}
+.rc2-nav-item.active svg {
+  color: #047857;
+}
+.rc2-nav-item .rc2-nav-badge {
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  background: #e0e7ff;
+  color: #4338ca;
+}
+.rc2-nav-empty {
+  padding: 24px 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.rc2-drawer-footer {
+  padding: 14px;
+  border-top: 1px solid #f1f5f9;
+  background: rgba(248, 250, 252, 0.7);
+  flex-shrink: 0;
+}
+.rc2-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rc2-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: #047857;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.rc2-user-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc2-user-meta {
+  font-size: 10px;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc2-logout-btn {
+  margin-left: auto;
+  padding: 6px;
+  border-radius: 8px;
+  border: 0;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+}
+.rc2-logout-btn:hover {
+  color: #e11d48;
+  background: #fff;
+}
+
+/* ─── Frame + fixed header ─── */
+.rc2-frame {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.rc2-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+@media (min-width: 1024px) {
+  .rc2-header {
+    padding: 0 32px;
+  }
+}
+.rc2-header-inner {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+.rc2-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  text-decoration: none;
+}
+.rc2-header-brand > .rc2-icon-btn {
+  margin-left: 8px;
+}
+.rc2-header-brand-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #047857;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.rc2-live-chip {
+  display: none;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  background: #d1fae5;
+  color: #047857;
+  font-weight: 600;
+}
+@media (min-width: 640px) {
+  .rc2-live-chip {
+    display: inline-block;
+  }
+}
+.rc2-header-sub {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rc2-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+.rc2-live-pill {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #d1fae5;
+  font-size: 12px;
+  font-weight: 600;
+}
+@media (min-width: 640px) {
+  .rc2-live-pill {
+    display: flex;
+  }
+}
+.rc2-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #10b981;
+  animation: rc2-pulse 2s infinite;
+}
+.rc2-live-dot.is-stale {
+  background: #f59e0b;
+  animation: none;
+}
+@keyframes rc2-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.rc2-notif-wrap,
+.rc2-avatar-wrap {
+  position: relative;
+}
+.rc2-notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #f43f5e;
+}
+
+.rc2-dropdown {
+  position: absolute;
+  right: 0;
+  margin-top: 8px;
+  width: 320px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+  border: 1px solid #f1f5f9;
+  padding: 16px;
+  z-index: 50;
+}
+@media (min-width: 640px) {
+  .rc2-dropdown {
+    width: 384px;
+  }
+}
+.rc2-dropdown--user {
+  width: 224px;
+  padding: 8px 0;
+}
+.rc2-dropdown-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.rc2-dropdown-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e293b;
+}
+.rc2-dropdown-list {
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 288px;
+  overflow-y: auto;
+}
+.rc2-notif-item {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f8fafc;
+}
+.rc2-notif-item.is-alert {
+  background: #fff7ed;
+  border-color: rgba(251, 146, 60, 0.8);
+}
+.rc2-notif-item p {
+  margin: 0;
+}
+.rc2-notif-item-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+.rc2-notif-item-body {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 2px !important;
+}
+.rc2-notif-item-time {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 4px !important;
+  display: block;
+}
+.rc2-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #334155;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  cursor: pointer;
+  font-family: inherit;
+}
+.rc2-dropdown-item:hover {
+  background: #f8fafc;
+}
+.rc2-dropdown-item svg {
+  color: #94a3b8;
+}
+.rc2-dropdown-item.is-danger {
+  color: #e11d48;
+  font-weight: 600;
+}
+.rc2-dropdown-item.is-danger:hover {
+  background: #fff1f2;
+}
+.rc2-dropdown-sep {
+  margin: 4px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* ─── Main content ─── */
+.rc2-main {
+  position: relative;
+  padding: 88px 16px 24px;
+  width: 100%;
+  flex: 1;
+  background: #f8fafc;
+}
+@media (min-width: 1024px) {
+  .rc2-main {
+    padding: 88px 32px 24px;
+  }
+}
+.rc2-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+}
+
+/* ─── เพิ่มเติมจากการ implement ─── */
+.rc2-brand-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.rc2-header-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rc2-dropdown-item.is-static {
+  cursor: default;
+}
+.rc2-dropdown-item.is-static:hover {
+  background: transparent;
+}

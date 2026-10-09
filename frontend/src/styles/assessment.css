@@ -595,6 +595,9 @@
 .back-button { color: var(--color-primary-dark); border-color: var(--color-primary-soft); background: #ffffff; }
 .assessment-brand .logo-icon { color: #006644; width: 40px; height: 40px; }
 
+/* Match the region/province selectors to the rounded controls used elsewhere. */
+.assessment-location-grid select { border-radius: 12px; }
+
 @media (max-width: 480px) {
   .assessment-shell { padding-inline: 10px; }
   .assessment-header, .assessment-intro, .question-card, .result-card { border-radius: 14px; }

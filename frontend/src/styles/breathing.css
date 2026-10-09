@@ -414,6 +414,7 @@
   color: #ffffff;
   font-weight: 700;
 }
+.page-menu-badge { display: inline-block; margin-left: 8px; padding: 2px 6px; border-radius: 6px; color: #c7d2fe; background: rgba(99, 102, 241, .25); font-size: 9px; font-weight: 700; line-height: 1.5; vertical-align: middle; }
 
 .page-menu-footer { padding: 10px 12px 12px; border-top: 1px solid rgba(148, 163, 184, 0.18); }
 .page-menu-note { margin: 0 0 10px; color: #94a3b8; font-size: 11px; line-height: 1.6; }

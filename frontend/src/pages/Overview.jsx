@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getAirQualityStations, getNearestAirQuality, getUserLocation } from '../services/airQuality'
+import { computeProvinceAreas } from '../utils/provinceAirQuality'
 import { getAqiStatus, pm25ToAqi } from '../utils/aqiStatus'
 import { getPersonalizedAudience } from '../utils/personalizedPm25'
 
@@ -27,19 +28,19 @@ function adviceOf(pm25, group) {
 }
 function riskName(pm25) { return getAqiStatus(pm25ToAqi(pm25)).label }
 
-function RiskSpotCard({ station, group, audience }) {
-  const tone = toneOf(station.pm25)
+function RiskSpotCard({ area, group, audience }) {
+  const tone = toneOf(area.pm25)
   return <article className={`overview-spot-card overview-spot-card--${tone}`}>
-    <div className="overview-spot-title"><strong>{station.name}</strong><span className={`overview-risk-badge overview-risk-badge--${tone}`}>{riskName(station.pm25)}</span></div>
-    <small>{station.province || 'ไม่ทราบจังหวัด'} · {station.distanceKm.toFixed(1)} กม.</small>
-    <div className="overview-spot-pm"><b>{station.pm25.toFixed(1)}</b><span>µg/m³</span></div>
-    <p>{adviceOf(station.pm25, group)}</p>
+    <div className="overview-spot-title"><strong>{area.name}</strong><span className={`overview-risk-badge overview-risk-badge--${tone}`}>{riskName(area.pm25)}</span></div>
+    <small>{area.province || 'ไม่ทราบจังหวัด'}{area.updatedAt ? ` · อัปเดต ${area.updatedAt}` : ''}</small>
+    <div className="overview-spot-pm"><b>{area.pm25.toFixed(1)}</b><span>µg/m³</span></div>
+    <p>{adviceOf(area.pm25, group)}</p>
     <small className="overview-personalized-note">คำเตือนสำหรับคุณ: {audience === 'sensitive' ? 'กลุ่มเสี่ยง' : audience === 'unknown' ? 'ยังประเมินไม่ได้' : 'กลุ่มทั่วไป'}</small>
   </article>
 }
 
 export default function Overview() {
-  const [state, setState] = useState({ status: 'loading', group: 'low', audience: 'unknown', province: '', stations: [], error: '' })
+  const [state, setState] = useState({ status: 'loading', group: 'low', audience: 'unknown', province: '', stations: [], provinceAreas: [], error: '' })
   useEffect(() => {
     let cancelled = false
     async function load() {
@@ -61,7 +62,13 @@ export default function Overview() {
           available = fallback.source === 'open-meteo' ? [] : [fallback]
         }
         const audience = getPersonalizedAudience(profile, assessment, healthProfile)
-        if (!cancelled) setState({ status: 'ready', group: profile?.health_risk_group || 'low', audience: audience.audience, province: profile?.province || available[0]?.province || '', stations: available, error: '' })
+        if (!cancelled) {
+          setState({ status: 'ready', group: profile?.health_risk_group || 'low', audience: audience.audience, province: profile?.province || available[0]?.province || '', stations: available, provinceAreas: [], error: '' })
+          try {
+            const computed = await computeProvinceAreas(available, profile?.province || '')
+            if (!cancelled) setState((current) => ({ ...current, provinceAreas: computed.ranked.slice(0, 3), provinceAverage: computed.averagePm25 }))
+          } catch { /* ดึงรายพื้นที่ไม่ได้ → แสดงข้อความไม่มีข้อมูล ไม่ใส่เลขปลอม */ }
+        }
       } catch (error) { if (!cancelled) setState((current) => ({ ...current, status: 'error', error: error.message || 'ไม่สามารถโหลดข้อมูลภาพรวมได้' })) }
     }
     load()
@@ -74,16 +81,15 @@ export default function Overview() {
     const top = [...new Map(items.map((item) => [item.province || item.name, item])).values()].sort((a, b) => b.pm25 - a.pm25).slice(0, 3)
     return { region, average, top }
   }), [state.stations])
-  const currentProvinceTop = useMemo(() => state.stations.filter((station) => station.province?.includes(state.province) || state.province?.includes(station.province)).sort((a, b) => b.pm25 - a.pm25).slice(0, 3), [state.stations, state.province])
-  const touristSpots = useMemo(() => state.stations.filter((station) => station.province?.includes(state.province) || state.province?.includes(station.province)).sort((a, b) => b.pm25 - a.pm25).slice(0, 3), [state.stations, state.province])
+  const provinceAreas = state.provinceAreas // พื้นที่จริงรายอำเภอ (ค่าจริงจาก API ตามพิกัด) — top 3 สูงสุด
 
-  if (state.status === 'loading') return <main className="overview-page"><div className="page-status" role="status" aria-live="polite"><strong>กำลังโหลดภาพรวมค่าฝุ่น</strong><span>ระบบกำลังรวบรวมข้อมูลจากสถานีตรวจวัด</span></div></main>
+  if (state.status === 'loading') return <main className="overview-page"><div className="page-status" role="status" aria-live="polite"><strong>กำลังโหลดภาพรวมค่าฝุ่น</strong><span>ระบบกำลังดึงข้อมูลคุณภาพอากาศรายพื้นที่</span></div></main>
   if (state.status === 'error') return <main className="overview-page"><div className="page-status page-status--error" role="alert"><strong>ไม่สามารถโหลดภาพรวมได้</strong><span>{state.error || 'กรุณาลองใหม่อีกครั้ง'}</span></div></main>
   return <main className="overview-page">
-    <header className="overview-header"><div><h1>ภาพรวมความเสี่ยงฝุ่น PM2.5</h1><p>{state.province ? `จังหวัด ${state.province}` : 'ภาพรวมจากจุดตรวจวัดที่มีข้อมูล'}</p></div><Link to="/" className="overview-back-link">กลับหน้าหลัก</Link></header>
-    <section className="overview-section"><h2>อันดับ 3 จุดเสี่ยงสูงสุดในจังหวัด</h2><div className="overview-spot-grid">{currentProvinceTop.length ? currentProvinceTop.map((station) => <RiskSpotCard key={`province-${station.name}`} station={station} group={state.group} audience={state.audience} />) : <p>ยังไม่มีข้อมูลสถานีในจังหวัดนี้</p>}</div></section>
-    <section className="overview-section"><h2>ภาพรวมความเสี่ยง 4 ภาค</h2><div className="overview-region-grid">{regional.map((item) => <article className="overview-region-card" key={item.region}><header><strong>ภาค{item.region}</strong><span>เฉลี่ย {item.average ? item.average.toFixed(1) : 'รอข้อมูล'} µg/m³</span></header>{item.top.length ? item.top.map((station) => <div className="overview-region-row" key={`${item.region}-${station.name}`}><span>{station.province || station.name}</span><b>{station.pm25.toFixed(1)}</b></div>) : <small>ยังไม่มีข้อมูลสถานีในภูมิภาคนี้</small>}</article>)}</div></section>
-    <section className="overview-section"><h2>สถานที่/จุดตรวจวัดที่ควรหลีกเลี่ยงสำหรับคุณ</h2><p className="overview-description">คำเตือนเฉพาะบุคคล: {state.audience === 'sensitive' ? 'กลุ่มเสี่ยง' : state.audience === 'unknown' ? 'ยังประเมินไม่ได้' : 'กลุ่มทั่วไป'}</p><div className="overview-spot-grid">{touristSpots.length ? touristSpots.map((station) => <RiskSpotCard key={`tourist-${station.name}`} station={station} group={state.group} audience={state.audience} />) : <p>ยังไม่มีข้อมูลจุดตรวจวัดสำหรับพื้นที่นี้</p>}</div></section>
+    <header className="overview-header"><div><h1>ภาพรวมความเสี่ยงฝุ่น PM2.5</h1><p>{state.province ? `จังหวัด ${state.province}` : 'ภาพรวมคุณภาพอากาศรายพื้นที่'}</p></div><Link to="/" className="overview-back-link">กลับหน้าหลัก</Link></header>
+    <section className="overview-section"><h2>อันดับ 3 พื้นที่เสี่ยงสูงสุดในจังหวัด</h2><div className="overview-spot-grid">{provinceAreas.length ? provinceAreas.map((area) => <RiskSpotCard key={`province-${area.name}`} area={area} group={state.group} audience={state.audience} />) : <p>ยังไม่มีข้อมูลคุณภาพอากาศรายพื้นที่ในจังหวัดนี้</p>}</div></section>
+    <section className="overview-section"><h2>ภาพรวมความเสี่ยง 4 ภาค</h2><div className="overview-region-grid">{regional.map((item) => <article className="overview-region-card" key={item.region}><header><strong>ภาค{item.region}</strong><span>เฉลี่ย {item.average ? item.average.toFixed(1) : 'รอข้อมูล'} µg/m³</span></header>{item.top.length ? item.top.map((station) => <div className="overview-region-row" key={`${item.region}-${station.name}`}><span>{station.province || station.name}</span><b>{station.pm25.toFixed(1)}</b></div>) : <small>ยังไม่มีข้อมูลในภูมิภาคนี้</small>}</article>)}</div></section>
+    <section className="overview-section"><h2>พื้นที่ที่ควรหลีกเลี่ยงสำหรับคุณ</h2><p className="overview-description">คำเตือนเฉพาะบุคคล: {state.audience === 'sensitive' ? 'กลุ่มเสี่ยง' : state.audience === 'unknown' ? 'ยังประเมินไม่ได้' : 'กลุ่มทั่วไป'}</p><div className="overview-spot-grid">{provinceAreas.length ? provinceAreas.map((area) => <RiskSpotCard key={`tourist-${area.name}`} area={area} group={state.group} audience={state.audience} />) : <p>ยังไม่มีข้อมูลคุณภาพอากาศรายพื้นที่สำหรับจังหวัดนี้</p>}</div></section>
     <section className="overview-section"><h2>ประเมินความเสี่ยงโรคทางเดินหายใจ</h2><article className="overview-spot-card overview-spot-card--lime"><div className="overview-spot-title"><strong>ประเมินจาก 3 สัญญาณ</strong><span className="overview-risk-badge overview-risk-badge--lime">ใหม่</span></div><p>อัตราการหายใจจากกล้อง (MediaPipe) + ชีพจร/ออกซิเจนจากใบหน้า (vitallens rPPG) + แบบประเมินอาการ — คัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยทางการแพทย์</p><Link className="overview-personalized-note" to="/respiratory-risk">เริ่มประเมินความเสี่ยงโรคทางเดินหายใจ →</Link></article></section>
   </main>
 }

@@ -20,6 +20,21 @@ export function pm25ToAqi(value) {
   return Math.round(((highI - lowI) / (highC - lowC)) * (Math.min(pm25, highC) - lowC) + lowI)
 }
 
+// อิโมจิผูกกับ "ระดับความเสี่ยง" (ข้อความสถานะจาก backend ซึ่งคำนวณจาก PM2.5 เสมอ)
+// ไม่ผูกกับหน่วยที่แสดง (PM2.5/AQI) — ทั้งสองโหมดจึงได้อิโมจิเดียวกันต่อวันเดียวกัน
+const EMOJI_BY_STATUS_LABEL = {
+  'ดีมาก': '\u{1F604}',
+  'ดี': '\u{1F642}',
+  'ปานกลาง': '\u{1F610}',
+  'เริ่มมีผลกระทบต่อสุขภาพ': '\u{1F61F}',
+  'มีผลกระทบต่อสุขภาพ': '\u{1F637}',
+}
+
+export function getEmojiByStatusLabel(statusLabel) {
+  const key = String(statusLabel || '').trim()
+  return EMOJI_BY_STATUS_LABEL[key] ?? '—'
+}
+
 export function getAqiEmoji(pm25Value) {
   const tone = getAqiStatus(pm25ToAqi(pm25Value)).tone
   if (tone === 'green') return '\u{1F642}'

@@ -1,48 +1,29 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { fetchHourlyForecast } from '../services/hourlyForecast'
+import { useProvinceAirLocation } from '../hooks/useProvinceAirLocation'
 
 const API_URL = '/api/air-quality/hourly-forecast'
-const geoSupported = typeof navigator !== 'undefined' && Boolean(navigator.geolocation)
-
-function useGeolocation(attempt) {
-  const [coords, setCoords] = useState(null)
-  const [status, setStatus] = useState(geoSupported ? 'asking' : 'unavailable')
-  useEffect(() => {
-    if (!geoSupported) return
-    navigator.geolocation.getCurrentPosition(
-      (position) => { setCoords({ lat: position.coords.latitude, lon: position.coords.longitude }); setStatus('granted') },
-      () => setStatus('denied'),
-      { timeout: 10000, maximumAge: 600000 },
-    )
-  }, [attempt])
-  return { coords, status }
-}
 
 export default function HourlyForecast() {
   const navigate = useNavigate()
-  const [attempt, setAttempt] = useState(0)
-  const [refetching, setRefetching] = useState(false)
-  const { coords, status: geoStatus } = useGeolocation(attempt)
+  // ตรรกะเดียวกับ /air-quality-trend: จังหวัดจาก profiles.province เป็นหลัก, GPS เป็นตัวเลือกเสริม
+  const { provinceState, province, coords, mode, gpsStatus, requestGps, backToProfileProvince } = useProvinceAirLocation()
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
+  const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
-    if (!coords) return
+    if (!coords || provinceState !== 'ready') return undefined
     let active = true
     const controller = new AbortController()
-    fetchHourlyForecast(`${API_URL}?lat=${coords.lat}&lon=${coords.lon}&risk=general`, { signal: controller.signal })
+    fetchHourlyForecast(`${API_URL}?lat=${coords.latitude}&lon=${coords.longitude}&risk=general`, { signal: controller.signal })
       .then((payload) => { if (active) { setData(payload); setError(null) } })
       .catch((err) => { if (active && err?.name !== 'AbortError') setError(err?.message || 'ดึงข้อมูลไม่สำเร็จ') })
-      .finally(() => { if (active) setRefetching(false) })
     return () => { active = false; controller.abort() }
-  }, [coords, attempt])
+  }, [coords, provinceState, requestVersion])
 
-  // retry/reload เป็น event handler — setState ที่นี่ได้ตามกฎ react-hooks
-  const retry = () => { setData(null); setError(null); setRefetching(true); setAttempt((value) => value + 1) }
-
-  const loading = geoStatus === 'granted' && !data && !error
-  const showEmptyStates = geoStatus !== 'granted' || (loading && !refetching) || (!loading && Boolean(error))
+  const retry = () => { setData(null); setError(null); setRequestVersion((version) => version + 1) }
 
   return (
     <main className="aq-page">
@@ -51,37 +32,55 @@ export default function HourlyForecast() {
 
         <section className="aq-card">
           <h1 className="aq-title">พยากรณ์ฝุ่น PM2.5 รายชั่วโมง</h1>
-          <p className="aq-subtitle">พยากรณ์ 1-3 ชั่วโมงข้างหน้า ด้วยโมเดลที่ผ่านการวัดจริง ความแม่นยำ ±2 µg/m³ = 99.2% และ ±3 µg/m³ = 99.8% (1 ชม.)</p>
+          <p className="aq-subtitle">พยากรณ์ 1-3 ชั่วโมงข้างหน้า</p>
+          {provinceState === 'ready' && (
+            <p className="aq-source-status" role="status">
+              {mode === 'gps' ? 'ข้อมูลตามตำแหน่งปัจจุบัน (GPS)' : province ? `ข้อมูลตามโปรไฟล์ (${province})` : 'ยังไม่ได้ตั้งจังหวัดในโปรไฟล์'}
+            </p>
+          )}
         </section>
 
-        {showEmptyStates && (
+        {provinceState === 'loading' && (
+          <section className="aq-card"><div className="aq-empty-state"><strong>กำลังโหลดข้อมูล...</strong></div></section>
+        )}
+
+        {provinceState === 'ready' && !data && !error && (
+          <section className="aq-card"><div className="aq-empty-state" role="status"><strong>กำลังโหลดข้อมูลพยากรณ์...</strong></div></section>
+        )}
+
+        {provinceState === 'no-province' && (
           <section className="aq-card"><div className="aq-empty-state">
-            {geoStatus !== 'granted' ? (
-              <>
-                <strong>{geoStatus === 'denied' ? 'ยังไม่ได้อนุญาตการเข้าถึงตำแหน่ง' : geoStatus === 'unavailable' ? 'อุปกรณ์นี้ระบุตำแหน่งไม่ได้' : 'กำลังระบุตำแหน่งของคุณ...'}</strong>
-                <span>ระบบใช้ตำแหน่งของคุณค้นหาสถานีวัดฝุ่น PM2.5 ที่ใกล้ที่สุดเท่านั้น</span>
-                {(geoStatus === 'denied' || geoStatus === 'unavailable') && <button type="button" className="aq-retry" onClick={retry}>ลองอีกครั้ง</button>}
-              </>
-            ) : error ? (
-              <>
-                <strong>ดึงข้อมูลไม่สำเร็จ</strong><span>{error}</span>
-                <button type="button" className="aq-retry" onClick={retry}>ลองอีกครั้ง</button>
-              </>
+            <strong>{province ? `ไม่พบพิกัดอ้างอิงของจังหวัด${province} ในระบบ` : 'คุณยังไม่ได้ตั้งค่าจังหวัดในโปรไฟล์'}</strong>
+            <span>หน้านี้แสดงค่าฝุ่นตามจังหวัดที่บันทึกไว้ในโปรไฟล์ของคุณเท่านั้น — ไปตั้งค่าจังหวัดก่อน หรือใช้ตำแหน่งปัจจุบันของอุปกรณ์แทน (ตัวเลือกเสริม)</span>
+            <Link className="aq-retry" to="/profile">ไปตั้งค่าจังหวัดที่หน้าโปรไฟล์</Link>
+            {gpsStatus === 'asking' ? (
+              <span>กำลังขอตำแหน่งปัจจุบัน...</span>
+            ) : gpsStatus === 'denied' ? (
+              <><span>ยังไม่ได้อนุญาตการเข้าถึงตำแหน่ง — กดใหม่อีกครั้งเพื่อลองถามสิทธิ์</span><button type="button" className="aq-retry" onClick={requestGps}>ใช้ตำแหน่งปัจจุบันแทน</button></>
+            ) : gpsStatus === 'unavailable' ? (
+              <span>อุปกรณ์นี้ระบุตำแหน่งไม่ได้ — กรุณาตั้งค่าจังหวัดในโปรไฟล์</span>
             ) : (
-              <strong>กำลังโหลดข้อมูล...</strong>
+              <button type="button" className="aq-retry" onClick={requestGps}>ใช้ตำแหน่งปัจจุบันแทน</button>
             )}
           </div></section>
         )}
 
-        {!showEmptyStates && data && data.state !== 'success' && data.state !== 'partial' && (
+        {provinceState === 'ready' && error && (
+          <section className="aq-card"><div className="aq-empty-state" role="alert">
+            <strong>ดึงข้อมูลไม่สำเร็จ</strong><span>{error}</span>
+            <button type="button" className="aq-retry" onClick={retry}>ลองอีกครั้ง</button>
+          </div></section>
+        )}
+
+        {provinceState === 'ready' && !error && data && data.state !== 'success' && data.state !== 'partial' && (
           <section className="aq-card"><div className="aq-empty-state">
-            <strong>{data.state === 'no_station_nearby' ? 'ไม่พบสถานีใกล้คุณ' : data.state === 'invalid_coordinates' ? 'พิกัดไม่ถูกต้อง' : 'ยังไม่มีข้อมูลรายชั่วโมง'}</strong>
+            <strong>{data.state === 'no_station_nearby' ? `ไม่พบสถานีวัดฝุ่นในจังหวัด${province || 'ที่เลือก'}` : data.state === 'invalid_coordinates' ? 'พิกัดไม่ถูกต้อง' : 'ยังไม่มีข้อมูลรายชั่วโมง'}</strong>
             <span>{data.message}</span>
             <button type="button" className="aq-retry" onClick={retry}>ลองอีกครั้ง</button>
           </div></section>
         )}
 
-        {!showEmptyStates && data && (data.state === 'success' || data.state === 'partial') && (
+        {provinceState === 'ready' && !error && data && (data.state === 'success' || data.state === 'partial') && (
           <>
             {data.stale && (
               <section className="aq-card hf-stale" role="status">⏳ {data.note}</section>
@@ -89,8 +88,6 @@ export default function HourlyForecast() {
             <section className="aq-card">
               <div className="hf-station">
                 <span className="aq-badge aq-badge-real">ข้อมูลจริง</span>
-                <strong>{data.station?.name}</strong>
-                <span className="hf-distance">ห่าง ~{data.station?.distanceKm} กม.</span>
               </div>
               <div className="hf-current">
                 <span className="hf-value">{data.observed?.pm25}</span>
@@ -98,6 +95,9 @@ export default function HourlyForecast() {
                 <span className="hf-when">วัดเมื่อ {data.observed?.timeLocal} น. · {data.observed?.status?.level}</span>
               </div>
               <p className="hf-advice">{data.observed?.status?.advice}</p>
+              {mode === 'gps' && (
+                <button type="button" className="aq-retry" onClick={backToProfileProvince}>กลับไปใช้จังหวัดในโปรไฟล์{province ? ` (${province})` : ''}</button>
+              )}
             </section>
 
             <section className="aq-card">

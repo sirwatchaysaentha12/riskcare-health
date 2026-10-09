@@ -14,11 +14,23 @@ async function attempt(url, { signal, timeoutMs }) {
   signal?.addEventListener('abort', onAbort, { once: true })
   try {
     const response = await fetch(url, { cache: 'no-store', signal: controller.signal })
-    const payload = await response.json().catch(() => null)
+    const responseText = await response.text()
+    let payload = null
+    try { payload = responseText ? JSON.parse(responseText) : null } catch { /* handled as an invalid server response below */ }
     if (!response.ok || !payload || typeof payload !== 'object') {
-      throw new Error(payload?.message || `HTTP ${response.status}`)
+      const message = payload?.message || (response.status === 502 || response.status === 503
+        ? 'เซิร์ฟเวอร์ข้อมูลไม่พร้อมใช้งาน กรุณาตรวจสอบว่าเปิด admin-app แล้ว'
+        : `เซิร์ฟเวอร์ตอบกลับผิดปกติ (HTTP ${response.status})`)
+      const error = new Error(message)
+      error.status = response.status
+      error.code = payload?.error
+      throw error
     }
     return payload
+  } catch (error) {
+    if (error?.name === 'TimeoutError') throw new Error('รอข้อมูลนานเกินไป กรุณาลองอีกครั้ง', { cause: error })
+    if (error instanceof TypeError) throw new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบการเชื่อมต่อแล้วลองอีกครั้ง', { cause: error })
+    throw error
   } finally {
     clearTimeout(timer)
     signal?.removeEventListener('abort', onAbort)

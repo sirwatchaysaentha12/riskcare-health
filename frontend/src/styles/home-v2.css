@@ -1,0 +1,912 @@
+/* Home v2 — หน้า "ภาพรวมคุณภาพอากาศ" (port จาก stitch-design/code.html)
+ * โครง: header row → error/empty banner → การ์ดหลัก (PM2.5/AQI hero + warning strip + links)
+ *       → grid 2 คอลัมน์ (สรุปสถิติ | 5 พื้นที่เสี่ยงสูงสุด)
+ */
+
+.rc2-home-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+@media (min-width: 1024px) {
+  .rc2-home-head {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+.rc2-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 600;
+}
+.rc2-home-title {
+  margin: 4px 0 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (min-width: 640px) {
+  .rc2-home-title {
+    font-size: 30px;
+  }
+}
+.rc2-home-title em {
+  font-style: normal;
+  color: #047857;
+}
+.rc2-home-desc {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.rc2-head-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (min-width: 640px) {
+  .rc2-head-controls {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+.rc2-prov-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+  color: #047857;
+}
+.rc2-prov-picker:focus-within {
+  border-color: #047857;
+  box-shadow: 0 0 0 2px rgba(4, 120, 87, 0.2);
+}
+.rc2-prov-picker-label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.rc2-prov-picker select {
+  border: 0;
+  padding: 0 8px 0 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  font-family: inherit;
+  max-width: 180px;
+}
+.rc2-prov-picker select:focus {
+  outline: none;
+}
+
+.rc2-sync-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  color: #475569;
+}
+.rc2-sync-time {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 500;
+}
+.rc2-sync-state {
+  font-size: 11px;
+  color: #047857;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+.rc2-sync-state.is-stale {
+  color: #b45309;
+}
+.rc2-sync-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #10b981;
+  flex-shrink: 0;
+}
+.rc2-sync-dot.is-stale {
+  background: #f59e0b;
+}
+
+/* ─── Banners ─── */
+.rc2-banner {
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+}
+.rc2-banner--error {
+  background: #fff1f2;
+  border: 1px solid #fecdd3;
+  color: #881337;
+}
+.rc2-banner--empty {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  text-align: center;
+  display: block;
+}
+.rc2-banner-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rc2-banner--error .rc2-banner-icon {
+  background: #ffe4e6;
+  color: #be123c;
+}
+.rc2-banner-text {
+  flex: 1;
+  font-size: 13px;
+}
+.rc2-banner-text strong {
+  font-weight: 700;
+}
+.rc2-banner-retry {
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 0;
+  background: #e11d48;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.rc2-banner-retry:hover {
+  background: #be123c;
+}
+.rc2-banner--empty h3 {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #334155;
+}
+.rc2-banner--empty p {
+  margin: 0 auto;
+  max-width: 28rem;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ─── การ์ดหลัก ─── */
+.rc2-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 16px -2px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+@media (min-width: 1024px) {
+  .rc2-card {
+    padding: 32px;
+  }
+}
+.rc2-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rc2-card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rc2-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rc2-card-title-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #047857;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  flex-shrink: 0;
+}
+.rc2-card-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (min-width: 640px) {
+  .rc2-card-title {
+    font-size: 20px;
+  }
+}
+.rc2-prov-badge {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #d1fae5;
+}
+.rc2-card-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+.rc2-telemetry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rc2-telemetry-pill.is-stale {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.rc2-telemetry-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #10b981;
+  flex-shrink: 0;
+}
+.rc2-telemetry-dot.is-stale {
+  background: #f59e0b;
+}
+
+/* ─── Hero metrics ─── */
+.rc2-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+@media (min-width: 768px) {
+  .rc2-metrics {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .rc2-metric {
+    grid-column: span 6;
+  }
+}
+.rc2-metric {
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid #f1f5f9;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.rc2-metric-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rc2-metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.rc2-metric-note {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+.rc2-hero-num {
+  font-size: 48px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+@media (min-width: 1024px) {
+  .rc2-hero-num {
+    font-size: 60px;
+  }
+}
+.rc2-hero-unit {
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748b;
+  margin-left: 8px;
+}
+.rc2-hero-unit-sm {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  margin-left: 8px;
+}
+.rc2-pm25-bar {
+  width: 100%;
+  background: #e2e8f0;
+  height: 10px;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.rc2-pm25-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: #10b981;
+  transition: all 500ms ease;
+}
+.rc2-pm25-bar-legend {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 6px;
+}
+.rc2-pm25-bar-legend strong {
+  font-weight: 700;
+}
+.rc2-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+.rc2-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.rc2-status-subtext {
+  font-size: 12px;
+  color: #64748b;
+}
+.rc2-aqi-subrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ─── แถบคำเตือนสุขภาพ ─── */
+.rc2-warning-strip {
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+}
+.rc2-warning-strip-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.rc2-warning-strip-title {
+  font-size: 12px;
+  font-weight: 700;
+}
+.rc2-warning-strip-body {
+  font-size: 13px;
+  line-height: 1.65;
+  font-weight: 500;
+  margin: 2px 0 0;
+}
+.rc2-warning-strip p.rc2-warning-strip-extra {
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+
+/* ─── ปุ่มลิงก์ท้ายการ์ด ─── */
+.rc2-card-footer {
+  padding-top: 16px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rc2-card-footer-note {
+  font-size: 12px;
+  color: #64748b;
+}
+.rc2-card-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rc2-link-soft {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+.rc2-link-soft:hover {
+  background: rgba(209, 250, 229, 0.8);
+}
+.rc2-link-solid {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: #047857;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+  transition: background-color 150ms ease;
+}
+.rc2-link-solid:hover {
+  background: #065f46;
+}
+
+/* ─── Grid สองคอลัมน์ ─── */
+.rc2-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .rc2-detail-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+  .rc2-detail-grid > .rc2-col-5 {
+    grid-column: span 5;
+  }
+  .rc2-detail-grid > .rc2-col-7 {
+    grid-column: span 7;
+  }
+}
+.rc2-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.rc2-panel-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rc2-panel-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #047857;
+  flex-shrink: 0;
+}
+.rc2-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+.rc2-panel-subtitle {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: #64748b;
+}
+.rc2-panel-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #047857;
+  background: #ecfdf5;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #d1fae5;
+  white-space: nowrap;
+}
+
+.rc2-avg-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.rc2-avg-tile {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+.rc2-avg-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  display: block;
+  text-transform: uppercase;
+}
+.rc2-avg-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 4px;
+}
+.rc2-avg-num {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+.rc2-avg-unit {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+.rc2-avg-status {
+  font-size: 10px;
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+}
+
+.rc2-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+}
+.rc2-weather-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.rc2-weather-tile {
+  padding: 12px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  text-align: center;
+}
+.rc2-weather-tile .rc2-weather-icon {
+  color: #94a3b8;
+  display: inline-flex;
+}
+.rc2-weather-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  margin-top: 2px;
+}
+.rc2-weather-label {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.rc2-weather-note {
+  font-size: 10px;
+  color: #94a3b8;
+  margin: 6px 0 0;
+  line-height: 1.5;
+}
+
+.rc2-guidance-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.7;
+}
+.rc2-guidance-label {
+  font-size: 11px;
+  color: #94a3b8;
+  display: block;
+  margin-top: 8px;
+}
+.rc2-personal-box {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  border: 1px solid #d1fae5;
+  font-size: 13px;
+  color: #065f46;
+}
+.rc2-personal-box strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.rc2-personal-box p {
+  margin: 2px 0 0;
+}
+.rc2-reference-details {
+  font-size: 12px;
+  color: #64748b;
+}
+.rc2-reference-details summary {
+  cursor: pointer;
+  color: #047857;
+  font-weight: 600;
+}
+.rc2-reference-details p {
+  margin: 6px 0 0;
+  line-height: 1.6;
+}
+
+/* ─── รายการ 5 พื้นที่เสี่ยง ─── */
+.rc2-rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rc2-rank-row {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: background-color 150ms ease;
+}
+@media (min-width: 640px) {
+  .rc2-rank-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+.rc2-rank-row--green { background: rgba(236, 253, 245, 0.4); border-color: rgba(167, 243, 208, 0.7); }
+.rc2-rank-row--lime { background: rgba(163, 230, 53, 0.08); border-color: rgba(190, 242, 100, 0.6); }
+.rc2-rank-row--yellow { background: rgba(250, 204, 21, 0.1); border-color: rgba(253, 224, 71, 0.7); }
+.rc2-rank-row--orange { background: rgba(249, 115, 22, 0.08); border-color: rgba(251, 146, 60, 0.7); }
+.rc2-rank-row--red { background: rgba(239, 68, 68, 0.06); border-color: rgba(248, 113, 113, 0.7); }
+
+.rc2-rank-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.rc2-rank-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06);
+}
+.rc2-rank-num--green { background: #10b981; }
+.rc2-rank-num--lime { background: #65a30d; }
+.rc2-rank-num--yellow { background: #ca8a04; }
+.rc2-rank-num--orange { background: #f97316; }
+.rc2-rank-num--red { background: #dc2626; }
+.rc2-rank-num--pending { background: #94a3b8; }
+
+.rc2-rank-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rc2-rank-meta {
+  font-size: 11px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+.rc2-rank-source {
+  color: #047857;
+  font-weight: 500;
+}
+.rc2-rank-source.is-estimated {
+  color: #b45309;
+}
+.rc2-rank-tag {
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rc2-rank-tag--red { background: #fee2e2; color: #b91c1c; }
+.rc2-rank-tag--orange { background: #ffedd5; color: #c2410c; }
+.rc2-rank-tag--amber { background: #fef3c7; color: #b45309; }
+.rc2-rank-tag--slate { background: #f1f5f9; color: #334155; }
+
+.rc2-rank-values {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (min-width: 640px) {
+  .rc2-rank-values {
+    justify-content: flex-end;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+.rc2-rank-aqi {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+.rc2-rank-pm {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.rc2-rank-status {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 0;
+}
+.rc2-personal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #fecaca;
+}
+
+/* ─── Loading overlay ─── */
+.rc2-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.rc2-spinner {
+  color: #047857;
+  animation: rc2-spin 1s linear infinite;
+}
+@keyframes rc2-spin {
+  to { transform: rotate(360deg); }
+}
+.rc2-loading-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+.rc2-page-status {
+  padding: 24px;
+  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 14px;
+  color: #475569;
+}
+.rc2-page-status--error {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #881337;
+}
+.rc2-page-status strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* ─── เพิ่มเติมจากการ implement ─── */
+.rc2-hero-row {
+  margin: 16px 0;
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+.rc2-rank-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -1,6 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const backendUnavailableProxy = {
+  target: 'http://127.0.0.1:3000',
+  changeOrigin: true,
+  configure(proxy) {
+    proxy.on('error', (_error, _request, response) => {
+      if (response.headersSent || response.destroyed) return
+      response.writeHead(503, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' })
+      response.end(JSON.stringify({
+        state: 'error',
+        error: 'BACKEND_UNAVAILABLE',
+        message: 'เซิร์ฟเวอร์ข้อมูลยังไม่ทำงาน กรุณาเปิด admin-app แล้วลองอีกครั้ง',
+      }))
+    })
+  },
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -39,12 +55,10 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/air-quality': {
-        target: 'http://127.0.0.1:3000',
-        changeOrigin: true,
+        ...backendUnavailableProxy,
       },
       '/api/vital-signs': {
-        target: 'http://127.0.0.1:3000',
-        changeOrigin: true,
+        ...backendUnavailableProxy,
       },
       '/api/air4thai': {
         target: 'http://air4thai.pcd.go.th',

@@ -73,6 +73,7 @@ export default function PageMenuButton({ username = '' }) {
                   role="menuitem"
                 >
                   {item.label}
+                  {item.badge && <span className="page-menu-badge">{item.badge}</span>}
                 </NavLink>
               ))}
             </div>

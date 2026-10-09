@@ -1,10 +1,13 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { getAqiEmoji } from '../utils/aqiStatus'
-import { getPm25Tier } from '../data/pm25Thresholds'
+import { getEmojiByStatusLabel } from '../utils/aqiStatus'
 import { getPersonalizedAudience } from '../utils/personalizedPm25'
 import { fetchAirQualityDashboard } from '../services/airQualityDashboard'
+import { useProvinceAirLocation } from '../hooks/useProvinceAirLocation'
+import { UNIQUE_THAI_PROVINCES } from '../data/thaiProvinces'
+import { getProvinceCoords } from '../data/provinceCoords'
+import camsStats from '../data/camsAccuracyStats.json'
 
 const API_URL = '/api/air-quality/dashboard'
 const API_BACKEND_TARGET = 'http://127.0.0.1:3000/api/air-quality/dashboard'
@@ -25,20 +28,10 @@ const focusTabs = [
 
 // วันนี้ตามเขตเวลา Asia/Bangkok (ให้ตรงกับการตัดวันของ OpenAQ daily rollups)
 const bangkokToday = () => new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10)
-
-function getPm25Emoji(value) {
-  if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return '—'
-
-  const tier = getPm25Tier(Number(value))
-  const emojiByLevel = {
-    very_good: '😄',
-    good: '🙂',
-    moderate: '😐',
-    health_impact_start: '😟',
-    health_impact: '😷',
-  }
-
-  return tier ? emojiByLevel[tier.level_code] ?? '—' : '—'
+const addBangkokDays = (isoDate, days) => {
+  const date = new Date(`${isoDate}T00:00:00+07:00`)
+  date.setUTCDate(date.getUTCDate() + days)
+  return date.toISOString().slice(0, 10)
 }
 
 function formatDate(value) {
@@ -116,29 +109,36 @@ export default function AirQualityTrend() {
   const [cachedAt, setCachedAt] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [errorDetails, setErrorDetails] = useState(null)
-  const [coords, setCoords] = useState(null)
-  const [geoStatus, setGeoStatus] = useState('asking') // 'asking' | 'granted' | 'denied'
   const [attempt, setAttempt] = useState(0)
   const [refetching, setRefetching] = useState(false) // indicator ตอนเปลี่ยนหน้าต่าง/metric (ข้อมูลเก่ายังโชว์ระหว่างรอ)
+  const [forecastLoading, setForecastLoading] = useState(false)
   const [isSensitive, setIsSensitive] = useState(false) // กลุ่มสุขภาพของผู้ใช้ → คำแนะนำเฉพาะบุคคล
   const [modelVersion, setModelVersion] = useState(null) // เวอร์ชันโมเดลที่ให้ค่าพยากรณ์ (ย้อนตรวจได้)
   const [forecastNote, setForecastNote] = useState('') // คำอธิบายที่มาของค่าพยากรณ์จาก backend
+  const [forecastUpdatedAt, setForecastUpdatedAt] = useState(null)
+  const [forecastStale, setForecastStale] = useState(false)
+  const [forecastStationCount, setForecastStationCount] = useState(0)
+  const [dataNotice, setDataNotice] = useState('') // แจ้งเมื่อแสดงค่าประมาณจากแหล่งข้อมูลแบบกริด
   const [todayEstimate, setTodayEstimate] = useState(null) // ประมาณการของวันนี้ (เมื่อสถานียังไม่ส่งค่าวัดจริง)
-  const geoSupported = typeof navigator !== 'undefined' && Boolean(navigator.geolocation)
+  // ตำแหน่งอ้างอิง: จังหวัดจาก profiles.province เป็นหลัก, GPS เป็นตัวเลือกเสริม (กดปุ่มเอง)
+  const { provinceState, province, coords, mode, gpsStatus, requestGps, backToProfileProvince } = useProvinceAirLocation()
+  // จุดที่ 3: จังหวัดสำหรับ "ดูข้อมูลย้อนหลัง" — อิสระจากแหล่งค่าเริ่มต้น (โปรไฟล์/GPS)
+  // browseProvince = null → ยังไม่แตะ → ตามแหล่งค่าเริ่มต้น (โปรไฟล์ หรือ GPS ถ้ากดปุ่ม)
+  // ค่าเริ่มต้น = จังหวัดในโปรไฟล์ (สะดวกผู้ใช้ส่วนใหญ่) แต่เลือกเปลี่ยนเองได้โดยไม่กระทบโปรไฟล์
+  const GPS_PROVINCE_KEY = '__gps__'
+  const [browseProvince, setBrowseProvince] = useState(null)
+  const effectiveProvince = browseProvince ?? (mode === 'gps' ? GPS_PROVINCE_KEY : province)
+  const gpsCoords = mode === 'gps' ? coords : null
+  const fetchCoords = useMemo(() => effectiveProvince === GPS_PROVINCE_KEY
+    ? gpsCoords
+    : (effectiveProvince ? getProvinceCoords(effectiveProvince) : null), [effectiveProvince, gpsCoords])
+  const handleUseGps = () => { setRefetching(true); requestGps(); setBrowseProvince(GPS_PROVINCE_KEY) }
+  const handleBackToProfileProvince = () => { setRefetching(true); backToProfileProvince(); setBrowseProvince(null) }
   const history = historyTabs.find((tab) => tab.id === selectedHistory) || historyTabs[0]
   const setSelectedHistory = (value) => { setSelectedHistoryState(value); setSelectedModeOff(); setRefetching(true) }
   const setSelectedModeOff = () => { setFocus((current) => (current && current !== 'today' ? null : current)) }
   const today = bangkokToday()
   const todayRow = rows.find((row) => row.date === today)
-
-  useEffect(() => {
-    if (!geoSupported) return
-    navigator.geolocation.getCurrentPosition(
-      (position) => { setCoords({ lat: position.coords.latitude, lon: position.coords.longitude }); setGeoStatus('granted') },
-      () => setGeoStatus('denied'),
-      { timeout: 10000, maximumAge: 600000 },
-    )
-  }, [attempt, geoSupported])
 
   // ดึงกลุ่มสุขภาพของผู้ใช้ (แบบประเมิน + โรคประจำตัว) → ส่งเป็น risk param ให้ API คำนวณคำแนะนำเฉพาะบุคคล
   useEffect(() => {
@@ -158,10 +158,16 @@ export default function AirQualityTrend() {
   }, [])
 
   useEffect(() => {
-    if (!coords) return undefined
+    if (!fetchCoords) return undefined
     let active = true
     const controller = new AbortController()
-    const url = `${API_URL}?period=${history.id}&metric=${encodeURIComponent(metric)}&lat=${coords.lat}&lon=${coords.lon}&risk=${isSensitive ? 'sensitive' : 'general'}`
+    setForecastLoading(false)
+    const forecastLoadingTimer = window.setTimeout(() => {
+      if (active) setForecastLoading(true)
+    }, 350)
+    const provinceForecastParams = new URLSearchParams({ forecastModel: 'v27' })
+    if (effectiveProvince !== GPS_PROVINCE_KEY) provinceForecastParams.set('province', effectiveProvince)
+    const url = `${API_URL}?period=${history.id}&metric=${encodeURIComponent(metric)}&lat=${fetchCoords.latitude}&lon=${fetchCoords.longitude}&risk=${isSensitive ? 'sensitive' : 'general'}&${provinceForecastParams}`
     fetchAirQualityDashboard(url, { signal: controller.signal })
       .then(({ payload, source, cachedAt: responseCachedAt }) => {
         if (!active) return
@@ -175,6 +181,10 @@ export default function AirQualityTrend() {
         setForecastRows(forecast)
         setModelVersion(typeof payload.modelVersion === 'string' ? payload.modelVersion : null)
         setForecastNote(typeof payload.forecastNote === 'string' ? payload.forecastNote : '')
+        setForecastUpdatedAt(typeof payload.forecastUpdatedAt === 'string' ? payload.forecastUpdatedAt : null)
+        setForecastStale(payload.forecastStale === true)
+        setForecastStationCount(Number.isFinite(Number(payload.forecastStationCount)) ? Number(payload.forecastStationCount) : 0)
+        setDataNotice(typeof payload.dataNotice === 'string' ? payload.dataNotice : '')
         setTodayEstimate(payload.todayEstimate && Number.isFinite(Number(payload.todayEstimate.value)) ? payload.todayEstimate : null)
         // โฟกัสค่าเริ่มต้น: "วันนี้" ถ้ามีข้อมูลวันนี้ในหน้าต่างที่เลือก, เปลี่ยนหน้าต่าง → ประเมินใหม่
         setFocus((current) => {
@@ -188,7 +198,7 @@ export default function AirQualityTrend() {
         setApiState('error')
         setDataFreshness('none')
         setCachedAt(null)
-        setRows([]); setForecastRows([]); setFocus(null); setTodayEstimate(null); setModelVersion(null); setForecastNote('')
+        setRows([]); setForecastRows([]); setFocus(null); setTodayEstimate(null); setModelVersion(null); setForecastNote(''); setForecastUpdatedAt(null); setForecastStale(false); setForecastStationCount(0); setDataNotice('')
         const upstreamStatus = Number(error?.upstreamStatus) || null
         const failureCategory = upstreamStatus
           ? 'upstream'
@@ -206,15 +216,15 @@ export default function AirQualityTrend() {
         const friendlyMessage = error?.status === 502
           ? 'Backend ไม่ตอบสนอง กรุณาตรวจสอบว่าเปิด server หรือยัง'
           : upstreamStatus === 401
-          ? 'OpenAQ ปฏิเสธการยืนยันตัวตน'
+          ? 'แหล่งข้อมูลปฏิเสธการยืนยันตัวตน'
           : upstreamStatus === 403
-            ? 'บัญชีไม่มีสิทธิ์เข้าถึงข้อมูล OpenAQ นี้'
+            ? 'บัญชีไม่มีสิทธิ์เข้าถึงข้อมูลนี้'
             : upstreamStatus === 404
-              ? 'ไม่พบสถานีหรือข้อมูลที่ร้องขอจาก OpenAQ'
+              ? 'ไม่พบข้อมูลที่ร้องขอ'
               : upstreamStatus === 429
-                ? 'OpenAQ จำกัดจำนวนคำขอชั่วคราว'
+                ? 'แหล่งข้อมูลจำกัดจำนวนคำขอชั่วคราว'
                 : upstreamStatus >= 500
-                  ? 'บริการ OpenAQ ขัดข้องชั่วคราว'
+                  ? 'บริการข้อมูลขัดข้องชั่วคราว'
                   : error?.name === 'TypeError'
                     ? 'เชื่อมต่อ Backend ไม่สำเร็จ อาจเกิดจาก Server ยังไม่ทำงานหรือการตั้งค่า CORS และไม่มีข้อมูลสำรอง กรุณาลองใหม่อีกครั้ง'
                     : 'ไม่สามารถเชื่อมต่อข้อมูลคุณภาพอากาศได้ และไม่มีข้อมูลสำรองที่เคยโหลดไว้ กรุณาลองใหม่อีกครั้ง'
@@ -226,34 +236,109 @@ export default function AirQualityTrend() {
         })
         setErrorMessage(friendlyMessage)
       })
-      .finally(() => { if (active) setRefetching(false) })
-    return () => { active = false; controller.abort() }
-  }, [history.id, metric, coords, attempt, today, isSensitive])
+      .finally(() => {
+        window.clearTimeout(forecastLoadingTimer)
+        if (active) {
+          setForecastLoading(false)
+          setRefetching(false)
+        }
+      })
+    return () => {
+      active = false
+      window.clearTimeout(forecastLoadingTimer)
+      controller.abort()
+    }
+  }, [history.id, metric, fetchCoords, effectiveProvince, attempt, today, isSensitive])
 
-  const loading = apiState === 'idle'
-  const effectiveGeoStatus = !geoSupported ? 'unavailable' : geoStatus
+  const loading = apiState === 'idle' || provinceState === 'loading'
   // ปุ่มโฟกัสวันใช้ได้เฉพาะช่วง "สัปดาห์นี้" — หน้าต่างเก่า (สัปดาห์ที่แล้วขึ้นไป) ไม่มีวันนี้/พรุ่งนี้
   // อยู่ในช่วงข้อมูล ถ้าบังคับแสดงกราฟจะเหลื่อมวันหลอกตา (จุดเรียงตาม index ไม่ใช่ตามวันจริง)
   const focusAvailable = selectedHistory === 'currentWeek'
   const focusTab = focusTabs.find((tab) => tab.id === focus) || null
   const forecastCount = focusAvailable ? (focusTab?.forecastDays ?? 0) : 0
+  const expectedForecastDates = focusTab && focusTab.forecastDays > 0
+    ? Array.from({ length: focusTab.forecastDays }, (_, index) => addBangkokDays(today, index + 1))
+    : []
+  const focusedForecastRows = expectedForecastDates
+    .map((date) => forecastRows.find((row) => row.date === date))
+    .filter(Boolean)
   // โฟกัสวันพยากรณ์ → กราฟแสดง 3 วันจริงท้ายสุดนำหน้า ให้เห็นการไหลจากของจริงไปคาดการณ์
-  const visibleRows = forecastCount > 0 ? [...rows.slice(-3), ...forecastRows.slice(0, forecastCount)] : rows
+  const visibleRows = forecastCount > 0 ? [...rows.slice(-3), ...focusedForecastRows] : rows
   const focusedDate = focus === 'today'
     ? todayRow?.date
-    : focusTab ? forecastRows[forecastCount - 1]?.date : null
+    : focusTab ? focusedForecastRows.at(-1)?.date : null
   const todayAvailable = Boolean(todayRow)
   const focusDataMissing = Boolean(focusTab && (
     focusTab.id === 'today'
       ? !todayRow && !todayEstimate
-      : forecastRows.length < focusTab.forecastDays
+      : focusedForecastRows.length < focusTab.forecastDays
   ))
+  const forecastUnavailableMessage = forecastRows.length > 0
+    ? 'ยังไม่มีผลพยากรณ์สำหรับวันที่เลือก รุ่นนี้ต้องใช้ค่าฝุ่นของวันก่อนหน้า และยังพยากรณ์ได้เฉพาะสถานีในชุดที่รองรับ'
+    : forecastNote || 'ยังไม่มีข้อมูลพยากรณ์สำหรับจังหวัดนี้จากสถานีที่โมเดลรองรับ'
   const metricDescription = metric === 'AQI'
     ? 'AQI · ดัชนีคุณภาพอากาศรายวัน'
     : 'PM2.5 · ค่าฝุ่นละอองขนาดเล็กเฉลี่ยรายวัน'
+  const modelBacktestWarning = modelVersion === '2.7-local-2026-10-01'
+    ? ' · ผลทดสอบย้อนหลัง 1–7 ต.ค. ยังด้อยกว่า baseline'
+    : ''
 
-  if (!coords && effectiveGeoStatus !== 'granted') {
-    return <main className="aq-page"><div className="aq-shell"><button type="button" className="aq-back" onClick={() => navigate(-1)}>← กลับ</button><section className="aq-card"><div className="aq-empty-state"><strong>{effectiveGeoStatus === 'denied' ? 'ยังไม่ได้อนุญาตการเข้าถึงตำแหน่ง' : effectiveGeoStatus === 'unavailable' ? 'อุปกรณ์นี้ระบุตำแหน่งไม่ได้' : 'กำลังระบุตำแหน่งของคุณ...'}</strong><span>ระบบใช้ตำแหน่งของคุณค้นหาสถานีวัดฝุ่น PM2.5 ที่ใกล้ที่สุดเท่านั้น ข้อมูลจะแสดงเฉพาะพื้นที่ของคุณ</span>{effectiveGeoStatus !== 'asking' && <button type="button" className="aq-retry" onClick={() => { setGeoStatus('asking'); setAttempt((value) => value + 1) }}>ลองอีกครั้ง</button>}</div></section></div></main>
+  const effectiveCoords = effectiveProvince === GPS_PROVINCE_KEY ? gpsCoords : (effectiveProvince ? getProvinceCoords(effectiveProvince) : null)
+  if (provinceState === 'no-province' && !effectiveCoords) {
+    return (
+      <main className="aq-page">
+        <div className="aq-shell">
+          <button type="button" className="aq-back" onClick={() => navigate(-1)}>← กลับ</button>
+          <section className="aq-card">
+            <div className="aq-empty-state">
+              <strong>{province ? `ไม่พบพิกัดอ้างอิงของจังหวัด${province} ในระบบ` : 'คุณยังไม่ได้ตั้งค่าจังหวัดในโปรไฟล์'}</strong>
+              <span>ค่าเริ่มต้นของหน้านี้อิงจังหวัดในโปรไฟล์ — ไปตั้งค่าจังหวัดก่อน ใช้ตำแหน่งปัจจุบันของอุปกรณ์แทน (ตัวเลือกเสริม) หรือเลือกจังหวัดเพื่อดูข้อมูลย้อนหลังด้านล่าง</span>
+              <Link className="aq-retry" to="/profile">ไปตั้งค่าจังหวัดที่หน้าโปรไฟล์</Link>
+              {gpsStatus === 'asking' ? (
+                <span>กำลังขอตำแหน่งปัจจุบัน...</span>
+              ) : gpsStatus === 'denied' ? (
+                <><span>ยังไม่ได้อนุญาตการเข้าถึงตำแหน่ง — กดใหม่อีกครั้งเพื่อลองถามสิทธิ์</span><button type="button" className="aq-retry" onClick={handleUseGps}>ใช้ตำแหน่งปัจจุบันแทน</button></>
+              ) : gpsStatus === 'unavailable' ? (
+                <span>อุปกรณ์นี้ระบุตำแหน่งไม่ได้ — กรุณาตั้งค่าจังหวัดในโปรไฟล์</span>
+              ) : (
+                <button type="button" className="aq-retry" onClick={handleUseGps}>ใช้ตำแหน่งปัจจุบันแทน</button>
+              )}
+              <span style={{ marginTop: 8 }}>หรือเลือกจังหวัดเพื่อดูข้อมูลย้อนหลัง (ไม่กระทบค่าเริ่มต้นของโปรไฟล์):</span>
+              <select
+                className="aq-province-select"
+                aria-label="เลือกจังหวัดสำหรับดูข้อมูลย้อนหลัง"
+                value={effectiveProvince}
+                onChange={(event) => {
+                  const value = event.target.value
+                  if (value === GPS_PROVINCE_KEY) { handleUseGps() } else { setBrowseProvince(value) }
+                }}
+              >
+                <option value="">— เลือกจังหวัด —</option>
+                {UNIQUE_THAI_PROVINCES.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+            </div>
+          </section>
+        </div>
+      </main>
+    )
+  }
+
+  if (effectiveProvince === GPS_PROVINCE_KEY && !gpsCoords) {
+    return (
+      <main className="aq-page">
+        <div className="aq-shell">
+          <button type="button" className="aq-back" onClick={() => navigate(-1)}>← กลับ</button>
+          <section className="aq-card">
+            <div className="aq-empty-state">
+              <strong>{gpsStatus === 'asking' ? 'กำลังขอตำแหน่งปัจจุบัน...' : 'ยังไม่ได้อนุญาตการเข้าถึงตำแหน่ง'}</strong>
+              <span>{gpsStatus === 'denied' ? 'เบราว์เซอร์ปฏิเสธสิทธิ์ตำแหน่ง — กดใหม่อีกครั้งเพื่อลองถามสิทธิ์ หรือกลับไปใช้จังหวัดจาก dropdown' : 'กดปุ่มด้านล่างเพื่อขอสิทธิ์ตำแหน่งอีกครั้ง หรือเลือกจังหวัดจาก dropdown แทน'}</span>
+              {gpsStatus !== 'asking' && <button type="button" className="aq-retry" onClick={requestGps}>ใช้ตำแหน่งปัจจุบันแทน</button>}
+              <button type="button" className="aq-retry" onClick={handleBackToProfileProvince}>กลับไปใช้จังหวัดตามโปรไฟล์</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    )
   }
 
   return (
@@ -286,8 +371,8 @@ export default function AirQualityTrend() {
           </header>
 
           <div className={`aq-today-strip${todayAvailable ? ' is-clickable' : ''}`} onClick={todayAvailable ? () => setFocus('today') : undefined} role={todayAvailable ? 'button' : undefined} tabIndex={todayAvailable ? 0 : undefined} aria-pressed={focus === 'today'} onKeyDown={todayAvailable ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setFocus('today') } } : undefined}>
-            <strong>ข้อมูลวันนี้ ({formatDate(today)})</strong>
-            {todayRow ? <span>{Number(todayRow.value).toFixed(1)} {todayRow.unit} · {todayRow.status} {getAqiEmoji(Number(todayRow.value))} <Badge row={todayRow} />{focus === 'today' && <small>· กำลังโฟกัส</small>}</span> : todayEstimate ? <span>{Number(todayEstimate.value).toFixed(1)} {todayEstimate.unit} · {todayEstimate.status} {getAqiEmoji(Number(todayEstimate.value))} <Badge row={todayEstimate} /> <small>รอค่าวัดจริงของวันนี้</small></span> : <span className="aq-today-empty">{selectedHistory === 'currentWeek' ? 'ไม่มีข้อมูลวันนี้ — สถานียังไม่ส่งข้อมูลวันที่ล่าสุด' : 'ช่วงที่เลือกไม่รวมวันนี้ — กด "สัปดาห์นี้" เพื่อดูวันนี้'}</span>}
+            <strong>ข้อมูลวันนี้{effectiveProvince && effectiveProvince !== GPS_PROVINCE_KEY ? ` · จังหวัด${effectiveProvince}` : ''} ({formatDate(today)})</strong>
+            {todayRow ? <span>{Number(todayRow.value).toFixed(1)} {todayRow.unit} · {todayRow.status} {getEmojiByStatusLabel(todayRow.status)} <Badge row={todayRow} />{focus === 'today' && <small>· กำลังโฟกัส</small>}</span> : todayEstimate ? <span>{Number(todayEstimate.value).toFixed(1)} {todayEstimate.unit} · {todayEstimate.status} {getEmojiByStatusLabel(todayEstimate.status)} <Badge row={todayEstimate} /> <small>รอค่าวัดจริงของวันนี้</small></span> : <span className="aq-today-empty">{selectedHistory === 'currentWeek' ? 'ไม่มีข้อมูลวันนี้ — สถานียังไม่ส่งข้อมูลวันที่ล่าสุด' : 'ช่วงที่เลือกไม่รวมวันนี้ — กด "สัปดาห์นี้" เพื่อดูวันนี้'}</span>}
           </div>
 
           <div className="aq-metric-row">
@@ -297,9 +382,41 @@ export default function AirQualityTrend() {
             <span>{metricDescription}</span>
           </div>
 
-          {dataFreshness !== 'none' && <p className={`aq-source-status${dataFreshness === 'stale' ? ' is-stale' : ''}`} role="status">{dataFreshness === 'stale' ? `ข้อมูลสำรองจาก cache — โหลดสำเร็จล่าสุด ${new Date(cachedAt).toLocaleString('th-TH')}` : 'ข้อมูลสดจาก OpenAQ'}</p>}
-          {refetching && <p className="aq-loading-note" role="status">กำลังโหลดข้อมูลช่วงเวลาใหม่...</p>}
-
+          {(refetching || dataFreshness !== 'none') && <p className={`aq-source-status${dataFreshness === 'stale' ? ' is-stale' : ''}`} role="status" aria-live="polite">{forecastLoading ? 'กำลังโหลดผลคาดการณ์ค่าฝุ่น...' : refetching ? 'กำลังโหลดข้อมูล...' : dataNotice || (dataFreshness === 'stale' ? `ข้อมูลสำรองจาก cache — โหลดสำเร็จล่าสุด ${new Date(cachedAt).toLocaleString('th-TH')}` : 'ข้อมูลล่าสุด')}</p>}
+          {/* จุดที่ 3: dropdown จังหวัดอิสระของโหมดดูข้อมูลย้อนหลัง — ไม่ผูกกับค่าเริ่มต้น (โปรไฟล์/GPS) */}
+          <div className="aq-metric-row">
+            <span className="aq-source-status" role="status">
+              ดูข้อมูลย้อนหลังของจังหวัด:
+              {' '}
+              <select
+                className="aq-province-select"
+                aria-label="เลือกจังหวัดสำหรับดูข้อมูลย้อนหลัง"
+                value={effectiveProvince}
+                onChange={(event) => {
+                  const value = event.target.value
+                  setRefetching(true)
+                  if (value === GPS_PROVINCE_KEY) { handleUseGps() } else { setBrowseProvince(value) }
+                }}
+              >
+                <option value={GPS_PROVINCE_KEY}>ตำแหน่งปัจจุบัน (GPS)</option>
+                {UNIQUE_THAI_PROVINCES.map((item) => <option key={item} value={item}>{item}</option>)}
+              </select>
+              {mode === 'province' && effectiveProvince !== GPS_PROVINCE_KEY && province && effectiveProvince !== province && (
+                <small style={{ marginLeft: 8 }}>กำลังดูจังหวัดอื่น — ค่าเริ่มต้นยังอิงโปรไฟล์</small>
+              )}
+            </span>
+          </div>
+          {/* จุดที่ 2: แหล่งค่าเริ่มต้น (โปรไฟล์/GPS) แสดงที่มาชัดเจน + ปุ่ม GPS เป็นตัวเลือกเสริม */}
+          <div className="aq-metric-row">
+            <span className="aq-source-status" role="status">
+              {effectiveProvince === GPS_PROVINCE_KEY ? 'ข้อมูลตามตำแหน่งปัจจุบัน (GPS)' : effectiveProvince ? `ข้อมูลจังหวัดที่เลือก (${effectiveProvince})` : 'ยังไม่ได้ตั้งจังหวัดในโปรไฟล์'}
+            </span>
+            {mode === 'province' ? (
+              <button type="button" className="aq-retry" onClick={handleUseGps}>ใช้ตำแหน่งปัจจุบันแทน</button>
+            ) : (
+              <button type="button" className="aq-retry" onClick={handleBackToProfileProvince}>กลับไปใช้จังหวัดในโปรไฟล์{province ? ` (${province})` : ''}</button>
+            )}
+          </div>
           {loading ? <EmptyState loading /> : apiState === 'error' ? (
             <div className="aq-empty-state" role="alert">
               <strong>เกิดข้อผิดพลาด</strong><span>{errorMessage}</span>
@@ -307,27 +424,27 @@ export default function AirQualityTrend() {
               <button type="button" className="aq-retry" onClick={() => { setApiState('idle'); setAttempt((value) => value + 1) }}>ลองใหม่</button>
             </div>
           ) : apiState === 'no_station_nearby' ? (
-            <div className="aq-empty-state" role="status"><strong>ไม่พบสถานีวัดฝุ่นใกล้คุณ</strong><span>{errorMessage || 'ไม่มีสถานี PM2.5 ในรัศมี 25 กม. จากตำแหน่งของคุณ'}</span></div>
-          ) : <Chart rows={focusDataMissing ? [] : visibleRows} focusedDate={focusedDate} emptyMessage="ยังไม่มีข้อมูลสำหรับวันที่เลือก — เลือกช่วงวันอื่นหรือลองใหม่ภายหลัง" />}
+            <div className="aq-empty-state" role="status"><strong>ไม่พบสถานีวัดฝุ่นในจังหวัด{province || 'ที่เลือก'}</strong><span>{errorMessage || 'ไม่มีสถานี PM2.5 ในรัศมี 25 กม. จากพื้นที่อ้างอิงของจังหวัดนี้'}</span></div>
+          ) : <Chart rows={focusDataMissing ? [] : visibleRows} focusedDate={focusedDate} emptyMessage={focusDataMissing && focusTab?.forecastDays ? forecastUnavailableMessage : 'ยังไม่มีข้อมูลสำหรับวันที่เลือก — เลือกช่วงวันอื่นหรือลองใหม่ภายหลัง'} />}
 
           <section className="aq-details">
             <h2>รายละเอียดรายวัน</h2>
             {isSensitive && <p className="aq-forecast-note">คำแนะนำทุกวันปรับตามกลุ่มสุขภาพของคุณ (กลุ่มเสี่ยง) จากแบบประเมินและโรคประจำตัว</p>}
-            {forecastCount > 0 && forecastRows.length > 0 && <p className="aq-forecast-note">{forecastNote || 'คาดการณ์จากแนวโน้มย้อนหลัง — ไม่ใช่ข้อมูลจริง'}{modelVersion ? ` · โมเดล: ${modelVersion}` : ''}</p>}
+            {forecastCount > 0 && focusedForecastRows.length > 0 && <p className="aq-forecast-note">{forecastStale ? 'ข้อมูลพยากรณ์ล้าสมัย (อัปเดตเกิน 2 วัน) · ' : ''}{forecastNote || 'พยากรณ์โดยแบบจำลองระดับโลก CAMS (Copernicus) ผ่าน Open-Meteo ความละเอียด ~45 กม. ไม่ใช่ค่าวัด ณ จุดของคุณ'}{camsStats?.formattedText ? ` · ${camsStats.formattedText}` : ''}{forecastStationCount > 0 ? ` · เฉลี่ยจาก ${forecastStationCount} สถานี` : ''}{forecastUpdatedAt ? ` · อัปเดต ${new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Bangkok' }).format(new Date(forecastUpdatedAt))}` : ''}</p>}
+            {forecastCount > 0 && focusDataMissing && apiState !== 'error' && <p className="aq-forecast-note">{forecastUnavailableMessage}</p>}
             {visibleRows.length === 0 ? <p className="aq-table-empty">ยังไม่มีรายละเอียดรายวันสำหรับช่วงที่เลือก</p> : <>
               <div className="aq-table-scroll">
                 <table>
                   <thead><tr><th>วันที่</th><th>ค่าเฉลี่ย</th><th>สถานะ</th><th>ประเภท</th><th>คำแนะนำ</th></tr></thead>
                   <tbody>{visibleRows.slice(-10).map((row) => {
-                    const pm25Value = metric === 'PM2.5' ? row.value : row.pm25
-                    const emoji = getPm25Emoji(pm25Value)
-                    const status = emoji === '—' ? 'ไม่มีข้อมูล' : row.status || 'ไม่มีข้อมูล'
+                    const emoji = getEmojiByStatusLabel(row.status)
+                    const status = row.status || 'ไม่มีข้อมูล'
                     return <tr key={`${row.date}-${row.isForecast}`} className={row.date === focusedDate ? (row.isForecast ? 'is-focused-forecast' : 'is-focused-real') : ''}><td>{formatDate(row.date)}</td><td>{Number(row.value).toFixed(1)} {row.unit}</td><td><span aria-label={`สถานะคุณภาพอากาศ: ${status}`}><span aria-hidden="true">{emoji}</span>{' '}<span>{status}</span></span></td><td><Badge row={row} /></td><td>{row.advice || '-'}</td></tr>
                   })}</tbody>
                 </table>
               </div>
               <div className="aq-daily-cards">
-                {visibleRows.slice(-10).map((row) => <article className={`aq-day-card${row.date === focusedDate ? (row.isForecast ? ' is-focused-forecast' : ' is-focused-real') : ''}`} key={`${row.date}-${row.isForecast}`}><strong>{formatDate(row.date)}</strong><span>{getAqiEmoji(Number(row.value))}</span><b>{Number(row.value).toFixed(1)} {row.unit}</b><Badge row={row} /></article>)}
+                {visibleRows.slice(-10).map((row) => <article className={`aq-day-card${row.date === focusedDate ? (row.isForecast ? ' is-focused-forecast' : ' is-focused-real') : ''}`} key={`${row.date}-${row.isForecast}`}><strong>{formatDate(row.date)}</strong><span>{getEmojiByStatusLabel(row.status)}</span><b>{Number(row.value).toFixed(1)} {row.unit}</b><Badge row={row} /></article>)}
               </div>
             </>}
           </section>

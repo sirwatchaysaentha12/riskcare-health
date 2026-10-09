@@ -136,6 +136,30 @@ async function getGridFallbackStations(userLat, userLon) {
   return results.filter((result) => result.status === 'fulfilled').map((result) => result.value)
 }
 
+// ดึงค่า PM2.5 ปัจจุบันจากพิกัดใด ๆ (ใช้กับการดึงรายอำเภอ) — ค่าจริงจาก API เท่านั้น
+// มี session cache 10 นาที เพื่อไม่ยิง API ซ้ำตอนสลับจังหวัด
+const openMeteoPm25Cache = new Map()
+export async function fetchOpenMeteoPm25(latitude, longitude) {
+  const key = `${Number(latitude).toFixed(3)},${Number(longitude).toFixed(3)}`
+  const cached = openMeteoPm25Cache.get(key)
+  if (cached && Date.now() - cached.fetchedAt < 10 * 60 * 1000) return cached
+  const url = new URL(OPEN_METEO_ENDPOINT)
+  url.searchParams.set('latitude', String(latitude))
+  url.searchParams.set('longitude', String(longitude))
+  url.searchParams.set('current', 'pm2_5')
+  url.searchParams.set('timezone', 'Asia/Bangkok')
+  const response = await fetch(url, { signal: AbortSignal.timeout(10000) })
+  if (!response.ok) throw new Error(`Open-Meteo HTTP ${response.status}`)
+  const payload = await response.json()
+  const pm25 = numberFrom(payload.current?.pm2_5)
+  if (pm25 === null) throw new Error('missing PM2.5')
+  const isoTime = String(payload.current?.time || '')
+  const timeLocal = isoTime.length >= 16 ? `${isoTime.slice(11, 16)} น.` : null
+  const result = { pm25, timeLocal, fetchedAt: Date.now() }
+  openMeteoPm25Cache.set(key, result)
+  return result
+}
+
 export async function getAirQualityStations(userLat, userLon) {
   if (!Number.isFinite(Number(userLat)) || !Number.isFinite(Number(userLon)) || (Number(userLat) === 0 && Number(userLon) === 0)) {
     const location = await getUserLocation()
