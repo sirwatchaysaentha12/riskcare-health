@@ -8,6 +8,7 @@ import { pm25Status } from '@/lib/pm25Status'
 import { pm25ToAqi } from '@/lib/aqiStatus'
 import { getGriddedPm25 } from '@/lib/griddedPm25'
 import { ensureEnvChecked } from '@/lib/envCheck'
+import { fetchCamsAirQuality } from '@/lib/openMeteoClient'
 
 const GRIDDED_PM25_MODEL_VERSION = 'cams-gridded-global-v1'
 const GRIDDED_FALLBACK_NOTE = 'จังหวัดนี้ไม่มีผลจากโมเดลที่ฝึกในโครงการ จึงใช้แบบจำลองพื้นที่ PM2.5 แทน ค่านี้เป็นค่าประมาณ ไม่ใช่ค่าตรวจวัดจากสถานี'
@@ -130,6 +131,52 @@ export async function GET(request: NextRequest) {
       historical: [], forecast: [], updatedAt: null, dataSource: 'OpenAQ', state: 'invalid_coordinates',
       error: 'INVALID_COORDINATES', message: 'กรุณาระบุพิกัด lat/lon ที่ถูกต้อง',
     }, { status: 400, headers: RESPONSE_HEADERS })
+  }
+
+  // Production forecast path: CAMS/Open-Meteo is authoritative and must not
+  // probe OpenAQ first. OpenAQ remains available only for legacy callers that
+  // do not request the frozen production forecast path.
+  if (useFrozenProvinceModel) {
+    const cams = await fetchCamsAirQuality(lat, lon, 28, 4)
+    const toMetric = (value: number | null) => value == null
+      ? null
+      : metric === 'AQI' ? (pm25ToAqi(value) ?? Math.round(value)) : value
+    const mapPoint = (point: typeof cams.historical[number]) => ({
+      date: point.date,
+      value: toMetric(point.pm25),
+      unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+      status: point.pm25 == null ? 'รอข้อมูล' : (pm25Status(point.pm25, isSensitive)?.status ?? 'รอข้อมูล'),
+      advice: point.pm25 == null ? 'ข้อมูลไม่ครบ 18 ชั่วโมง จึงยังไม่คำนวณค่าเฉลี่ย' : (pm25Status(point.pm25, isSensitive)?.advice ?? ''),
+      isForecast: point.isForecast,
+      dataType: point.dataType,
+      dataSource: 'Open-Meteo/CAMS',
+      modelVersion: point.modelVersion,
+      validHours: point.validHours,
+    })
+    const historical = cams.historical.map(mapPoint)
+    const forecast = cams.forecast.map(mapPoint)
+    return NextResponse.json({
+      station: null,
+      metric,
+      unit: metric === 'AQI' ? 'AQI' : 'µg/m³',
+      historical,
+      forecast,
+      days: historical,
+      todayEstimate: historical.find((point) => point.date === toDate) ?? null,
+      forecastNote: cams.forecastLabel,
+      dataNotice: cams.historicalLabel,
+      forecastUpdatedAt: cams.updatedAt,
+      forecastStale: cams.status === 'stale',
+      forecastStationCount: 0,
+      forecastModelTrainedUntil: null,
+      modelVersion: forecast.some((point) => point.modelVersion === 'cams-open-meteo') ? 'cams-open-meteo' : null,
+      dataSource: 'Open-Meteo/CAMS',
+      accuracyText: cams.accuracyText,
+      accuracyWarning: cams.accuracyWarning,
+      updatedAt: cams.updatedAt,
+      state: cams.status,
+      ...(cams.errorMessage ? { error: cams.errorMessage } : {}),
+    }, { headers: RESPONSE_HEADERS })
   }
 
   try {

@@ -28,6 +28,7 @@ export type CamsAirQualityResult = {
   historicalLabel: string
   forecastLabel: string
   accuracyText: string
+  accuracyWarning: string
   errorMessage?: string
 }
 
@@ -50,7 +51,10 @@ export function getOpenMeteoHost(): { url: string; hasKey: boolean } {
 
 export const CAMS_HISTORICAL_LABEL = 'ค่าประมาณจากแบบจำลอง CAMS ~45 กม. ไม่ใช่ค่าที่วัดจริง'
 export const CAMS_FORECAST_LABEL = 'พยากรณ์โดยแบบจำลองระดับโลก CAMS (Copernicus) ผ่าน Open-Meteo ความละเอียด ~45 กม. ไม่ใช่ค่าวัด ณ จุดของคุณ (Data: Copernicus Atmosphere Monitoring Service via Open-Meteo)'
-export const CAMS_ACCURACY_TEXT = 'เทียบสถานีกรุงเทพฯ ช่วง 1–7 ต.ค. คลาดเคลื่อนเฉลี่ย 6.73 µg/m³ (n=21)'
+export const CAMS_ACCURACY_TEXT = 'CAMS accuracy sample: กรุงเทพฯ 1–7 ต.ค., n=21, MAE 6.73 µg/m³, RMSE 8.03 µg/m³, Bias +2.23 µg/m³'
+
+export const CAMS_ACCURACY_TEXT_PRODUCTION = 'CAMS accuracy sample: กรุงเทพฯ 1–7 ต.ค., n=21, MAE 6.73 µg/m³, RMSE 8.03 µg/m³, Bias +2.23 µg/m³'
+export const CAMS_ACCURACY_WARNING = 'ตัวเลขนี้เป็นการประเมินจาก 3 สถานีในกรุงเทพฯ ช่วง 1–7 ต.ค. ไม่ใช่ความแม่นยำของทุกจังหวัดหรือทุกฤดู'
 
 export async function fetchCamsAirQuality(
   latitude: number,
@@ -68,6 +72,7 @@ export async function fetchCamsAirQuality(
       historicalLabel: CAMS_HISTORICAL_LABEL,
       forecastLabel: CAMS_FORECAST_LABEL,
       accuracyText: CAMS_ACCURACY_TEXT,
+      accuracyWarning: CAMS_ACCURACY_WARNING,
       errorMessage: 'พิกัดไม่ถูกต้อง',
     }
   }
@@ -96,6 +101,7 @@ export async function fetchCamsAirQuality(
         historicalLabel: CAMS_HISTORICAL_LABEL,
         forecastLabel: CAMS_FORECAST_LABEL,
         accuracyText: CAMS_ACCURACY_TEXT,
+        accuracyWarning: CAMS_ACCURACY_WARNING,
         errorMessage: 'OPEN_METEO_AUTH_FAILED: การยืนยันตัวตนกับ Open-Meteo ไม่ถูกต้อง',
       }
     }
@@ -109,6 +115,7 @@ export async function fetchCamsAirQuality(
         historicalLabel: CAMS_HISTORICAL_LABEL,
         forecastLabel: CAMS_FORECAST_LABEL,
         accuracyText: CAMS_ACCURACY_TEXT,
+        accuracyWarning: CAMS_ACCURACY_WARNING,
         errorMessage: `OPEN_METEO_HTTP_ERROR_${res.status}: ไม่สามารถดึงข้อมูลจาก Open-Meteo ได้`,
       }
     }
@@ -163,6 +170,13 @@ export async function fetchCamsAirQuality(
     historical.sort((a, b) => a.date.localeCompare(b.date))
     forecast.sort((a, b) => a.date.localeCompare(b.date))
 
+    // Open-Meteo includes the current day in past_days. Keep the API contract
+    // explicit: callers receive exactly the requested number of historical days.
+    const historyLimit = Math.min(92, Math.max(1, pastDays))
+    if (historical.length > historyLimit) {
+      historical.splice(0, historical.length - historyLimit)
+    }
+
     return {
       status: historical.length || forecast.length ? 'ok' : 'stale',
       historical,
@@ -171,6 +185,7 @@ export async function fetchCamsAirQuality(
       historicalLabel: CAMS_HISTORICAL_LABEL,
       forecastLabel: CAMS_FORECAST_LABEL,
       accuracyText: CAMS_ACCURACY_TEXT,
+      accuracyWarning: CAMS_ACCURACY_WARNING,
     }
   } catch (err) {
     const isTimeout = err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')
@@ -182,6 +197,7 @@ export async function fetchCamsAirQuality(
       historicalLabel: CAMS_HISTORICAL_LABEL,
       forecastLabel: CAMS_FORECAST_LABEL,
       accuracyText: CAMS_ACCURACY_TEXT,
+      accuracyWarning: CAMS_ACCURACY_WARNING,
       errorMessage: isTimeout ? 'OPEN_METEO_TIMEOUT: การเชื่อมต่อ Open-Meteo หมดเวลา' : 'OPEN_METEO_FETCH_FAILED: เกิดข้อผิดพลาดในการดึงข้อมูล',
     }
   }

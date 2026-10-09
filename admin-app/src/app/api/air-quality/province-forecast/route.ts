@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       : 0
 
     // ─── shadow readiness (ข้อ 5): ชนะ baseline ≥ 14 วัน ─────────────────
-    let horizonReadiness: Array<{ horizon: number; ready: boolean; streak: number }> = []
+    const horizonReadiness: Array<{ horizon: number; ready: boolean; streak: number }> = []
     try {
       const mVersion = selection.modelVersion ?? ''
       if (mVersion) {

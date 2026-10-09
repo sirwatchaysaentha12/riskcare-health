@@ -22,13 +22,58 @@ debug.log
 notebooks/*.joblib
 !notebooks/pm25_model_v4_residual.joblib
 
+# Large AutogluonModels (>500 MB — ห้าม commit เด็ดขาด)
+AutogluonModels/
+
+# Large data files (CSV, PDF, JSON data)
+notebooks/pm25_daily_vertex.csv
+notebooks/pm25_forecast_training_data_v2.7.pdf
+data/vertex/weather_daily_bangkok.csv
+data/vertex/weather_forecast_daily_bangkok.csv
+data/vertex/step1_backtest_all_provinces.json
+data/vertex/phase28_experiment_results.json
+data/vertex/v27_holdout_*.json
+data/vertex/v3_holdout_*.json
+
+# Model metadata (local only)
+notebooks/pm25_model_production.metadata.json
+notebooks/pm25_model_v2.7_filtered.metadata.json
+notebooks/train_v27_results.json
+notebooks/train_v27_filtered_results.json
+notebooks/eval_v26_results.json
+
+# Log files
+*.log
+notebooks/pm25_v27_daily_publish.log
+notebooks/pm25_v27_daily_validation.log
+frontend-dev.log
+backend-dev.log
+frontend-vite.out.log
+frontend-vite.err.log
+
+# Generated notebooks
+notebooks/pm25_random_forest_colab.ipynb
+notebooks/pm25_training_fixed.ipynb
+notebooks/rag_embedding_colab.ipynb
+
 # Zero-byte shell-redirect artifacts at repo root
 /cd
 /netstat
 /node
 
-# Phase 2 test scratch (raw video clips for e2e — not committed)
+# Phase 2 test scratch
 tmp-vitallens/
 data/hourly/
 data/vertex/*.joblib
 .venv-ml/
+.venv-pm25-forecast/
+
+# Skills lock (local only)
+skills-lock.json
+
+# Design scratch
+.hallmark/
+stitch-design/
+
+# Frontend tmp scripts
+frontend/scripts/tmp-*.mjs

@@ -1,11 +1,11 @@
 # RiskCare PM2.5 Forecast — Competition Final Report
 
-**เวอร์ชัน:** v2.0 · **วันที่:** 2026-10-06 · **อ้างอิงผล:** Phase 34 (commit `38ceeac`, bootstrap แบบ row-level pairing ที่แก้ถูกต้องแล้ว) · **ผลดิบ:** `data/vertex/phase34_results.json`
+**เวอร์ชัน:** v2.1 · **วันที่:** 2026-10-07 · **อ้างอิงผล:** Phase 34 (commit `38ceeac`, bootstrap row-level) + รอบพัฒนา 4–6 (round4–6 JSON, ดูส่วนเสริมท้ายรายงาน) · **ผลดิบ:** `data/vertex/phase34_results.json`, `round4_pm5_push.json`, `round5_hourly_ml_deep.json`, `round5b_all_season.json`, `round6_daily_deep.json`
 
 **จุดยืนยันที่กรรมการ/ผู้ใช้เช็คเองได้:**
 1. `python notebooks/phase34_push.py` → ตัวเลขในรายงานนี้ต้องตรงกับผลที่พิมพ์ออกทุกตัว
 2. `git show 38ceeac --stat` → 2 ไฟล์ (สคริปต์ + JSON)
-3. เรียก API จริง `GET /api/air-quality/dashboard?...&lat=13.763&lon=100.476` → ตรวจ field `modelVersion` และ `dataType` ต่อแถว
+3. เรียก API จริง `GET /api/air-quality/dashboard?...&lat=13.763&lon=100.476` → ตรวจ field `modelVersion` (ขณะนี้ = `ml-local-v4.0`) และ `dataType` ต่อแถว
 
 > **ข้อความบังคับ (1):** ระบบเทรนโมเดลด้วย Python 3.11 แบบ offline ไม่ได้เทรนในเว็บไซต์ เว็บไซต์เรียก Backend/API และแสดงผลเท่านั้น
 
@@ -44,8 +44,7 @@ Frontend (React/Vite, พอร์ต 5173) — เรียก API และแ
 
 ## 4. Production model
 
-**`ml-local-v3.0`** — Ridge blend50 (ML×persistence) ต่อ horizon h1/h2/h3 วัน, เทรนออฟไลน์, publish แบบ batch วันละครั้ง 04:30 ผ่าน Windows Task Scheduler
-**สถานะการเสิร์ฟจริง ณ วันตรวจ (2026-10-06):** publish ล่าสุด = 2026-10-03 (99 แถว/33 สถานี) — ML rows เก่ากว่าค่าวัดล่าสุด ทำให้ **freshness guard ตัดแถว ML ออกและเสิร์ฟ fallback ตามดีไซน์** (ตรวจจาก API จริง: `modelVersion = baseline-pers-ma7blend-v1`, publish_log.txt ประทับเวลา 2026-10-03) — กลไกนี้ป้องกันการแสดงคำทำนายเก่าโดยไม่มีป้ายกำกับ
+**`ml-local-v4.0`** (อัปเกรดจาก v3.0 เมื่อ 2026-10-07 — ดูส่วนเสริมท้ายรายงาน) — เลือกสูตรต่อ horizon ตาม CV: h=1 = residual HGB, h=2–3 = w05 blend, เทรนออฟไลน์ (Python 3.11), publish แบบ batch วันละครั้ง 04:30 ผ่าน Windows Task Scheduler · ตรวจ API จริงแล้วเสิร์ฟ `ml-local-v4.0` ครบ 3 วัน (freshness guard ยังทำหน้าที่เดิม: ML stale → fallback `baseline-pers-ma7blend-w05-v1` อัตโนมัติ)
 
 ## 5. Baseline
 

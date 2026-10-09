@@ -1,0 +1,318 @@
+{
+ "model_version": "ml-local-v4.0",
+ "model_file": "notebooks/pm25_model_v4_residual.joblib",
+ "recipe": "h1 = residual_hgb + persistence; h2-3 = 0.5×persistence + 0.5×MA7 (w05, CV-best round4)",
+ "features": [
+  "lag1",
+  "lag2",
+  "lag3",
+  "lag4",
+  "lag5",
+  "lag6",
+  "lag7",
+  "lag8",
+  "lag9",
+  "lag10",
+  "lag11",
+  "lag12",
+  "lag13",
+  "lag14",
+  "rm3",
+  "rs3",
+  "rm7",
+  "rs7",
+  "rm14",
+  "rs14",
+  "rm30",
+  "rs30",
+  "min7",
+  "max7",
+  "min14",
+  "max14",
+  "roc1",
+  "roc7",
+  "mom3_7",
+  "sp_lag",
+  "dow",
+  "month",
+  "is_hs"
+ ],
+ "trained_until": "2026-09-30",
+ "training_rows": 24211,
+ "horizons_days": [
+  1,
+  2,
+  3
+ ],
+ "stations": [
+  {
+   "station_id": "1304082",
+   "station_name": "Public Park to commemorate the sixth anniversary of His Majesty the King",
+   "latitude": 13.697252,
+   "longitude": 100.497185,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304114",
+   "station_name": "Mahaisawan Intersection",
+   "latitude": 13.70515,
+   "longitude": 100.48465,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304179",
+   "station_name": "Saphan Sung District Office, Bangkok",
+   "latitude": 13.768892,
+   "longitude": 100.685743,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304192",
+   "station_name": "Siam University",
+   "latitude": 13.718689,
+   "longitude": 100.45391,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304205",
+   "station_name": "Highway District",
+   "latitude": 13.7054879,
+   "longitude": 100.315622,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304207",
+   "station_name": "Residence for Dept. of Mineral Resources",
+   "latitude": 13.652141,
+   "longitude": 100.531805,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304211",
+   "station_name": "Bueng Kum District Office, Bangkok",
+   "latitude": 13.785212,
+   "longitude": 100.669183,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304255",
+   "station_name": "Sukhothai Thammathirat Open University",
+   "latitude": 13.907861,
+   "longitude": 100.535641,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304281",
+   "station_name": "Lat Krabang Hospital",
+   "latitude": 13.72205,
+   "longitude": 100.784069,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304293",
+   "station_name": "National Economic and Social Development Council Office",
+   "latitude": 13.756281,
+   "longitude": 100.514267,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304328",
+   "station_name": "Bansomdejchaopraya Rajabhat University",
+   "latitude": 13.732846,
+   "longitude": 100.487662,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304340",
+   "station_name": "Phra Nakhon District Office, Bangkok",
+   "latitude": 13.76415,
+   "longitude": 100.499077,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304353",
+   "station_name": "Library under King Taksin Bridge",
+   "latitude": 13.719705,
+   "longitude": 100.508782,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304403",
+   "station_name": "Bangkok Noi Train Police Station",
+   "latitude": 13.759619,
+   "longitude": 100.481137,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304435",
+   "station_name": "Odeon Circus",
+   "latitude": 13.737136,
+   "longitude": 100.512734,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1304438",
+   "station_name": "Chaloem Phrakiat Rama 9 Park Min buri, Bangkok",
+   "latitude": 13.813578,
+   "longitude": 100.73208,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1305020",
+   "station_name": "Tha phra Intersection",
+   "latitude": 13.729431,
+   "longitude": 100.474373,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "1320292",
+   "station_name": "Grand Monaco Village",
+   "latitude": 13.672332,
+   "longitude": 100.698602,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "14153208",
+   "station_name": "Magi HQ",
+   "latitude": 13.7307691641537,
+   "longitude": 100.69343611145,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "15186788",
+   "station_name": "Life Bangkok Boulevard",
+   "latitude": 13.8158217,
+   "longitude": 100.6953185,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "15194517",
+   "station_name": "SM HQ",
+   "latitude": 13.7745623,
+   "longitude": 100.7076196,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "15194983",
+   "station_name": "SM HQ",
+   "latitude": 13.7655832,
+   "longitude": 100.7004831,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "2076214",
+   "station_name": "60th Anniversary of Queen Sirikit Park ,Kheha Romklao Road, Lat Krabang, Bangkok",
+   "latitude": 13.7631141,
+   "longitude": 100.7302101,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "2076216",
+   "station_name": "Rama VIII Park",
+   "latitude": 13.7693437,
+   "longitude": 100.4945337,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "2076219",
+   "station_name": "Bang Kho Laem District Office, Bangkok (Mobile)",
+   "latitude": 13.69304,
+   "longitude": 100.50244,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "2076228",
+   "station_name": "Phra Nakhon Park",
+   "latitude": 13.7201042,
+   "longitude": 100.7807077,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "2076229",
+   "station_name": "Suan Luang Rama IX",
+   "latitude": 13.6881393,
+   "longitude": 100.6579657,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "2076231",
+   "station_name": "Serithai Park",
+   "latitude": 13.7855673,
+   "longitude": 100.6733359,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "5077771",
+   "station_name": "Thonburi Power Sub-Station",
+   "latitude": 13.727622,
+   "longitude": 100.486568,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "5077838",
+   "station_name": "Prabadang Rehabiltation Center",
+   "latitude": 13.664087,
+   "longitude": 100.543436,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "6530250",
+   "station_name": "Nuannoradit school 2, Phasi Charoen, Bangkok",
+   "latitude": 13.723905641057,
+   "longitude": 100.466725545593,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "6530291",
+   "station_name": "Suwannaramwittayakom school 1, Bangkok Noi, Bangkok",
+   "latitude": 13.7631257933049,
+   "longitude": 100.476129018612,
+   "province": "กรุงเทพมหานคร"
+  },
+  {
+   "station_id": "6530344",
+   "station_name": "Mahapruttaram girl's school 2, Bang Rak, Bangkok",
+   "latitude": 13.7326677111143,
+   "longitude": 100.516011518612,
+   "province": "กรุงเทพมหานคร"
+  }
+ ],
+ "province_to_stations": {
+  "กรุงเทพมหานคร": [
+   "1304082",
+   "1304114",
+   "1304179",
+   "1304192",
+   "1304205",
+   "1304207",
+   "1304211",
+   "1304255",
+   "1304281",
+   "1304293",
+   "1304328",
+   "1304340",
+   "1304353",
+   "1304403",
+   "1304435",
+   "1304438",
+   "1305020",
+   "1320292",
+   "14153208",
+   "15186788",
+   "15194517",
+   "15194983",
+   "2076214",
+   "2076216",
+   "2076219",
+   "2076228",
+   "2076229",
+   "2076231",
+   "5077771",
+   "5077838",
+   "6530250",
+   "6530291",
+   "6530344"
+  ]
+ },
+ "note": "โมเดลเทรนบนสถานีเหล่านี้เท่านั้น — สถานี/จังหวัดอื่นห้ามใช้โมเดลนี้ทำนาย (นอก training distribution)"
+}

@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""
+pre-commit hook: ตรวจ secret + ไฟล์ >5MB ก่อน commit
+ติดตั้ง: copy ไฟล์นี้ไปที่ .git/hooks/pre-commit แล้ว chmod +x
+หรือใช้ pre-commit framework: https://pre-commit.com
+
+ตรวจ:
+1. ห้าม commit .env* (ยกเว้น .env.example)
+2. ไฟล์ขนาด >5MB ต้องได้รับอนุญาตพิเศษ
+3. pattern ที่คล้าย secret ใน staged files
+"""
+import subprocess
+import sys
+import re
+import os
+
+# ── ดึง staged files ──
+result = subprocess.run(['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'],
+                        capture_output=True, text=True)
+staged = [f.strip() for f in result.stdout.splitlines() if f.strip()]
+
+errors = []
+
+# ── 1. ห้าม .env* (ยกเว้น .env.example) ──
+for f in staged:
+    basename = os.path.basename(f)
+    if basename.startswith('.env') and basename != '.env.example':
+        errors.append(f"❌ ห้าม commit ไฟล์ env: {f}")
+
+# ── 2. ไฟล์ >5MB ──
+for f in staged:
+    try:
+        size = int(subprocess.run(['git', 'cat-file', '-s', f':{f}'],
+                                   capture_output=True, text=True).stdout.strip() or 0)
+        if size > 5 * 1024 * 1024:
+            errors.append(f"❌ ไฟล์ใหญ่เกิน 5MB ({size // 1024 // 1024}MB): {f} — เพิ่มใน .gitignore ก่อน")
+    except Exception:
+        pass
+
+# ── 3. ตรวจ secret pattern ใน content (staged diff เท่านั้น) ──
+SECRET_PATTERNS = [
+    (re.compile(r'SUPABASE_SERVICE_ROLE_KEY\s*=\s*["\']?ey[A-Za-z0-9_\-]{20,}'), 'Supabase service role key'),
+    (re.compile(r'OPENAQ_API_KEY\s*=\s*["\']?[A-Za-z0-9_\-]{20,}'), 'OpenAQ API key literal'),
+    (re.compile(r'sk-[A-Za-z0-9]{32,}'), 'OpenAI/Anthropic API key'),
+    (re.compile(r'eyJhbGciOiJIUzI1NiJ9\.[A-Za-z0-9_\-]{10,}'), 'JWT token'),
+]
+diff_result = subprocess.run(['git', 'diff', '--cached', '--unified=0'],
+                              capture_output=True, text=True)
+for line in diff_result.stdout.splitlines():
+    if not line.startswith('+') or line.startswith('+++'):
+        continue
+    content = line[1:]
+    for pattern, label in SECRET_PATTERNS:
+        if pattern.search(content):
+            errors.append(f"❌ พบ {label} ที่อาจเป็น secret จริง — ตรวจสอบและลบก่อน commit")
+            break
+
+# ── รายงานผล ──
+if errors:
+    print("🔒 pre-commit: พบปัญหาก่อน commit:\n")
+    for e in errors:
+        print(f"  {e}")
+    print("\nแก้ไขปัญหาก่อนแล้ว git add อีกครั้ง")
+    sys.exit(1)
+
+print("✅ pre-commit: ผ่านทุกข้อตรวจ")
+sys.exit(0)

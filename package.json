@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "dev": "node scripts/dev.mjs"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "dotenv": "^17.4.2"
